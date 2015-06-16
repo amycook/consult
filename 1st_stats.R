@@ -79,7 +79,7 @@ all7a<- all7 %>% select(-Paperless,-Innovation, -JobInvCount,-job.first.inv.emai
                         -Role)
 
 
-write.csv(all7a, 'all7a.csv')
+# write.csv(all7a, 'all7a.csv')
 # all7 %>% arrange(-inv.vs.cost) %>% select(inv.vs.cost) %>% head(50)
 # ggplot(all7, aes(x=inv.vs.cost, y=inv.mlsto)) + geom_point()
 # ggplot(all7, aes(x=inv.vs.cost, y=inv.vs.cost)) + geom_boxplot()
@@ -312,9 +312,7 @@ corrgram(num.all %>% select(client.count, charge.ph, no.users, pc.director, pc.g
 summary(num.all)
 num.all[rowSums(is.na(num.all))>0,]
 
-
-cor.test(all7a$return.pdol, all7a$client.count, method = c('pearson'))
-cor.test(all7a$return.pdol, all7a$client.count, method = c('kendall'))
+#correlation by each variable against return.perdol individually - numeric variables only
 
 cor.all<- c("client.count", "no.users", "pc.director", "pc.gradpro", "pc.midpro", 
             "pc.midtech", "pc.contracttech", "return.pdol","Inv.freq", 'num.neginv','client.invfreq','client.neginv',
@@ -328,9 +326,9 @@ for(i in 1:length(cor.all)) {
         print(
                 cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('pearson'))
         )
-        print(
-                cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('spearman'))
-        )
+#         print(
+#                 cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('spearman'))
+#         )
         print(
                 cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('kendall'))
         )
@@ -338,7 +336,7 @@ for(i in 1:length(cor.all)) {
 }
 
 
+#lots of them have a very low p value
 
-
-
+# correlation of categorical variables against numeric return.pdol target variable
 

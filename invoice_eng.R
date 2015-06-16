@@ -59,13 +59,6 @@ v3<- ddply(temp %>% filter(Inv.Amount>0 & btwn.inv>0), .(mlsto), summarise,
 #num of negative invoices for project
 v4<- ddply(temp %>% filter(Inv.Amount<0), .(mlsto), nrow)
 
-#check sign jobs 
-v1 %>% filter(mlsto == '2011.072.3')
-v2 %>% filter(mlsto == '2011.072.3')
-v3 %>% filter(mlsto == '2011.072.3')
-v4 %>% filter(mlsto == '2011.072.3')
-#everything looking ok
-
 
 #now to add client codes as column
 all5a<-read.csv('all5a.csv')[,-1]
@@ -107,18 +100,22 @@ inv.eng<- merge(inv.eng, v1, by='mlsto', all.x=TRUE)
 inv.eng<- merge(inv.eng, v2, by= 'mlsto', all.x=TRUE)
 inv.eng<- merge(inv.eng, v3, by= 'mlsto', all.x=TRUE)
 inv.eng<- merge(inv.eng, v4, by= 'mlsto', all.x=TRUE)
+
+#turn all NA into zeroes
+
 inv.eng<- merge(inv.eng, v5, by= 'code.client', all.x=TRUE)
 inv.eng<- merge(inv.eng, v6, by= 'code.client', all.x=TRUE)
 inv.eng<- merge(inv.eng, v7, by= 'code.client', all.x=TRUE)
-
 colnames(inv.eng)[names(inv.eng) %in% 'V1.x']<-'num.inv'
 colnames(inv.eng)[names(inv.eng) %in% 'V1.y']<-'num.neginv'
 colnames(inv.eng)[names(inv.eng) %in% 'V1']<-'client.neginv'
+inv.eng[is.na(inv.eng$num.neginv),]$num.neginv <- 0
+inv.eng[is.na(inv.eng$client.neginv),]$client.neginv <- 0
 
 #final variables!!
 #mean size of invoice over total invoiced per project - same as num.inv!! except inverse
 #mean number of invoices per job for client
-v8<- ddply(inv.eng, .(code.client), summarise, client.numinv = mean(num.inv) %>% round(2))
+v8<- ddply(inv.eng %>% filter(!is.na(num.inv)), .(code.client), summarise, client.numinv = mean(num.inv) %>% round(2))
 #mean total invoiced per client
 v9<- ddply(inv.eng, .(code.client), summarise, client.totinv = mean(inv.mlsto) %>% round(2))
 
@@ -131,4 +128,8 @@ write.csv(inv.eng, 'invoices_eng.csv')
 #now can merge inv.eng with all6 :)! see end of de-identify file
 
 
-
+#can we get rid of some of the NA values in inv.eng?? 
+# inv.eng$Inv.freq has 1131 NA rows - fine - either 1 invoice or 2 invoices in different milestones etc.
+# inv.eng$client.invfreq has 269 NA rows - fine
+# client.numinv has 21 NA rows - all pre 2007 - fine
+# client.meaninv has 21 NAs - all pre 2007 - fine
