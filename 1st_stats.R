@@ -230,11 +230,11 @@ matrix4<- spm(~ inv.vs.cost + pc.tech + mean.peeps + hours.perday
 #lets write a function for running these anova and lm models
 
 BT.lin<- function(type= 'lm', data= all7a, add.var = 'Job.Type.Primary') {
-        formula = paste("inv.vs.cost~ inv.mlsto + Discipline + client.count + Business+
-                              Biz.size + Biz.type + 
-                              no.users + pc.contracttech +
-                              pc.director + pc.midtech + pc.midpro+ pc.gradpro+ pc.seniortech+ pc.seniorpro+
-                              pc.pro + mean.peeps + hours.perday + 
+        formula = paste("return.pdol ~ inv.mlsto + Discipline + client.count + Business +
+                              Biz.size + Biz.type + Year + Num.days +
+                              no.users + pc.contracttech + client.neginv + client.numinv + client.totinv +
+                              pc.director + pc.midtech + pc.midpro + pc.gradpro + pc.seniortech + pc.seniorpro +
+                              pc.pro + mean.peeps + hours.perday + num.inv + mean.inv + num.neginv + client.meaninv +
                               code.director + ProjEng.Pos", add.var, sep="+")
         if (type== 'aov') {
             model= aov(as.formula(formula)              
