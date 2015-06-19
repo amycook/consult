@@ -7,16 +7,29 @@ output: word_document
 
 
 ```{r, echo=FALSE, include=FALSE}
-setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
+library('knitr')
+# library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
+# library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
+# library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
+
+library('ggplot2')
+library("dplyr")
+library("plyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
 library('car')
-library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('e1071')
+library('corrgram')
 ```
 
 
@@ -31,7 +44,7 @@ all7$Start.Date<- as.Date(all7$Start.Date)
 Check for normality of return variable return per dollar
 Outliers were deleted first
 
-```{r, echo=FALSE}
+```{r}
 # try deleting very high return.pdol values greater than 3
 test<- all7 %>% filter(return.pdol <=3 & return.pdol> -2)
 qqPlot(test$return.pdol)
@@ -63,6 +76,7 @@ kurtosis equals 2.85 - very peakedy - ie not flat. normal distribution is 0.
 Create new data set that has outliers deleted, all7a
 
 ```{r}
+
 ### delete outliers! and variables that aren't by milestone
 all7a<- all7 %>% filter(return.pdol <=3 & return.pdol> -2)
 all7a<- all7 %>% select(-Paperless,-Innovation, -JobInvCount,-job.first.inv.email.Sent, 
@@ -82,7 +96,7 @@ In order to get Anova and linear regression to work on this data set, start with
 
 For lm, the output is ordered from abs(highest coefficient)
 
-```{r, echo=TRUE}
+```{r, echo=FALSE}
 BT.lin<- function(type= 'lm', data= all7a, add.var = 'Job.Type.Primary') {
         formula = paste("return.pdol ~ inv.mlsto + Discipline + client.count + Business +
                               Biz.size + Biz.type + Year + Num.days +
@@ -107,9 +121,12 @@ BT.lin<- function(type= 'lm', data= all7a, add.var = 'Job.Type.Primary') {
             
                 
 }
+```
 
-BT.lin(type= 'lm', data= all7a[1:1313,], add.var = 'Job.Type.Primary') %>% slice(1:20)
-BT.lin(type= 'lm', data= all7a, add.var = 'Job.Type.Primary') %>% slice(1:10)
+```{r}
+
+# BT.lin(type= 'lm', data= all7a[1:1313,], add.var = 'Job.Type.Primary') %>% slice(1:20)
+BT.lin(type= 'lm', data= all7a, add.var = 'Job.Type.Primary') %>% slice(1:20)
 BT.lin(type= 'lm', data= all7a[1314:2283,], add.var = 'Job.Type.Primary') %>% slice(1:10)
 BT.lin(type= 'aov', data= all7a, add.var = 'Job.Type.Primary')
 BT.lin(type= 'aov', data= all7a[1314:2283,], add.var = 'Job.Type.Primary')
@@ -117,6 +134,7 @@ BT.lin(type= 'aov', data= all7a[1314:2283,], add.var = 'Job.Type.Primary')
 ```
 
 Most influential variables are:
+
 * Business type
 * director code
 * Discipline
@@ -124,6 +142,7 @@ Most influential variables are:
 
 
 Excluded variables include:
+
 * Post.Code
 * Billing.Type
 * Job.Source
@@ -143,6 +162,114 @@ Excluded variables include:
 * Inv.freq
 * client.invfreq
 
+# Correlation Analysis - Numeric variables with 'return.pdol' variable
+
+First run Corrgram  - corrgram function
+Run as type 'spearman' - non linear
+
+```{r, echo=FALSE}
+
+#### CORRELATION ANALYSIS
+
+# str(all7a)
+num.all<- all7a %>% select(client.count, no.employees, dist, charge.ph, no.users, pc.contracttech,
+                           pc.director, pc.gradpro, pc.midpro, pc.midtech, pc.seniorpro, pc.seniortech, 
+                           pc.unknown, pc.pro, pc.tech, Year, balance.mlsto,
+                           timespan, Num.disc, Num.days, mean.peeps, hours.perday, hrs.mlsto, cost.mlsto, 
+                           dis.sc.mlsto, 
+                           inv.mlsto, return.pdol,
+                           num.inv, mean.inv, Inv.freq, num.neginv, client.meaninv, client.invfreq, client.neginv, 
+                           client.numinv,
+                           client.totinv)
+corrgram(num.all %>% select(client.count, charge.ph, no.users, pc.director, pc.gradpro, pc.midpro, 
+                            pc.midtech, pc.contracttech, return.pdol,
+                            pc.seniorpro, pc.seniortech, balance.mlsto,
+                            pc.unknown, pc.pro, pc.tech, Year, Num.days, mean.peeps, hours.perday, hrs.mlsto, 
+                            cost.mlsto,
+                            dis.sc.mlsto, inv.mlsto, num.inv, mean.inv, client.meaninv, client.totinv,
+                            timespan) %>% filter(complete.cases(.)), order=T, 
+         lower.panel = panel.shade,
+         upper.panel = panel.pie,
+         text.panel = panel.txt,
+         cor.method = 'spearman')
+# summary(num.all)
+# num.all[rowSums(is.na(num.all))>0,]
+```
+
+Now output cor.test results for all numeric variables using both pearson (linear) and kendall (non-linear) to compare.
+Kendall does not have problems with ties
+
+```{r, echo=FALSE}
+
+#correlation by each variable against return.perdol individually - numeric variables only
+
+cor.all<- c("client.count", "no.users", "pc.director", "pc.gradpro", "pc.midpro", 
+            "pc.midtech", "pc.contracttech", "return.pdol","Inv.freq", 'num.neginv','client.invfreq','client.neginv',
+            "pc.seniorpro", "pc.seniortech", "no.employees", "dist", "Num.disc",'client.numinv',
+            "pc.unknown", "pc.pro", "pc.tech", "Year", "Num.days", "mean.peeps", "hours.perday", "hrs.mlsto", 
+            "cost.mlsto",
+            "dis.sc.mlsto", "inv.mlsto", "num.inv", "mean.inv", "client.meaninv", "client.totinv",
+            "timespan")
+
+summ<- data.frame("test"=NULL,
+                  'var' = NULL,
+                  'corr' = NULL,
+                  'p.val' = NULL)
+
+for(i in 1:length(cor.all)) {
+        
+        a = cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('pearson'))
+
+        b = cor.test(all7a$return.pdol, all7a[,cor.all[i]], method = c('kendall'))
+        
+        inter.summ = data.frame('test'= c('pearson','kendall'),
+                                'var' = c(cor.all[i], cor.all[i]),
+                                'corr' = c(a$estimate, b$estimate),
+                                'p.val' = c(a$p.val, b$p.val))
+        
+        summ = rbind(summ,inter.summ)
+}
+
+summ$p.val <- format(summ$p.val, scientific=TRUE, digits = 3)
+summ$p.val <- as.numeric(summ$p.val)
+summ$corr <- round(summ$corr, 3)
+
+```
+
+Output ordered by p value
+```{r, echo=TRUE}
+
+summ %>% arrange(test, p.val)
+
+```
+
+Output ordered by correlation value - only 'significant' results to 5%
+
+```{r}
+
+summ %>% filter(p.val<= 0.05) %>% arrange(test, -abs(corr))
+
+```
+
+From this list it can be concluded what the most influential variables are. 
+For the purposes of return.pdol prediction, cost.mlsto, hrs.mlsto, Num.days, dis.sc.mlsto,
+num.neginv, Year (won't help in the future) cannot be known. 
+
+This leaves the following important variables:
+
+```{r, echo=FALSE}
+kable(
+        summ %>% filter(p.val<= 0.05, test== 'kendall') %>% arrange(test, -abs(corr)) %>% 
+                select(var, p.val, corr) %>%
+                filter(var!= 'cost.mlsto', var!= 'hrs.mlsto', var!= 'Num.days', var!= 'dis.sc.mlsto',
+                       var!= 'num.neginv',var!= 'Year', var!= 'return.pdol')
+         )
+
+```
+
+
+
+# Strength of association with Categorical variables
 
 
 
