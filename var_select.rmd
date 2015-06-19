@@ -7,29 +7,31 @@ output: word_document
 
 
 ```{r, echo=FALSE, include=FALSE}
-library('knitr')
-# library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library('knitr')
+library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
-# library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-# library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
-# library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
-# library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
-# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
+library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('party', lib = 'C:/Progra~1/R/R-3.2.0/library')
 
-library('ggplot2')
-library("dplyr")
-library("plyr")
-library('magrittr')
-library('reshape2')
-library("rpart")
-library('car')
-library('e1071')
-library('corrgram')
+# library('ggplot2')
+# library("dplyr")
+# library("plyr")
+# library('magrittr')
+# library('reshape2')
+# library("rpart")
+# library('car')
+# library('e1071')
+# library('corrgram')
+# library('party')
 ```
 
 
@@ -271,6 +273,23 @@ kable(
 
 # Strength of association with Categorical variables
 
+Use cforest from party package - (Strobl etc, 2007)
+- must be subsampling without replacement
+- subsampling size 0.632 times recommended because about 63.2% of data end up in bootstrap sample
 
+```{r}
+
+all7b<- all7a %>% select(return.pdol, no.users,timespan,mean.peeps,hours.perday,Num.disc,pc.pro,
+                num.inv, pc.gradpro , inv.mlsto , client.numinv, client.totinv, client.meaninv , 
+                client.neginv , mean.inv , pc.director , code.client , Post.Code , Billing.Type , 
+                Discipline , Job.Detail.Primary , Job.Detail.Secondary , Job.Type.Primary , 
+                Job.Type.Secondary , State , Type , Business , Biz.size , Biz.type , JD.Primary ,
+                JD.Second , code.director , code.ProjEng , ProjEng.Pos , code.Eng2 , Eng2.Pos)
+
+var.imp<- cforest(return.pdol~.,
+        data= all7b
+        )
+
+```
 
 
