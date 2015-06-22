@@ -211,11 +211,29 @@ hours1<- read.csv('hours_clean.csv')[,-1]
 
 ############ ENGINEER MORE VARIABLES  #####################
 
-# number of diff people who worked on a job
-V1<- hours1[!(hours1$user.code %in% c('disburse', 'Admin')), names(hours1) %in% c('Job.num', 'user.code')]
-V1 <- V1 %>% arrange(Job.num) %>%
+#calculate percentage of hours by each position for each MILESTONE, not JOB NUMBER - 2015-06-22
+#merge mlsto by Job.Number - use file all5a
+
+#create new column for milestone prefix
+hours1<- hours1 %>% arrange(Job.num)
+temp1<- hours1[1:77588,]
+#string split to create another column with the first part of a job number. For the first half of jobs just the first bit indicates it could be invoiced together ie 2002.001 by itself
+temp1$mlsto<-sapply(temp1$Job.num,FUN=function(x){
+        substr(x,1,8)})
+#do the same with second half of data
+temp2<- hours1[77589:120508,]
+temp2$mlsto<-sapply(temp2$Job.num,FUN=function(x){
+        substr(x,1,10)})
+temp2$mlsto<- ifelse(temp2$mlsto == '2011.072.3', temp2$Job.num, temp2$mlsto)
+#rbind temp1 and temp2 back together to make temp
+hours1<- rbind(temp1, temp2)
+hours1$mlsto<- as.factor(hours1$mlsto)
+
+# number of diff people who worked on a milestone
+V1<- hours1[!(hours1$user.code %in% c('disburse', 'Admin')), names(hours1) %in% c('mlsto', 'user.code')]
+V1 <- V1 %>% arrange(mlsto) %>%
         unique() 
-V1a<- ddply(V1, .(Job.num), nrow)
+V1a<- ddply(V1, .(mlsto), nrow)
 #rename columns
 colnames(V1a)[names(V1a) %in% 'V1']<-'no.users'
 V1a %>% arrange(-no.users) %>% head()
@@ -225,11 +243,11 @@ V1a %>% arrange(-no.users) %>% head()
 # variables: % hours by each position
 
 V2<- hours1[!(hours1$user.code %in% c('disburse', 'Admin')), 
-            names(hours1) %in% c('Job.num', 'Position', 'Hours' )]
+            names(hours1) %in% c('mlsto', 'Position', 'Hours' )]
 
 #reshape data - sum number of hours for each positon, then convert into percentage of total hours
 
-V2a<- acast(V2, Job.num~Position, sum, value.var= 'Hours')
+V2a<- acast(V2, mlsto~Position, sum, value.var= 'Hours')
 V2b<- round(prop.table(as.matrix(V2a),1)*100,2)
 V2b<- na.omit(V2b)
 #rename columns
@@ -263,7 +281,7 @@ pos.plot<- ggplot(percent.plot, aes(x=variable, y= percent.hrs,
 
 #### variable: Start date in month
 hours1$Work.Date<- as.Date(hours1$Work.Date, "%d/%m/%Y")
-hours1<- hours1 %>% arrange(Job.num, Work.Date)
+hours1<- hours1 %>% arrange(mlsto, Work.Date)
 #first get rid of date outliers
 date.plot<- ggplot(hours1[2000:4000,], aes(x=Job.num, y= Work.Date,
                                     colour= Job.num)) + 
@@ -277,7 +295,7 @@ date.plot<- ggplot(hours1[2000:4000,], aes(x=Job.num, y= Work.Date,
 # limit2= test[2]-(test[4]-test[1])*2.2
 
 
-temp<- hours1[!is.na(hours1$Work.Date),c('Job.num','Work.Date')]
+temp<- hours1[!is.na(hours1$Work.Date),c('mlsto','Work.Date')]
 
 
 hours2<- temp
@@ -298,9 +316,9 @@ hours2<- temp
 
 #finally, on to start date - skim head and tail for date in each job
 #skim the top entry from every job to be the 'start date'
-V4<- ddply(hours2, .(Job.num), head, 1)
+V4<- ddply(hours2, .(mlsto), head, 1)
 colnames(V4)[names(V4) %in% 'Work.Date']<-'Start.Date'
-V4a<- ddply(hours2, .(Job.num), tail, 1)
+V4a<- ddply(hours2, .(mlsto), tail, 1)
 colnames(V4a)[names(V4a) %in% 'Work.Date']<-'End.Date'
 V4$End.Date<- V4a$End.Date
 #create year column
@@ -314,40 +332,42 @@ V4<- transform(V4, timespan= End.Date- Start.Date)
 ##### variable: number of days worked on a job
 #need to count unique job number and work.Date combinations - ddply
 #below ddply gives a list of Job nUmbers and Work Dates and number of times someone recorded hours on a WorkDate
-V6<- ddply(hours1, .(Job.num, Work.Date), nrow)
+V6<- ddply(hours1, .(mlsto, Work.Date), nrow)
 #investigate high jobs
-hours1 %>% filter(Job.num =='2009.238.1' & Work.Date == '3/03/2010') %>% head(20)
+hours1 %>% filter(mlsto =='2009.238' & Work.Date == '2010-03-03') %>% head(20)
 #find mean number of people working on each job per day as well as total days worked on each job
-V6a<- ddply(V6, .(Job.num), nrow)
+V6a<- ddply(V6, .(mlsto), nrow)
 colnames(V6a)[names(V6a) %in% 'V1']<-'Num.days'
-V6b<- ddply(V6, .(Job.num), summarise, mean.peeps = mean(V1))
+V6b<- ddply(V6, .(mlsto), summarise, mean.peeps = mean(V1))
 
 
 #### variable: # of user.disciplines
 #first delete unknown user.discipline
 hours3<- hours1 %>% filter(!(user.disc == 'Unknown'))
-V5<- ddply(hours3, .(Job.num, user.disc), nrow)
-V5a<- ddply(V5, .(Job.num), nrow)
+V5<- ddply(hours3, .(mlsto, user.disc), nrow)
+V5a<- ddply(V5, .(mlsto), nrow)
 colnames(V5a)[names(V5a) %in% 'V1']<-'Num.disc'
 
 ##### COMBINE ALL ENGINEERED VARIABLES INTO FINAL JOB.HOURS DATA SET ######
 #first load summed charges, costs, hours
 Job.Hours<- read.csv( 'Tot_TS.csv')[,-1]
+#add mlsto column
+Job.Hours<- merge(Job.Hours, hours1 %>% select(Job.num, mlsto) %>% unique, by='Job.num', all.x=T)
 #merge with V1a - num users who worked on job
-Job.Hours <- merge(Job.Hours, V1a, by= 'Job.num', all.x= TRUE)
+Job.Hours <- merge(Job.Hours, V1a, by= 'mlsto', all.x= TRUE)
 
 #merge with V3 percent by each position/group
-Job.Hours<- merge(Job.Hours, V3, by.x= 'Job.num', by.y= 0, all.x= TRUE)
+Job.Hours<- merge(Job.Hours, V3, by.x= 'mlsto', by.y= 0, all.x= TRUE)
 
 #merge with timespan V4
-Job.Hours<- merge(Job.Hours, V4, by= 'Job.num',all.x= TRUE)
+Job.Hours<- merge(Job.Hours, V4, by= 'mlsto',all.x= TRUE)
 
 #merge with V5a - number of disciplines
-Job.Hours<- merge(Job.Hours, V5a, by= 'Job.num',all.x= TRUE)
+Job.Hours<- merge(Job.Hours, V5a, by= 'mlsto',all.x= TRUE)
 
 #merge with V6a and V6b - number of days and users per day
-Job.Hours<- merge(Job.Hours, V6a, by= 'Job.num',all.x= TRUE)
-Job.Hours<- merge(Job.Hours, V6b, by= 'Job.num',all.x= TRUE)
+Job.Hours<- merge(Job.Hours, V6a, by= 'mlsto',all.x= TRUE)
+Job.Hours<- merge(Job.Hours, V6b, by= 'mlsto',all.x= TRUE)
 Job.Hours<- transform(Job.Hours, hours.perday= hours/Num.days)
 
 

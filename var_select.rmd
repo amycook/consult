@@ -7,31 +7,33 @@ output: word_document
 
 
 ```{r, echo=FALSE, include=FALSE}
-# library('knitr')
-library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
-# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
-library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
-library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
-library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
-library('party', lib = 'C:/Progra~1/R/R-3.2.0/library')
 
-# library('ggplot2')
-# library("dplyr")
-# library("plyr")
-# library('magrittr')
-# library('reshape2')
-# library("rpart")
-# library('car')
-# library('e1071')
-# library('corrgram')
-# library('party')
+# library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+# library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
+# library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
+# library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.0/library')
+
+library('knitr')
+library('ggplot2')
+library("dplyr")
+library("plyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+library('party')
+
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 ```
 
 
@@ -180,7 +182,8 @@ num.all<- all7a %>% select(client.count, no.employees, dist, charge.ph, no.users
                            timespan, Num.disc, Num.days, mean.peeps, hours.perday, hrs.mlsto, cost.mlsto, 
                            dis.sc.mlsto, 
                            inv.mlsto, return.pdol,
-                           num.inv, mean.inv, Inv.freq, num.neginv, client.meaninv, client.invfreq, client.neginv, 
+                           num.inv, mean.inv, Inv.freq, num.neginv, client.meaninv, client.invfreq, 
+                           client.neginv, 
                            client.numinv,
                            client.totinv)
 corrgram(num.all %>% select(client.count, charge.ph, no.users, pc.director, pc.gradpro, pc.midpro, 
@@ -274,17 +277,81 @@ kable(
 # Strength of association with Categorical variables
 
 Use cforest from party package - (Strobl etc, 2007)
-- must be subsampling without replacement
-- subsampling size 0.632 times recommended because about 63.2% of data end up in bootstrap sample
 
-```{r}
+* must be subsampling without replacement
+* subsampling size 0.632 times recommended because about 63.2% of data end up in bootstrap sample
+* cforest defauly is unbiased - for unbiased variable importance as per Strobl etc 2007
+* since variables are potentially correlated to one another, need to set conditional permutation importance varimp(obj, conditional=TRUE)
+    * This iterates each variable against correlated variables in a controlled way. Ie the target variable is assessed against subgroups of the data where a correlated variable is constant.
+    
+For cforest, NA values are not handled. Therefore create a 'core' dataframe consisting of the variables which have very low NA entries (say max 10) and delete all NA rows or impute.
 
-all7b<- all7a %>% select(return.pdol, no.users,timespan,mean.peeps,hours.perday,Num.disc,pc.pro,
-                num.inv, pc.gradpro , inv.mlsto , client.numinv, client.totinv, client.meaninv , 
-                client.neginv , mean.inv , pc.director , code.client , Post.Code , Billing.Type , 
-                Discipline , Job.Detail.Primary , Job.Detail.Secondary , Job.Type.Primary , 
-                Job.Type.Secondary , State , Type , Business , Biz.size , Biz.type , JD.Primary ,
-                JD.Second , code.director , code.ProjEng , ProjEng.Pos , code.Eng2 , Eng2.Pos)
+State- impute QLD
+Business - 22 NA values - impute 'unknown'
+Biz.size - 38 NA's - find median, impute?
+Biz.type - 18 NA's impute???
+charge.ph - delete
+charge.pc - delete
+Start.Date - delete
+End.Date - delete
+no.users - 4 NA values - impute
+pc.usersss - 7 NA's - what to do. 0 for all? averages for all?
+Num.disc - 84 NA's - impute 1?
+num.inv and mean.inv- 1 NA?
+
+
+
+```{r core_creation}
+#impute NA values in some variables to be in core, call this all7b
+all7b<- all7a
+all7b[is.na(all7b$State),]$State <- 'QLD'
+#RSL Care client - now have details
+all7b[all7b$code.client %in% 'C2835',]$no.employees <- 1001
+all7b[all7b$code.client %in% 'C2835',]$Biz.type <- 'NFP'
+all7b[all7b$code.client %in% 'C2835',]$Business <- 'developer/real estate'
+all7b[all7b$code.client %in% 'C2758',]$Biz.size <- 'national'
+all7b[all7b$code.client %in% 'C2758',]$no.employees <- 2
+all7b[all7b$code.client %in% 'C2758',]$Biz.size <- 'local'
+all7b[all7b$code.client %in% 'C2758',]$Business <- 'business'
+all7b[all7b$code.client %in% 'C2326',]$Business <- 'health'
+all7b[all7b$code.client %in% 'C2338',]$Biz.size <- 'local'
+all7b[all7b$code.client %in% 'C2338',]$Business <- 'developer/real estate'
+all7b[all7b$code.client %in% 'C2338',]$Biz.type <- 'private'
+all7b[all7b$code.client %in% 'C2882',]$Biz.size <- 'local'
+all7b[all7b$code.client %in% 'C2882',]$Business <- 'builder'
+all7b[all7b$code.client %in% 'C2882',]$Biz.type <- 'private'
+all7b[all7b$code.client %in% 'C2882',]$no.employees <- 3
+#all remaining NA Business will be 'unknown'
+all7b$Business<- as.character(all7b$Business)
+all7b[is.na(all7b$Business),]$Business <- 'unknown'
+all7b$Business<- as.factor(all7b$Business)
+
+#impute Biz.size to be 'local' by default - this is most popular category
+all7b[is.na(all7b$Biz.size),]$Biz.size <- 'local'
+#impute Biz.type to be 'private' by default - this is most popular category
+#client which is 'department of national parks' shall be 'gov'
+all7b[is.na(all7b$Biz.type),]$Biz.type <- 'private'
+all7b[all7b$code.client %in% 'C2503',]$Biz.type <- 'gov'
+#delete charge.ph and charge.pc, Start.Date and End.Date
+all7b<- all7b %>% select(-charge.ph, -charge.pc, -Start.Date, -End.Date)
+#impute NA no.users as 2 = median and mode
+all7b[is.na(all7b$no.users),]$no.users <- 2
+#impute NA num.disc as 1 - overwhelmingly the most common
+all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
+#num.inv and mean.inv both have a single NA value
+# this consisted of single large -ve invoice. I think we should delete this case 
+all7b<- all7b %>% filter(!is.na(num.inv))
+# write.csv(all7b,'all7b.csv')
+
+#create core data frame - variables with very few NA's and delete these NA's
+
+core<- all7b %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
+        Biz.size , Biz.type , no.users , Year , timespan , Num.disc , Num.days , mean.peeps,
+        pc.contracttech , hours.perday , profit.mlsto , balance.mlsto , hrs.mlsto , 
+        cost.mlsto , dis.sc.mlsto , inv.mlsto , return.pdol , code.contact ,
+        pc.director , pc.midtech , pc.midpro , pc.gradpro , pc.seniortech , pc.seniorpro ,
+        pc.pro , code.director , code.ProjEng , ProjEng.Pos , num.inv , mean.inv , num.neginv , 
+        client.meaninv , client.neginv , client.numinv , client.totinv)
 
 var.imp<- cforest(return.pdol~.,
         data= all7b

@@ -181,7 +181,8 @@ write.csv(all5a, 'all6.csv')
 #merge new coded invoicing engineered variables from invoices_eng.csv'
 all6<- read.csv('all6.csv')[,-1]
 inv.eng<- read.csv('invoices_eng.csv')[,-1]
-all6a<- merge(all6, inv.eng %>% select(code.jobnum, num.inv, mean.inv, Inv.freq, num.neginv), by='code.jobnum', all.x=T)
+all6a<- merge(all6, inv.eng %>% select(mlsto, num.inv, mean.inv, Inv.freq, num.neginv) %>% unique, 
+              by='mlsto', all.x=T)
 all6a<- merge(all6a, inv.eng %>% select(code.client, client.meaninv, client.invfreq, client.neginv, client.numinv, client.totinv) %>% unique,
               by='code.client', all.x=T)
 test<- merge(all6 %>% select(mlsto), inv.eng %>% select(mlsto), by= 'mlsto', all.x=TRUE, all.y=TRUE)

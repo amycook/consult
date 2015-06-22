@@ -14,9 +14,9 @@ all6a$Start.Date<- as.Date(all6a$Start.Date)
 #sort by hours first
 all6a<- all6a %>% arrange(mlsto, -hours)
 dup<- all6a[,names(all6a) %in% c('mlsto')]
-all7<-all6a[!(all6a$Tot.Invoiced==0 | duplicated(dup)),]
+all7<-all6a[!(all6a$inv.mlsto==0 | duplicated(dup)),]
 
-# write.csv(all7, 'all7.csv')
+write.csv(all7, 'all7.csv')
 all7<- read.csv('all7.csv')[,-1]
 all7$Start.Date<- as.Date(all7$Start.Date)
 

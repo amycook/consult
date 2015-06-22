@@ -24,7 +24,7 @@ all4e[is.na(all4e$Tot.Invoiced),]$Tot.Invoiced <- 0
 
 #combine Job.Hours
 Job.Hours<- read.csv('Job_hours.csv')[,-1]
-head(Job.Hours)
+Job.Hours<- Job.Hours %>% select(-mlsto)
 all5<- merge(all4e, Job.Hours, by.x='Job.Number', by.y= 'Job.num', all.x=TRUE, all.y=FALSE)
 str(all5)
 
