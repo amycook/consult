@@ -8,31 +8,33 @@ output: word_document
 
 ```{r, echo=FALSE, include=FALSE}
 
-# library('knitr', lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-# library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
-# library('car', lib = 'C:/Progra~1/R/R-3.2.0/library')
-# library('e1071', lib = 'C:/Progra~1/R/R-3.2.0/library')
-# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.0/library')
-# library('party', lib = 'C:/Progra~1/R/R-3.2.0/library')
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
 
-library('knitr')
-library('ggplot2')
-library("dplyr")
-library("plyr")
-library('magrittr')
-library('reshape2')
-library("rpart")
-library('car')
-library('e1071')
-library('corrgram')
-library('party')
+# library('knitr')
+# library('ggplot2')
+# library("dplyr")
+# library("plyr")
+# library('magrittr')
+# library('reshape2')
+# library("rpart")
+# library('car')
+# library('e1071')
+# library('corrgram')
+# library('party')
 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 ```
 
@@ -88,6 +90,8 @@ all7a<- all7 %>% select(-Paperless,-Innovation, -JobInvCount,-job.first.inv.emai
                         -Job.Size, -Tot.Invoiced, -charge, -cost, -Dis.subcon, -hours,-profit,-balance,
                         -Role)
 
+# write.csv(all7a,'all7a.csv')
+all7a<- read.csv('all7a.csv')
 ```
 
 # Variable Selection
@@ -301,7 +305,7 @@ num.inv and mean.inv- 1 NA?
 
 
 
-```{r core_creation}
+```{r core_creation, include=FALSE}
 #impute NA values in some variables to be in core, call this all7b
 all7b<- all7a
 all7b[is.na(all7b$State),]$State <- 'QLD'
@@ -341,7 +345,25 @@ all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
 #num.inv and mean.inv both have a single NA value
 # this consisted of single large -ve invoice. I think we should delete this case 
 all7b<- all7b %>% filter(!is.na(num.inv))
+# 7 NA cases with significant dis.sc.mlsto - ie done by contractor 
+pc<- c('pc.contracttech','pc.director', 'pc.midtech', 'pc.midpro', 'pc.gradpro', 'pc.seniortech', 'pc.seniorpro', 'pc.pro', 'pc.tech')
+
+for (i in 1:length(pc)){
+        all7b[is.na(all7b[,pc[i]]),][,pc[i]] <-0
+}
+
+#change unknown Num.disc to be 1
+all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
 # write.csv(all7b,'all7b.csv')
+
+ 
+```
+
+Start running cforests
+Very slow, start with 100 rows only, using only core variables
+
+```{r, echo=FALSE}
+all7b<- read.csv('all7b.csv')
 
 #create core data frame - variables with very few NA's and delete these NA's
 
@@ -353,10 +375,195 @@ core<- all7b %>% select(code.client , Discipline ,  client.count , inv.mlsto , B
         pc.pro , code.director , code.ProjEng , ProjEng.Pos , num.inv , mean.inv , num.neginv , 
         client.meaninv , client.neginv , client.numinv , client.totinv)
 
-var.imp<- cforest(return.pdol~.,
-        data= all7b
+mini.core2 <- all7b %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
+        Biz.size , Biz.type , no.users , timespan, Num.disc, 
+        return.pdol, code.contact,
+        pc.director,
+        pc.pro , code.director , ProjEng.Pos ,
+        client.meaninv , client.neginv , client.numinv , client.totinv)
+
+mini.core3 <- all7b %>%
+        select(Discipline , inv.mlsto , Business,
+        Biz.size , Biz.type , no.users , timespan, Num.disc, 
+        return.pdol, pc.director,
+        pc.pro , code.director , ProjEng.Pos,
+        client.meaninv , client.neginv , client.numinv , client.totinv)
+
+```
+
+Try to make all cforests random selection of 200 rows - this time post 2009
+
+```{r, echo=FALSE}
+
+
+
+Try running a cforest over night with full dataset - don't include 
+```
+
+
+```{r, echo=FALSE}
+
+system.time(
+all.cfor2<- cforest(return.pdol~.,
+        data= mini.core3
         )
+)
+
+var.imp4<- varimp(all.cfor) %>% as.data.frame
+colnames(var.imp4)[names(var.imp4) %in% '.']<-'var.imp'
+var.imp4$var <- rownames(var.imp4)
+#reorder levels for bar plot
+var.imp4 <- within(var.imp4, 
+                    var <- factor(var,levels=
+                                            var.imp4[order(-abs(var.imp4$var.imp)),]$var))
+
+q<- ggplot(data=var.imp4, aes(x=var, y=var.imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
+q + geom_bar(stat='identity', position = 'dodge')
+
+save(all.cfor,file= 'C:/Users/n9232371/Documents/github/consult/object/all_cfor.RData')
+load('C:/Users/n9232371/Documents/github/consult/object/all_cfor.RData')
+```
+
+From analysing all jobs including 2009 and beyond, the most important variables are:
+`levels(var.imp4$var)[1:10] %>% as.data.frame`
+
+The least important are 
+`levels(var.imp4$var)[11:19]`
+
+Let's compare this to 
+
+* all data from 2002 to 2014 - currently running in another R window
+* ANOVA - all data because fast
+* random forest
+
+## Anova:
+
+```{r anova_varimp, echo=FALSE}
+#use mini.core2- all years
+system.time(
+        aov.all<- aov(return.pdol~.,
+                      data= mini.core3)
+        )
+
+
+summary(aov.all)
+```
+
+Therefore most significant variables are:
+
+* no.users - number of people on the job - <<.1%
+* code.director - <<.1%
+* timespan - 4%
+* Num.disc - 5.6%
+* Discipline - 5.65%
+
+worst: Business, ProjEng.Pos, client.numinv, 
+
+Contrasts to cforest results include
+
+* code.client pval=1 - this is likely because code.contact and code.client are highly correlated
+* inv.mlsto pval= .721 - surprising
+* client.numinv pval = 0.923 - surprisingly different
+
+# random forests
+
+First optimise parameters mtry and ntree - exclude code.client and code.contact for now as they have way too many categories
+
+```{r randomForest, echo=FALSE}
+#random forest can have max 53 categories in a variable
+#code.client has the most categories - 664
+
+# find optimal mtry
+
+#create train/test sets
+
+train_ind <- sample(seq_len(2355), size = 1570)
+
+train <- mini.core4[train_ind, ]
+test <- mini.core4[-train_ind, ]
+oob.err<-double(13)
+test.err<-double(13)
+for(mtry in 1:13){
+        fit<-randomForest(return.pdol ~., data=train, mtry=mtry, ntree=400)
+        oob.err[mtry]<-fit$mse[400]
+        test.err[mtry]<- mean((predict(fit,test)-test$return.pdol)^2)
+        cat(mtry," ")
+}
+
+qplot(1:mtry,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:mtry,oob.err,colour="blue"))+
+        geom_point(aes(1:mtry,oob.err, colour="blue"))
+
+#COMPLETELY FLAT - MAY AS WELL USE MTRY = 5????? NOW VARY NUMBER OF TREES
+
+trees<- c(300,500,700,1000,1500)
+oob.err<-double(5)
+test.err<-double(5)
+for(ntree in 1:5){
+        fit<-randomForest(return.pdol ~., data=train, mtry=5, ntree=trees[ntree])
+        oob.err[ntree]<-fit$mse[trees[ntree]]
+        test.err[ntree]<- mean((predict(fit,test)-test$return.pdol)^2)
+        cat(ntree," ")
+}
+
+qplot(1:ntree,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:ntree,oob.err,colour="blue"))+
+        geom_point(aes(1:ntree,oob.err, colour="blue"))
+
+#again, doesn't matter!! line is dead flat. i'm not having much confidence in the predictiveness of this model. 
+```
+
+Extract important variables from randomForest loop
+
+423 of the 664 client companies and 485 of the 670 client contacts appear ONLY once in the entire data set.
+While they may be great predictors what do we do in the majority of cases where the contact is new!?
+
+```{r, echo=FALSE}
+set.seed(47)
+
+#try running without code.client or code.contact
+multi.forest1<-function(data=mini.core3, nforest=1:10){
+        sample=double(50)
+        imp = NULL
+        for (i in 1:length(nforest)){
+                
+                #run tree
+                assign(paste("Forest",i,sep=""),randomForest(return.pdol~.,
+                                                             data=data,
+                                                             ntree=400,mtry=5, importance=TRUE),
+                       envir=.GlobalEnv)
+                
+                #put together importance rank for each variable
+                
+                rand.imp= importance(paste("Forest",i,sep="") %>% get, type=1, scale=FALSE) %>% as.data.frame
+                colnames(rand.imp)[names(rand.imp) %in% '%IncMSE']= 'IncMSE'
+                rand.imp$var= rownames(rand.imp)
+                rand.imp= rand.imp %>% arrange(-abs(IncMSE))
+                rand.imp$rank= 1:nrow(rand.imp)
+                
+                #rbind all variables and ranks on top of one another for each Forest
+                
+                imp = rbind(imp, rand.imp %>% select(var,rank))
+
+                cat(i," ")
+                
+        }
+        
+        #output average rank of each variable
+        rank = ddply(imp, .(var), summarise, m.rank =mean(rank)) %>% arrange(m.rank)
+        return(rank)
+        
+}
+
+rand.rank<- multi.forest1(data=mini.core2 %>% select(-code.contact, -code.client), nforest=1:10)
+
+kable(rand.rank)
 
 ```
 
 
+
+
+
+
+See how variable selection goes with random forest first, then probably just run cforest again without code.client and contact.code
