@@ -383,7 +383,7 @@ mini.core2 <- all7b %>% select(code.client , Discipline ,  client.count , inv.ml
         client.meaninv , client.neginv , client.numinv , client.totinv)
 
 mini.core3 <- all7b %>%
-        select(Discipline , inv.mlsto , Business,
+        select(Discipline , inv.mlsto , Business, client.count,
         Biz.size , Biz.type , no.users , timespan, Num.disc, 
         return.pdol, pc.director,
         pc.pro , code.director , ProjEng.Pos,
@@ -393,12 +393,8 @@ mini.core3 <- all7b %>%
 
 Try to make all cforests random selection of 200 rows - this time post 2009
 
-```{r, echo=FALSE}
-
-
 
 Try running a cforest over night with full dataset - don't include 
-```
 
 
 ```{r, echo=FALSE}
@@ -409,26 +405,28 @@ all.cfor2<- cforest(return.pdol~.,
         )
 )
 
-var.imp4<- varimp(all.cfor) %>% as.data.frame
-colnames(var.imp4)[names(var.imp4) %in% '.']<-'var.imp'
-var.imp4$var <- rownames(var.imp4)
+var.imp<- varimp(all.cfor2) %>% as.data.frame
+colnames(var.imp)[names(var.imp) %in% '.']<-'imp'
+var.imp$var <- rownames(var.imp)
 #reorder levels for bar plot
-var.imp4 <- within(var.imp4, 
+var.imp <- within(var.imp, 
                     var <- factor(var,levels=
-                                            var.imp4[order(-abs(var.imp4$var.imp)),]$var))
+                                            var.imp[order(-abs(var.imp$imp)),]$var))
 
-q<- ggplot(data=var.imp4, aes(x=var, y=var.imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
-q + geom_bar(stat='identity', position = 'dodge')
+q<- ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
+q + geom_bar(stat='identity')
 
-save(all.cfor,file= 'C:/Users/n9232371/Documents/github/consult/object/all_cfor.RData')
-load('C:/Users/n9232371/Documents/github/consult/object/all_cfor.RData')
+save(all.cfor2,file= 'C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
+load('C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
+
+
 ```
 
 From analysing all jobs including 2009 and beyond, the most important variables are:
-`levels(var.imp4$var)[1:10] %>% as.data.frame`
+`levels(var.imp$var) %>% as.data.frame %>% slice(1:8)`
 
 The least important are 
-`levels(var.imp4$var)[11:19]`
+`levels(var.imp4$var) %>% as.data.frame %>% slice(9:16)`
 
 Let's compare this to 
 
@@ -563,7 +561,30 @@ kable(rand.rank)
 
 
 
+Keep:
+
+* inv.mlsto
+* timespan
+* no.users
+* Discipline
+* pc.pro
+* client.totinv
+* client.numinv
+* pc.director
+* code.director
+* Num.disc
+* Business
+* Biz.type
+
+Dump
+
+* client.neginv
+* client.count
+* ProjEng.Pos
+* Biz.size
+* client.meaninv
 
 
 
-See how variable selection goes with random forest first, then probably just run cforest again without code.client and contact.code
+
+
