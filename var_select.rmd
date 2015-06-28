@@ -393,13 +393,6 @@ mini.core3 <- all7b %>%
 
 Try to make all cforests random selection of 200 rows - this time post 2009
 
-```{r, echo=FALSE}
-
-
-
-Try running a cforest over night with full dataset - don't include 
-```
-
 
 ```{r, echo=FALSE}
 
@@ -561,9 +554,76 @@ kable(rand.rank)
 
 ```
 
+# New Variable - client age
 
+```{r, echo=FALSE}
+#read csv file with all the client details - want to merge this with client df
+details<- read.csv('17marchclients.csv',
+                   na.strings = c("", " ", "NA"))
+head(details)
+#delete client.contact, client.count, and contact.count columns
+details<- details[,c(1,5:9)]
+#rename columns
+names(details)[2]<- 'Business'
+names(details)[4]<- 'Biz.size'
+names(details)[5]<- 'Biz.type'
+names(details)[6]<- 'Biz.age'
 
+#delete rows with 4 NA values
+details<-details[rowSums(is.na(details))!=5,]
+details<-details[rowSums(is.na(details))!=4,]
 
+#add row for client code
+code.client<- read.csv('code_client2.csv')[,-1]
+details<- merge(details, code.client, by.x ='client', by.y ='client2', all.x=TRUE, all.y=FALSE)
+details<- transform(details, client.age = 2014- Biz.age)
 
+#merge client.age column of details to all7b by code.client
+all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
+
+```
 
 See how variable selection goes with random forest first, then probably just run cforest again without code.client and contact.code
+
+Use cforest to test remaining variables (with significant NA components)
+
+These include:
+
+* code.client
+* Post.Code
+* Billing.Type
+* Job.Source
+* Job.Detail.Primary
+* Job.Detail.Secondary
+* Job.Type.Primary
+* Job.Type.Secondary
+* Type
+* Project.Value
+* no.employees
+* client age????
+* contact.count
+* JD.Primary
+* JD.Second
+* dist
+* code.contact
+* client.age
+
+First eliminate some of the job.detail.secondary - that kind of thing
+Then see if any have matching NA rows
+Then run cforest on each variable individually
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
