@@ -352,6 +352,17 @@ for (i in 1:length(pc)){
         all7b[is.na(all7b[,pc[i]]),][,pc[i]] <-0
 }
 
+#redo client.count and contact.count according to this reduced dataset!!
+client.count<- ddply(all7b, .(code.client), nrow)
+all7b<- merge(all7b, client.count, by='code.client', all.x=TRUE)
+all7b %>% select(code.client, client.count, V1) %>% slice(1000:1020)
+all7b<- transform(all7b, diff= client.count - V1)
+# all7b %>% select(code.client, client.count, V1, diff) %>% unique %>% arrange(-diff) %>% head
+#above line tells us that our most popular clients are also the ones with the most lost jobs - fine
+all7b$client.count<- all7b$V1
+all7b<- all7b %>% select(-diff, -V1)
+
+
 #change unknown Num.disc to be 1
 all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
 # write.csv(all7b,'all7b.csv')
@@ -363,7 +374,7 @@ Start running cforests
 Very slow, start with 100 rows only, using only core variables
 
 ```{r, echo=FALSE}
-all7b<- read.csv('all7b.csv')
+all7b<- read.csv('all7b.csv')[,-1]
 
 #create core data frame - variables with very few NA's and delete these NA's
 
@@ -415,8 +426,8 @@ var.imp <- within(var.imp,
 q<- ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
 q + geom_bar(stat='identity')
 
-save(all.cfor2,file= 'C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
-load('C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
+save(all.cfor2,file= 'C:/Users/n9232371/Documents/Consultbusiness/data/objects/all_cfor2.RData')
+# load('C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
 
 
 ```
@@ -558,6 +569,29 @@ kable(rand.rank)
 
 ```
 
+Keep:
+
+* inv.mlsto
+* timespan
+* no.users
+* Discipline
+* pc.pro
+* client.totinv
+* client.numinv
+* pc.director
+* code.director
+* Num.disc
+* Business
+* Biz.type
+
+Dump
+
+* client.neginv
+* client.count
+* ProjEng.Pos
+* Biz.size
+* client.meaninv
+
 # New Variable - client age
 
 ```{r, echo=FALSE}
@@ -584,6 +618,8 @@ details<- transform(details, client.age = 2014- Biz.age)
 
 #merge client.age column of details to all7b by code.client
 all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
+write.csv(all7b, 'all7c.csv')
+all7c<- read.csv('all7c.csv')[,-1]
 
 ```
 
@@ -604,7 +640,7 @@ These include:
 * Type
 * Project.Value
 * no.employees
-* client age????
+* client.age
 * contact.count
 * JD.Primary
 * JD.Second
@@ -617,41 +653,191 @@ Then see if any have matching NA rows
 Then run cforest on each variable individually
 
 
+```{r eliminate sme variables, echo=FALSe}
+#between Job.Detail.Primary, Job.Detail.Secondary, Job.Type.Primary, Job.Type.Secondary, Type, JD.Primary, JD.Second
+# need to delete some
+
+#Job.Detail.Primary - 1A, 1B, 1C and so on. 1215 NA values - delete
+#JD.Primary - 1A, 1B, 1C and so on. 628 NA values
+#Job.Detail.Secondary - 1A, 1B, 1C and so on. 2090 NA values - most don't make sense (ARch housing with industrial buidling) 
+#                                                            - industrial bldg with land subdivision - checked out, all wrong!
+#        - some do ie 2C Sustainable design with 2B water-sensitive urban design (WSUD) - use!
+#        - some do  ie 3C integrated water management and WSUD and 4C alternative sources of water supply - use!
+
+#Job.Type.Primary - eg 1. Building Structures, 628 NA values, quite useful - guessing that it matches JD.Primary NA values
 
 
+#Job.Type.Secondary - confusing
+#                   - 2. LandInfrastucture could be copied into land subdivision for Job.Detail.Secondary
+all7c$Job.Detail.Secondary <- as.character(all7c$Job.Detail.Secondary)
+all7c$Job.Detail.Secondary<- ifelse(all7c$Job.Detail.Secondary=='2E Land Subdivision' & all7c$Job.Type.Secondary=='2. LandInfrastructure',
+                                    '2. LandInfrastructure', all7c$Job.Detail.Secondary)
+all7c$Job.Detail.Secondary<- ifelse(is.na(all7c$Job.Detail.Secondary) & all7c$Job.Type.Secondary=='2. LandInfrastructure',
+                                    '2. LandInfrastructure', all7c$Job.Detail.Secondary)
+all7c$Job.Detail.Secondary <- as.factor(all7c$Job.Detail.Secondary)
+
+#                   - copy '4. Integrated water management' as 'water management' into JD.Second
+all7c$JD.Second <- as.character(all7c$JD.Second)
+all7c$JD.Second<- ifelse(is.na(all7c$JD.Second) & all7c$Job.Type.Secondary=='4. IntegratedWaterManagement',
+                                    'water management', all7c$JD.Second)
+all7c$JD.Second <- as.factor(all7c$JD.Second)
 
 
+# Type - short description - quite good - 1206 NA's - all 2010 or earlier
+
+#JD.Second - more detailed version of JD.Primary- 1277 NA's - across all years - keep
+
+all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
+
+write.csv(all7c, 'all7c.csv')
+all7c<- read.csv('all7c.csv')[,-1]
+
+```
+
+now left with 
+
+* code.client
+* Post.Code
+* Billing.Type
+* Job.Source
+* Job.Detail.Secondary
+* Job.Type.Primary
+* Type
+* Project.Value
+* no.employees
+* client.age
+* contact.count
+* JD.Primary
+* JD.Second
+* dist
+* code.contact
+* client.age
+
+Do any of these have significantly overlapping NA values??? 
+
+First need to change code.client and code.contact. Need to assign NA to any code.client or code.contact with less than 3 counts
+
+```{r NA into code.client, echo=FALSE}
+
+#all code.clients with counts less than 3 shall be 'NA'
+client.check<- ddply(all7c,.(code.client), nrow)
+all7c<- merge(all7c, client.check, by='code.client', all.x=TRUE)
+all7c$code.client<- as.character(all7c$code.client)
+all7c$code.client<- ifelse(all7c$V1>2, all7c$code.client, NA)
+all7c$code.client<- as.factor(all7c$code.client)
+all7c<- all7c %>% select(-V1)
+
+#all code.contacts with counts less than 3 shall be 'NA'
+#code for 'unknown' which should be NA
+all7c[all7c$code.contact %in% 'CN1983',]$code.contact <- NA
+contact.check<- ddply(all7c,.(code.contact), nrow)
+contact.check<- contact.check %>% filter(V1>2)
+all7c$code.contact<- as.character(all7c$code.contact)
+all7c$code.contact<- ifelse(all7c$code.contact %in% contact.check$code.contact, all7c$code.contact,
+                            NA)
+all7c$code.contact<- as.factor(all7c$code.contact)
+
+#redo contact.count
+cont.count<- ddply(all7c,.(code.contact), nrow)
+cont.count[is.na(cont.count$code.contact),]$V1<- NA
+all7c<- merge(all7c, cont.count, by='code.contact', all.x=TRUE)
+all7c$contact.count<- all7c$V1
+all7c<- all7c %>% select(-V1)
+
+#Project.Value - anything with '0' should be 'NA'
+all7c[all7c$Project.Value == 0,]$Project.Value<- NA
+#check out what the ratios of inv.mlsto/Project.Value are
+temp<- all7c %>% select(Project.Value, inv.mlsto,mlsto) %>% filter(!is.na(Project.Value))
+temp<- transform(temp, ratio = round(inv.mlsto/Project.Value*100,2))
+temp<- temp %>% filter(ratio< 16)
+all7c$Project.Value<- ifelse(all7c$mlsto %in% temp$mlsto, all7c$Project.Value, NA)
+write.csv(all7c, 'all7c.csv')
+
+```
 
 
+```{r NA overlap, echo=FALSE}
+
+#overlapping NA values for variables with many NA's
+# first lets look at Job.Detail.Secondary, Job.Type.Primary, Type, JD.Primary, JD.Second
+experiment<- all7c
+experiment<- experiment %>% select(code.client, Post.Code, Billing.Type, Job.Source, Job.Detail.Secondary, Job.Type.Primary, Type, Project.Value,
+                                   no.employees, client.age, contact.count, JD.Primary, JD.Second, dist, code.contact, client.age)
+experiment<- sapply(experiment, function(x) is.na(x))
+NA.plot<- melt(experiment)
+NA.plot$mlsto<- rep(all7c$mlsto, ncol(experiment))
+#reorder levels for ggplot by total number of NA TRUE
+# table(NA.plot$Var2, NA.plot$value)[,'TRUE']
+NA.plot <- within(NA.plot, 
+                         Var2 <- factor(Var2, 
+                                               levels=names(sort(table(NA.plot$Var2, NA.plot$value)[,'TRUE'], 
+                                                                 decreasing=FALSE))))
+
+ggplot(NA.plot, aes(x=Var2, y=mlsto)) +
+        geom_tile(aes(fill = value)) + 
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+
+```
+
+Yes, 
+
+* dist and Post.Code
+* Job.Type.Primary and JD.Primary
+* code.contact and contact.count
+
+For now, we will treat the rest as having 'different 
+
+Run 12 cforests with the core variables!!
+
+```{r cforests for NAs, echo=FALSE}
 
 
+#function to create a subset dataframe based on extra variable
+#then runs cforest, and saves variable importance ggplot in a folder
+
+vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client'
+            'client.age', 'contact.count', 'JD.Second', 'client.age', 'Billing.Type', c('dist','Post.Code'),
+            c('code.contact','contact.count'), c('Job.Type.Primary','JD.Primary'))
+cfor.plotsave<- function(extra= vars){
+        for(i in 1:length(vars)){
+                
+                core.var= all7c[,names(all7c) %in% c('inv.mlsto', 'timespan', 'no.users', 
+                                                     'Discipline', 'pc.pro', 
+                        'client.totinv', 'client.numinv','pc.director', 'code.director', 'Num.disc', 
+                        'Business', 'Biz.type', 'return.pdol', extra[[i]])]
+                core.var = core.var[!is.na(core.var[,extra[[i]][1]]),]
+        
+                #run cforest
+                cfor.var1= cforest(return.pdol~.,
+                                   data= core.var)
+                #calculate variable importances
+                var.imp= varimp(cfor.var1) %>% as.data.frame
+                colnames(var.imp)[names(var.imp) %in% '.']= 'imp'
+                var.imp$var = rownames(var.imp)
+                #reorder levels for bar plot
+                var.imp<- within(var.imp, 
+                    var <- factor(var,levels=var.imp[order(-abs(var.imp$imp)),]$var))
+        
+                q= ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
+                r=q + geom_bar(stat='identity') + 
+                        labs(title = extra[[i]])
+                #save plot
+                ggsave(plot=r,
+                       filename=paste('var',i,'.png',sep=''),
+                       path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/cforests/')
+                
+                cat(i," ")
+                
+        }
+        
+}
+
+cfor.plotsave(extra=vars)
+        
+                   
 
 
-
-Keep:
-
-* inv.mlsto
-* timespan
-* no.users
-* Discipline
-* pc.pro
-* client.totinv
-* client.numinv
-* pc.director
-* code.director
-* Num.disc
-* Business
-* Biz.type
-
-Dump
-
-* client.neginv
-* client.count
-* ProjEng.Pos
-* Biz.size
-* client.meaninv
-
-
+```
 
 
 
