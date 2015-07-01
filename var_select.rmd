@@ -10,8 +10,8 @@ output: word_document
 
 library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
 library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
 library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
@@ -370,227 +370,7 @@ all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
  
 ```
 
-Start running cforests
-Very slow, start with 100 rows only, using only core variables
 
-```{r, echo=FALSE}
-all7b<- read.csv('all7b.csv')[,-1]
-
-#create core data frame - variables with very few NA's and delete these NA's
-
-core<- all7b %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
-        Biz.size , Biz.type , no.users , Year , timespan , Num.disc , Num.days , mean.peeps,
-        pc.contracttech , hours.perday , profit.mlsto , balance.mlsto , hrs.mlsto , 
-        cost.mlsto , dis.sc.mlsto , inv.mlsto , return.pdol , code.contact ,
-        pc.director , pc.midtech , pc.midpro , pc.gradpro , pc.seniortech , pc.seniorpro ,
-        pc.pro , code.director , code.ProjEng , ProjEng.Pos , num.inv , mean.inv , num.neginv , 
-        client.meaninv , client.neginv , client.numinv , client.totinv)
-
-mini.core2 <- all7b %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
-        Biz.size , Biz.type , no.users , timespan, Num.disc, 
-        return.pdol, code.contact,
-        pc.director,
-        pc.pro , code.director , ProjEng.Pos ,
-        client.meaninv , client.neginv , client.numinv , client.totinv)
-
-mini.core3 <- all7b %>%
-        select(Discipline , inv.mlsto , Business, client.count,
-        Biz.size , Biz.type , no.users , timespan, Num.disc, 
-        return.pdol, pc.director,
-        pc.pro , code.director , ProjEng.Pos,
-        client.meaninv , client.neginv , client.numinv , client.totinv)
-
-```
-
-Try to make all cforests random selection of 200 rows - this time post 2009
-
-Try running a cforest over night with full dataset - don't include 
-
-
-```{r, echo=FALSE}
-
-system.time(
-all.cfor2<- cforest(return.pdol~.,
-        data= mini.core3
-        )
-)
-
-var.imp<- varimp(all.cfor2) %>% as.data.frame
-colnames(var.imp)[names(var.imp) %in% '.']<-'imp'
-var.imp$var <- rownames(var.imp)
-#reorder levels for bar plot
-var.imp <- within(var.imp, 
-                    var <- factor(var,levels=
-                                            var.imp[order(-abs(var.imp$imp)),]$var))
-
-q<- ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
-q + geom_bar(stat='identity')
-
-save(all.cfor2,file= 'C:/Users/n9232371/Documents/Consultbusiness/data/objects/all_cfor2.RData')
-# load('C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
-
-
-```
-
-From analysing all jobs including 2009 and beyond, the most important variables are:
-`levels(var.imp$var) %>% as.data.frame %>% slice(1:8)`
-
-The least important are 
-`levels(var.imp4$var) %>% as.data.frame %>% slice(9:16)`
-
-Let's compare this to 
-
-* all data from 2002 to 2014 - currently running in another R window
-* ANOVA - all data because fast
-* random forest
-
-## Anova:
-
-```{r anova_varimp, echo=FALSE}
-#use mini.core2- all years
-system.time(
-        aov.all<- aov(return.pdol~.,
-                      data= mini.core3)
-        )
-
-
-summary(aov.all)
-```
-
-Therefore most significant variables are:
-
-* no.users - number of people on the job - <<.1%
-* code.director - <<.1%
-* timespan - 4%
-* Num.disc - 5.6%
-* Discipline - 5.65%
-
-worst: Business, ProjEng.Pos, client.numinv, 
-
-Contrasts to cforest results include
-
-* code.client pval=1 - this is likely because code.contact and code.client are highly correlated
-* inv.mlsto pval= .721 - surprising
-* client.numinv pval = 0.923 - surprisingly different
-
-# random forests
-
-First optimise parameters mtry and ntree - exclude code.client and code.contact for now as they have way too many categories
-
-```{r randomForest, echo=FALSE}
-#random forest can have max 53 categories in a variable
-#code.client has the most categories - 664
-
-# find optimal mtry
-
-#create train/test sets
-
-train_ind <- sample(seq_len(2355), size = 1570)
-
-train <- mini.core4[train_ind, ]
-test <- mini.core4[-train_ind, ]
-oob.err<-double(13)
-test.err<-double(13)
-for(mtry in 1:13){
-        fit<-randomForest(return.pdol ~., data=train, mtry=mtry, ntree=400)
-        oob.err[mtry]<-fit$mse[400]
-        test.err[mtry]<- mean((predict(fit,test)-test$return.pdol)^2)
-        cat(mtry," ")
-}
-
-qplot(1:mtry,test.err,geom=c("point","line"),color="pink")+
-        geom_line(aes(1:mtry,oob.err,colour="blue"))+
-        geom_point(aes(1:mtry,oob.err, colour="blue"))
-
-#COMPLETELY FLAT - MAY AS WELL USE MTRY = 5????? NOW VARY NUMBER OF TREES
-
-trees<- c(300,500,700,1000,1500)
-oob.err<-double(5)
-test.err<-double(5)
-for(ntree in 1:5){
-        fit<-randomForest(return.pdol ~., data=train, mtry=5, ntree=trees[ntree])
-        oob.err[ntree]<-fit$mse[trees[ntree]]
-        test.err[ntree]<- mean((predict(fit,test)-test$return.pdol)^2)
-        cat(ntree," ")
-}
-
-qplot(1:ntree,test.err,geom=c("point","line"),color="pink")+
-        geom_line(aes(1:ntree,oob.err,colour="blue"))+
-        geom_point(aes(1:ntree,oob.err, colour="blue"))
-
-#again, doesn't matter!! line is dead flat. i'm not having much confidence in the predictiveness of this model. 
-```
-
-Extract important variables from randomForest loop
-
-423 of the 664 client companies and 485 of the 670 client contacts appear ONLY once in the entire data set.
-While they may be great predictors what do we do in the majority of cases where the contact is new!?
-
-```{r, echo=FALSE}
-set.seed(47)
-
-#try running without code.client or code.contact
-multi.forest1<-function(data=mini.core3, nforest=1:10){
-        sample=double(50)
-        imp = NULL
-        for (i in 1:length(nforest)){
-                
-                #run tree
-                assign(paste("Forest",i,sep=""),randomForest(return.pdol~.,
-                                                             data=data,
-                                                             ntree=400,mtry=5, importance=TRUE),
-                       envir=.GlobalEnv)
-                
-                #put together importance rank for each variable
-                
-                rand.imp= importance(paste("Forest",i,sep="") %>% get, type=1, scale=FALSE) %>% as.data.frame
-                colnames(rand.imp)[names(rand.imp) %in% '%IncMSE']= 'IncMSE'
-                rand.imp$var= rownames(rand.imp)
-                rand.imp= rand.imp %>% arrange(-abs(IncMSE))
-                rand.imp$rank= 1:nrow(rand.imp)
-                
-                #rbind all variables and ranks on top of one another for each Forest
-                
-                imp = rbind(imp, rand.imp %>% select(var,rank))
-
-                cat(i," ")
-                
-        }
-        
-        #output average rank of each variable
-        rank = ddply(imp, .(var), summarise, m.rank =mean(rank)) %>% arrange(m.rank)
-        return(rank)
-        
-}
-
-rand.rank<- multi.forest1(data=mini.core2 %>% select(-code.contact, -code.client), nforest=1:10)
-
-kable(rand.rank)
-
-```
-
-Keep:
-
-* inv.mlsto
-* timespan
-* no.users
-* Discipline
-* pc.pro
-* client.totinv
-* client.numinv
-* pc.director
-* code.director
-* Num.disc
-* Business
-* Biz.type
-
-Dump
-
-* client.neginv
-* client.count
-* ProjEng.Pos
-* Biz.size
-* client.meaninv
 
 # New Variable - client age
 
@@ -692,32 +472,29 @@ all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
 write.csv(all7c, 'all7c.csv')
 all7c<- read.csv('all7c.csv')[,-1]
 
+
+
+
 ```
-
-now left with 
-
-* code.client
-* Post.Code
-* Billing.Type
-* Job.Source
-* Job.Detail.Secondary
-* Job.Type.Primary
-* Type
-* Project.Value
-* no.employees
-* client.age
-* contact.count
-* JD.Primary
-* JD.Second
-* dist
-* code.contact
-* client.age
-
-Do any of these have significantly overlapping NA values??? 
 
 First need to change code.client and code.contact. Need to assign NA to any code.client or code.contact with less than 3 counts
 
 ```{r NA into code.client, echo=FALSE}
+#Job.Source - 'twitter' should be NA
+all7c[all7c$Job.Source %in% 'Twitter',]$Job.Source<- NA
+
+#Billing.Type - 'Estimate' and 'FeeProposal' and 'NoCharge' should be NA
+all7c[all7c$Billing.Type %in% c('Estimate','FeeProposal','NoCharge'),]$Billing.Type<- NA
+
+#code.ProjEng - 'Unknown' should be NA
+all7c[all7c$code.ProjEng %in% c('Unknown'),]$code.ProjEng<- NA
+
+#ProjEng.Pos - 'Unknown' should be NA
+all7c[all7c$ProjEng.Pos %in% c('Unknown'),]$ProjEng.Pos<- NA
+
+#code.Eng2 - 'Unknown' should be NA
+all7c[all7c$code.Eng2 %in% c('Unknown'),]$code.Eng2<- NA
+
 
 #all code.clients with counts less than 3 shall be 'NA'
 client.check<- ddply(all7c,.(code.client), nrow)
@@ -751,10 +528,287 @@ temp<- all7c %>% select(Project.Value, inv.mlsto,mlsto) %>% filter(!is.na(Projec
 temp<- transform(temp, ratio = round(inv.mlsto/Project.Value*100,2))
 temp<- temp %>% filter(ratio< 16)
 all7c$Project.Value<- ifelse(all7c$mlsto %in% temp$mlsto, all7c$Project.Value, NA)
+
+#delete outliers : return.pdol>30 GONE
+all7c %>% filter(return.pdol>3) %>% select(return.pdol, inv.mlsto, hrs.mlsto, dis.sc.mlsto,mlsto, cost.mlsto) %>% arrange(-return.pdol)
+all7c<- all7c %>% filter(!return.pdol>3)
+
+#drop levels in each variable
+all.vars<- colnames(all7c)
+for (i in 1:length(all.vars)){
+        if(all7c[,all.vars[i]] %>% class == 'factor'){
+        all7c[,all.vars[i]]<- droplevels(all7c[,all.vars[i]])
+        }
+        
+}
+
 write.csv(all7c, 'all7c.csv')
+
+all7c<- read.csv('all7c.csv')[,-1]
+all7c$Post.Code<- as.factor(all7c$Post.Code)
 
 ```
 
+
+
+Start running cforests on core list of variables
+
+```{r, echo=FALSE}
+
+#create core data frame - variables with very few NA's and delete these NA's
+
+core<- all7c %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
+        Biz.size , Biz.type , no.users , Year , timespan , Num.disc , Num.days , mean.peeps,
+        pc.contracttech , hours.perday , profit.mlsto , balance.mlsto , hrs.mlsto , 
+        cost.mlsto , dis.sc.mlsto , inv.mlsto , return.pdol , code.contact ,
+        pc.director , pc.midtech , pc.midpro , pc.gradpro , pc.seniortech , pc.seniorpro ,
+        pc.pro , code.director , code.ProjEng , ProjEng.Pos , num.inv , mean.inv , num.neginv , 
+        client.meaninv , client.neginv , client.numinv , client.totinv)
+
+mini.core2 <- all7c %>% select(code.client , Discipline ,  client.count , inv.mlsto , Business ,
+        Biz.size , Biz.type , no.users , timespan, Num.disc, 
+        return.pdol, code.contact,
+        pc.director,
+        pc.pro , code.director , ProjEng.Pos , code.ProjEng,
+        client.meaninv , client.neginv , client.numinv , client.totinv)
+
+mini.core3 <- all7c %>%
+        select(Discipline , inv.mlsto , Business, client.count,
+        Biz.size , Biz.type , no.users , timespan, Num.disc, 
+        return.pdol, pc.director,
+        pc.pro , code.director , 
+        client.meaninv , client.neginv , client.numinv , client.totinv)
+
+```
+
+
+Try running a cforest over night with full dataset - don't include 
+
+
+```{r, echo=FALSE}
+
+system.time(
+all.cfor2<- cforest(return.pdol~.,
+        data= mini.core3
+        )
+)
+
+var.imp<- varimp(all.cfor2) %>% as.data.frame
+colnames(var.imp)[names(var.imp) %in% '.']<-'imp'
+var.imp$var <- rownames(var.imp)
+#reorder levels for bar plot
+var.imp <- within(var.imp, 
+                    var <- factor(var,levels=
+                                            var.imp[order(-abs(var.imp$imp)),]$var))
+
+q<- ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
+q + geom_bar(stat='identity')
+
+save(all.cfor2,file= 'C:/Users/n9232371/Documents/Consultbusiness/data/objects/all_cfor2.RData')
+# load('C:/Users/n9232371/Documents/github/consult/object/all_cfor2.RData')
+
+
+```
+
+From analysing all jobs including 2009 and beyond, the most important variables are:
+`levels(var.imp$var) %>% as.data.frame %>% slice(1:8)`
+
+The least important are 
+`levels(var.imp4$var) %>% as.data.frame %>% slice(9:16)`
+
+Let's compare this to 
+
+* all data from 2002 to 2014 - currently running in another R window
+* ANOVA - all data because fast
+* random forest
+
+## Anova:
+
+```{r anova_varimp, echo=FALSE}
+#use mini.core2- all years
+
+aov.all<- aov(return.pdol~.,
+              data= mini.core3)
+
+summary(aov.all)
+```
+
+Therefore most significant variables are:
+
+* no.users - number of people on the job - << 1%
+* timespan - << 1%
+* Discipline - <<1%
+* inv.mlsto - 8.9%
+* Business << 1%
+* Biz.type - 2%
+* pc.pro - .13%
+
+worst: Biz.size, client.numinv, client.neginv, client.meaninv, client.totinv, pc.director, Num.disc, Biz.size
+
+Contrasts to cforest results include
+
+* Num.disc
+* pc.director
+* Biz.size
+* Biz.type = cforest rated this very low
+
+
+
+# random forests
+
+First optimise parameters mtry and ntree - exclude code.client and code.contact for now as they have way too many categories
+
+```{r randomForest, echo=FALSE}
+#random forest can have max 53 categories in a variable
+#code.client has the most categories - 664
+
+# find optimal mtry
+
+#create train/test sets
+
+train_ind <- sample(seq_len(nrow(mini.core3)), size = 1546)
+
+train <- mini.core3[train_ind, ]
+test <- mini.core3[-train_ind, ]
+oob.err<-double(13)
+test.err<-double(13)
+for(mtry in 1:13){
+        fit<-randomForest(return.pdol ~., data=train, mtry=mtry, ntree=400)
+        oob.err[mtry]<-fit$mse[400]
+        test.err[mtry]<- mean((predict(fit,test)-test$return.pdol)^2)
+        cat(mtry," ")
+}
+
+qplot(1:mtry,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:mtry,oob.err,colour="blue"))+
+        geom_point(aes(1:mtry,oob.err, colour="blue"))
+
+#USE MTRY = 5, NOW VARY NUMBER OF TREES
+
+trees<- c(300,500,700,1000,1500)
+oob.err<-double(5)
+test.err<-double(5)
+for(ntree in 1:5){
+        fit<-randomForest(return.pdol ~., data=train, mtry=5, ntree=trees[ntree])
+        oob.err[ntree]<-fit$mse[trees[ntree]]
+        test.err[ntree]<- mean((predict(fit,test)-test$return.pdol)^2)
+        cat(ntree," ")
+}
+
+qplot(1:ntree,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:ntree,oob.err,colour="blue"))+
+        geom_point(aes(1:ntree,oob.err, colour="blue"))
+
+#use 500 trees
+```
+
+Extract important variables from randomForest loop
+
+423 of the 664 client companies and 485 of the 670 client contacts appear ONLY once in the entire data set.
+While they may be great predictors what do we do in the majority of cases where the contact is new!?
+
+```{r, echo=FALSE}
+set.seed(47)
+
+#try running without code.client or code.contact
+multi.forest1<-function(data=mini.core3, nforest=1:10){
+        sample=double(50)
+        imp = NULL
+        for (i in 1:length(nforest)){
+                
+                #run tree
+                assign(paste("Forest",i,sep=""),randomForest(return.pdol~.,
+                                                             data=data,
+                                                             ntree=400,mtry=5, importance=TRUE),
+                       envir=.GlobalEnv)
+                
+                #put together importance rank for each variable
+                
+                rand.imp= importance(paste("Forest",i,sep="") %>% get, type=1, scale=FALSE) %>% as.data.frame
+                colnames(rand.imp)[names(rand.imp) %in% '%IncMSE']= 'IncMSE'
+                rand.imp$var= rownames(rand.imp)
+                rand.imp= rand.imp %>% arrange(-abs(IncMSE))
+                rand.imp$rank= 1:nrow(rand.imp)
+                
+                #rbind all variables and ranks on top of one another for each Forest
+                
+                imp = rbind(imp, rand.imp %>% select(var,rank))
+
+                cat(i," ")
+                
+        }
+        
+        #output average rank of each variable
+        rank = ddply(imp, .(var), summarise, m.rank =mean(rank)) %>% arrange(m.rank)
+        return(rank)
+        
+}
+
+rand.rank<- multi.forest1(data=mini.core3, nforest=1:10)
+
+kable(rand.rank)
+
+```
+
+* no.users - number of people on the job - << 1%
+* timespan - << 1%
+* Discipline - <<1%
+* inv.mlsto - 8.9%
+* Business << 1%
+* Biz.type - 2%
+* pc.pro - .13%
+
+Keep:
+
+* inv.mlsto
+* timespan
+* no.users
+* Discipline
+* pc.pro
+* client.totinv
+* pc.director
+* code.director
+* Num.disc
+* Business
+* Biz.type
+* Biz.size
+
+Dump
+
+* client.neginv
+* client.count
+* ProjEng.Pos
+* client.numinv
+* client.meaninv
+
+
+#### YOU ARE HEREE #####
+
+
+
+
+now left with 
+
+* ProjEng.Pos
+* code.ProjEng
+* code.client
+* Post.Code
+* Billing.Type
+* Job.Source
+* Job.Detail.Secondary
+* Job.Type.Primary
+* Type
+* Project.Value
+* no.employees
+* client.age
+* contact.count
+* JD.Primary
+* JD.Second
+* dist
+* code.contact
+* client.age
+
+Do any of these have significantly overlapping NA values???
 
 ```{r NA overlap, echo=FALSE}
 
@@ -795,10 +849,10 @@ Run 12 cforests with the core variables!!
 #function to create a subset dataframe based on extra variable
 #then runs cforest, and saves variable importance ggplot in a folder
 
-vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client'
-            'client.age', 'contact.count', 'JD.Second', 'client.age', 'Billing.Type', c('dist','Post.Code'),
+vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
+            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', c('dist','Post.Code'),
             c('code.contact','contact.count'), c('Job.Type.Primary','JD.Primary'))
-cfor.plotsave<- function(extra= vars){
+cfor.plotsave<- function(extra= vars, name= 'vara'){
         for(i in 1:length(vars)){
                 
                 core.var= all7c[,names(all7c) %in% c('inv.mlsto', 'timespan', 'no.users', 
@@ -823,7 +877,7 @@ cfor.plotsave<- function(extra= vars){
                         labs(title = extra[[i]])
                 #save plot
                 ggsave(plot=r,
-                       filename=paste('var',i,'.png',sep=''),
+                       filename=paste(name,i,'.png',sep=''),
                        path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/cforests/')
                 
                 cat(i," ")
@@ -832,12 +886,131 @@ cfor.plotsave<- function(extra= vars){
         
 }
 
-cfor.plotsave(extra=vars)
+cfor.plotsave(extra=vars, name='vara')
+cfor.plotsave(extra=vars, name='varb')
         
                    
+all7c %>% select(Job.Detail.Secondary) %>% summary
+
+```
+
+From the cforests, the extra variables worth keeping are
+
+* code.contact - ranks 2nd after timespan/2nd
+* code.client (ranks 4th/4th)
+* Project.Value (ranks 3rd/4th)
+* no.employees - ranks 7th - before code.director  / 3rd last 
+* JD.Second - ranks 6th - before code.director and Num.disc / 5th
+* Billing.Type - ranks 3rd last but I can't see how this is not important/last
+* Job.Type.Primary - ranks 7th - 6 nice broad categories/4th last
+
+
+Throwing out:
+* Job.Source - ranked last / 3rd last
+* Job.Detail.Secondary - too patchy I believe / 3rd last
+* Type - nice and broad but didn't seem to work - ranked 4th last / 2nd last
+* client.age - 3rd last/last
+* contact.count - 4th last/3rd last
+* dist - 5th last/last
+* Post.Code - 6th last or 7th last 
+* contact.count - 3rd last/4th last 
+* JD.Primary - 3rd last :(/2nd last
+
+
+```{r run anova on all, echo=FALSE}
+vars.vec<- c('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
+            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'dist','Post.Code',
+            'code.contact','contact.count', 'Job.Type.Primary','JD.Primary')
+
+aov.loop<- function(extra=vars.vec){
+        for (i in 1:length(extra)){
+                core.var= all7c[,names(all7c) %in% c('inv.mlsto', 'timespan', 'no.users', 
+                                                     'Discipline', 'pc.pro', 
+                        'client.totinv', 'client.numinv','pc.director', 'code.director', 'Num.disc', 
+                        'Business', 'Biz.type', 'return.pdol', extra[i])]
+                core.var = core.var[!is.na(core.var[,extra[i]]),]
+                
+                formula = paste("return.pdol ~ inv.mlsto + Discipline + Business+
+                        Biz.type + Num.disc +
+                        no.users + client.numinv +
+                        pc.director + client.totinv + 
+                        pc.pro + timespan +
+                        code.director +", extra[i], sep="+")
+                
+                model= aov(as.formula(formula)              
+                           ,data= core.var)
+                
+                assign(paste("summ.",extra[i],sep=""), model, envir=.GlobalEnv)
+                
+                cat(i," ")
+                }
+        }
+
+aov.loop(extra=vars.vec)
+
 
 
 ```
+
+From Anova, the only new variables that are significant are:
+
+* Project.Value - 17%
+* Post.Code - 11.4%
+* code.contact - .000013%
+
+Visualise all categorical variables as boxplots vs return.pdol
+
+```{r Tukey Ancova visualisation, echo=FALSE}
+
+all.vars<- colnames(all7c %>% select(-mlsto))
+
+auto.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box'){
+        
+        #make all boxplot dots match colours
+        update_geom_defaults("point", list(colour = NULL))
+
+        for (i in 1:length(colnames)){
+                
+                #only perform plot if variable is a factor
+                #if variable is numeric or an integer, break into 8 bins
+                if(df[,colnames[i]] %>% class %in% c('factor')) {
+                
+                medians= ddply(all7c,.(all7c[,colnames[i]]), summarise, med=median(return.pdol))
+                
+                df[,colnames[i]] <- factor(df[,colnames[i]], 
+                                               levels= medians[order(-medians$med),][,1] )                         
+                
+                r= ggplot(df[!is.na(df[,colnames[i]]),],
+                       aes_string(x=colnames[i], y=yvar, colour = colnames[i])) + 
+                        geom_boxplot(alpha = 0, size = .2, outlier.size = .5)+
+                        geom_jitter(alpha= 0.5, size=.2) +
+                        labs(title = paste(colnames[i], "vs.", yvar, sep=' '),
+                        x= colnames[i],
+                        y = yvar) + 
+                        theme(legend.position = 'none',
+                              text = element_text(size =9.5),
+                                axis.text.x= element_text(angle=45, hjust=1))+
+                        stat_summary(fun.y = mean, geom= 'point', shape = 1, size = .5)
+                
+                #save plot
+                ggsave(plot=r,
+                       filename=paste(name,i,'.png',sep=''),
+                       path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/boxplots/')
+                
+                cat(i," ")  
+                }
+        
+}
+}
+
+auto.BP(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box')
+
+
+```
+
+colnames(all7c)
+
+
 
 
 
