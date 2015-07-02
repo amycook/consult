@@ -365,6 +365,51 @@ all7b<- all7b %>% select(-diff, -V1)
 
 #change unknown Num.disc to be 1
 all7b[is.na(all7b$Num.disc),]$Num.disc <- 1
+
+#create new variable - tech.pos
+all7b %>% select(pc.contracttech, pc.midtech, pc.seniortech) %>% slice(1000:1020)
+test<- melt(all7b %>% select(mlsto, pc.contracttech, pc.midtech, pc.seniortech))
+test<- ddply(test, .(mlsto), max= max(value))
+#delete any rows where percentage is less than 10
+test<- test[!test$value<10,] %>% arrange(mlsto,-value)
+#now I just want the first row for every milestone - ie tech person that did the MOST
+test2<- ddply(test, .(mlsto), function(x) head(x,1))
+#now delete pc from the front of all the variables
+test2$variable<- sapply(test2$variable,FUN=function(x){
+        substr(x,4,15)})
+test2$variable<- as.factor(test2$variable)
+test2$value.bin<- cut(test2$value,9)
+table(test2$variable, test2$value.bin)
+mosaicplot(test2$variable ~ test2$value.bin, color=brewer.pal(9,"Spectral"),
+           cex.axis = .5)
+all7b<- merge(all7b, test2 %>% select(mlsto, variable), by='mlsto', all.x=TRUE, all.y=FALSE)
+colnames(all7b)[names(all7b) %in% 'variable']<-'pos.tech'
+
+#create new variable - majority.pos
+all7b %>% select(pc.contracttech, pc.midtech, pc.seniortech, pc.director, pc.seniorpro, pc.midpro) %>% slice(1000:1020)
+testa<- melt(all7b %>% select(mlsto, pc.contracttech, pc.midtech, pc.seniortech, pc.director, pc.gradpro,
+                             pc.midpro, pc.seniorpro, pc.unknown))
+#delete any rows where percentage is less than 10
+testa<- testa[!testa$value<10,] %>% arrange(mlsto,-value)
+#now I just want the first row for every milestone - ie tech person that did the MOST
+testa2<- ddply(testa, .(mlsto), function(x) head(x,1))
+#now delete pc from the front of all the variables
+testa2$variable<- sapply(testa2$variable,FUN=function(x){
+        substr(x,4,15)})
+testa2$variable<- as.factor(testa2$variable)
+#create bins for mosaic plot
+testa2$value.bin<- cut(testa2$value,5)
+table(testa2$variable, testa2$value.bin)
+#reorder levels for mosaic plot
+testa2$variable <- factor(testa2$variable, levels=names(sort(table(testa2$variable), 
+                                                                 decreasing=TRUE)))
+mosaicplot(testa2$variable ~ testa2$value.bin, color=brewer.pal(9,"Spectral"),
+           cex.axis = .6)
+all7b<- merge(all7b, testa2 %>% select(mlsto, variable), by='mlsto', all.x=TRUE, all.y=FALSE)
+colnames(all7b)[names(all7b) %in% 'variable']<-'majority.pos'
+all7b[all7b$majority.pos %in% 'unknown',]$majority.pos<- NA
+
+
 # write.csv(all7b,'all7b.csv')
 
  
@@ -398,7 +443,7 @@ details<- transform(details, client.age = 2014- Biz.age)
 
 #merge client.age column of details to all7b by code.client
 all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
-write.csv(all7b, 'all7c.csv')
+# write.csv(all7b, 'all7c.csv')
 all7c<- read.csv('all7c.csv')[,-1]
 
 ```
@@ -484,7 +529,7 @@ First need to change code.client and code.contact. Need to assign NA to any code
 all7c[all7c$Job.Source %in% 'Twitter',]$Job.Source<- NA
 
 #Billing.Type - 'Estimate' and 'FeeProposal' and 'NoCharge' should be NA
-all7c[all7c$Billing.Type %in% c('Estimate','FeeProposal','NoCharge'),]$Billing.Type<- NA
+all7c[all7c$Billing.Type %in% c('Estimate','FeeProposal','No Charge'),]$Billing.Type<- NA
 
 #code.ProjEng - 'Unknown' should be NA
 all7c[all7c$code.ProjEng %in% c('Unknown'),]$code.ProjEng<- NA
@@ -575,7 +620,7 @@ mini.core2 <- all7c %>% select(code.client , Discipline ,  client.count , inv.ml
 mini.core3 <- all7c %>%
         select(Discipline , inv.mlsto , Business, client.count,
         Biz.size , Biz.type , no.users , timespan, Num.disc, 
-        return.pdol, pc.director,
+        return.pdol,
         pc.pro , code.director , 
         client.meaninv , client.neginv , client.numinv , client.totinv)
 
@@ -807,6 +852,7 @@ now left with
 * dist
 * code.contact
 * client.age
+* majority.pos
 
 Do any of these have significantly overlapping NA values???
 
@@ -815,8 +861,10 @@ Do any of these have significantly overlapping NA values???
 #overlapping NA values for variables with many NA's
 # first lets look at Job.Detail.Secondary, Job.Type.Primary, Type, JD.Primary, JD.Second
 experiment<- all7c
-experiment<- experiment %>% select(code.client, Post.Code, Billing.Type, Job.Source, Job.Detail.Secondary, Job.Type.Primary, Type, Project.Value,
-                                   no.employees, client.age, contact.count, JD.Primary, JD.Second, dist, code.contact, client.age)
+experiment<- experiment %>% select(code.client, Post.Code, Billing.Type, Job.Source, Job.Detail.Secondary, 
+                                   Job.Type.Primary, Type, Project.Value,
+                                   no.employees, client.age, contact.count, JD.Primary, JD.Second, dist, code.contact,
+                                   client.age, ProjEng.Pos, code.ProjEng, majority.pos )
 experiment<- sapply(experiment, function(x) is.na(x))
 NA.plot<- melt(experiment)
 NA.plot$mlsto<- rep(all7c$mlsto, ncol(experiment))
@@ -838,6 +886,7 @@ Yes,
 * dist and Post.Code
 * Job.Type.Primary and JD.Primary
 * code.contact and contact.count
+* ProjEng.Pos and code.ProjEng
 
 For now, we will treat the rest as having 'different 
 
@@ -850,15 +899,18 @@ Run 12 cforests with the core variables!!
 #then runs cforest, and saves variable importance ggplot in a folder
 
 vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
-            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', c('dist','Post.Code'),
-            c('code.contact','contact.count'), c('Job.Type.Primary','JD.Primary'))
-cfor.plotsave<- function(extra= vars, name= 'vara'){
+            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'pos.tech', 'majority.pos',
+            c('dist','Post.Code'),
+            c('code.contact','contact.count'), c('Job.Type.Primary','JD.Primary'),
+            c('ProjEng.Pos', 'code.ProjEng'))
+
+cfor.plotsave<- function(extra= vars, name= 'vare'){
         for(i in 1:length(vars)){
                 
                 core.var= all7c[,names(all7c) %in% c('inv.mlsto', 'timespan', 'no.users', 
                                                      'Discipline', 'pc.pro', 
-                        'client.totinv', 'client.numinv','pc.director', 'code.director', 'Num.disc', 
-                        'Business', 'Biz.type', 'return.pdol', extra[[i]])]
+                        'client.totinv', 'pc.director', 'code.director', 'Num.disc', 
+                        'Business', 'Biz.type', 'Biz.size', 'return.pdol', extra[[i]])]
                 core.var = core.var[!is.na(core.var[,extra[[i]][1]]),]
         
                 #run cforest
@@ -888,6 +940,9 @@ cfor.plotsave<- function(extra= vars, name= 'vara'){
 
 cfor.plotsave(extra=vars, name='vara')
 cfor.plotsave(extra=vars, name='varb')
+cfor.plotsave(extra=vars, name='varc')
+cfor.plotsave(extra=vars, name='vard')
+cfor.plotsave(extra=list('majority.pos'), name='vare')
         
                    
 all7c %>% select(Job.Detail.Secondary) %>% summary
@@ -896,51 +951,55 @@ all7c %>% select(Job.Detail.Secondary) %>% summary
 
 From the cforests, the extra variables worth keeping are
 
-* code.contact - ranks 2nd after timespan/2nd
+* code.contact - ranks 4th after no.users, timespan, pc.pro
 * code.client (ranks 4th/4th)
-* Project.Value (ranks 3rd/4th)
-* no.employees - ranks 7th - before code.director  / 3rd last 
-* JD.Second - ranks 6th - before code.director and Num.disc / 5th
-* Billing.Type - ranks 3rd last but I can't see how this is not important/last
-* Job.Type.Primary - ranks 7th - 6 nice broad categories/4th last
-
+* Project.Value (ranks 4th/5th)
+* JD.Second - ranks 6/6th - before code.director and Num.disc / 5th
+* Billing.Type - ranks 3rd last/4th last but I can't see how this is not important/last
+* Post.Code - 4th
+* code.ProjEng - 8th
+* majority.pos
 
 Throwing out:
-* Job.Source - ranked last / 3rd last
-* Job.Detail.Secondary - too patchy I believe / 3rd last
-* Type - nice and broad but didn't seem to work - ranked 4th last / 2nd last
-* client.age - 3rd last/last
-* contact.count - 4th last/3rd last
-* dist - 5th last/last
+* Job.Source - ranked 4th last/3rd last
+* Job.Detail.Secondary - too patchy I believe / 5th last/3rd last
+* Type - nice and broad but didn't seem to work - ranked 5th last / 3rd last
+* client.age - last/last
+* contact.count - 4th last/last
+* dist - 3rd last/2nd last
 * Post.Code - 6th last or 7th last 
-* contact.count - 3rd last/4th last 
-* JD.Primary - 3rd last :(/2nd last
-
+* contact.count - last/2nd lsat 
+* ProjEng.Pos - 3rd last/ 4th last
+* no.employees - 3rd last / 2nd last
+* Job.Type.Primary - 3rd last
+* JD.Primary - 8th/9th,ie 7th last not too bad - too similar to JD.Second and JD.Second performs better
 
 ```{r run anova on all, echo=FALSE}
 vars.vec<- c('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
             'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'dist','Post.Code',
-            'code.contact','contact.count', 'Job.Type.Primary','JD.Primary')
+            'code.contact','contact.count', 'Job.Type.Primary','JD.Primary','ProjEng.Pos', 'code.ProjEng', 'pos.tech',
+            'majority.pos')
 
 aov.loop<- function(extra=vars.vec){
         for (i in 1:length(extra)){
                 core.var= all7c[,names(all7c) %in% c('inv.mlsto', 'timespan', 'no.users', 
                                                      'Discipline', 'pc.pro', 
-                        'client.totinv', 'client.numinv','pc.director', 'code.director', 'Num.disc', 
-                        'Business', 'Biz.type', 'return.pdol', extra[i])]
+                        'client.totinv', 'Biz.type','code.director', 'Num.disc', 
+                        'Business', 'return.pdol', extra[i])]
                 core.var = core.var[!is.na(core.var[,extra[i]]),]
                 
                 formula = paste("return.pdol ~ inv.mlsto + Discipline + Business+
                         Biz.type + Num.disc +
-                        no.users + client.numinv +
-                        pc.director + client.totinv + 
+                        no.users + 
+                        client.totinv + 
                         pc.pro + timespan +
-                        code.director +", extra[i], sep="+")
+                        code.director", extra[i], sep="+")
                 
                 model= aov(as.formula(formula)              
                            ,data= core.var)
                 
-                assign(paste("summ.",extra[i],sep=""), model, envir=.GlobalEnv)
+                print(extra[i])
+                print(model %>% summary)
                 
                 cat(i," ")
                 }
@@ -948,6 +1007,9 @@ aov.loop<- function(extra=vars.vec){
 
 aov.loop(extra=vars.vec)
 
+#try adding pc.director and pc.seniorpro to make pc.seniorpro.d - didn't go that well
+
+# all7c<- transform(all7c, pc.seniorpro.d = pc.seniorpro+pc.director)
 
 
 ```
@@ -955,16 +1017,24 @@ aov.loop(extra=vars.vec)
 From Anova, the only new variables that are significant are:
 
 * Project.Value - 17%
-* Post.Code - 11.4%
-* code.contact - .000013%
+* Post.Code - 23%
+* code.contact - 14.4%
+* code.client - .25%
+* JD.Second - 1.25%
+* dist - 17%
+* JD.Primary - 9.8% - delete, confusing with JD.Second
+* ProjEng.Pos - 1.5%
+* code.ProjEng - .9%
+* majority.pos - 3.7%
 
 Visualise all categorical variables as boxplots vs return.pdol
 
-```{r Tukey Ancova visualisation, echo=FALSE}
+```{r boxplots of each variable, echo=FALSE}
 
-all.vars<- colnames(all7c %>% select(-mlsto))
 
-auto.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box'){
+auto.BP<- function(yvar = 'return.pdol', df= all7c, name='box'){
+        
+        colnames= colnames(df %>% select(-mlsto))
         
         #make all boxplot dots match colours
         update_geom_defaults("point", list(colour = NULL))
@@ -982,15 +1052,15 @@ auto.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box
                 
                 r= ggplot(df[!is.na(df[,colnames[i]]),],
                        aes_string(x=colnames[i], y=yvar, colour = colnames[i])) + 
-                        geom_boxplot(alpha = 0, size = .2, outlier.size = .5)+
-                        geom_jitter(alpha= 0.5, size=.2) +
+                        geom_boxplot(alpha = 0, size = .5, outlier.size = .5)+
+                        geom_jitter(alpha= 0.5, size=.5) +
                         labs(title = paste(colnames[i], "vs.", yvar, sep=' '),
                         x= colnames[i],
                         y = yvar) + 
                         theme(legend.position = 'none',
                               text = element_text(size =9.5),
                                 axis.text.x= element_text(angle=45, hjust=1))+
-                        stat_summary(fun.y = mean, geom= 'point', shape = 1, size = .5)
+                        stat_summary(fun.y = mean, geom= 'point', shape = 1, size = .6)
                 
                 #save plot
                 ggsave(plot=r,
@@ -1003,13 +1073,187 @@ auto.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box
 }
 }
 
-auto.BP(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box')
+auto.BP(yvar = 'return.pdol', df= all7c %>% select(mlsto,return.pdol, majority.pos), name='box_maj')
 
 
 ```
 
-colnames(all7c)
+Visualise all numerical variables as boxplots vs return.pdol
 
+```{r boxplots numeric vars, echo=FALSE}
+
+
+
+autonum.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='box', breaks=4){
+
+        for (i in 1:length(colnames)){
+                
+                #only perform plot if variable is a factor
+                #if variable is numeric or an integer, break into 8 bins
+                
+                #how many total cols
+                        tot.num = df %>% ncol
+                        #how many numeric variables?
+                        num = df[,!sapply(df, is.factor)] %>% ncol
+                        
+                if(df[,colnames[i]] %>% class %in% c('numeric', 'integer')) {
+#                         print('yes')}
+                        
+                        #cut numeric columns into new variables with 8 categories, these are called 'cuti' 
+                        df[, paste0('cut',i)] <- cut_number(df[,colnames[i]] %>% as.numeric, breaks)
+#                         df[, paste0('cut',i)] <- cut_number(df[,colnames[i]] %>% as.numeric, 8)
+                        
+                
+#                 medians= ddply(df,
+#                                .(df[,paste0('cut',i)]), summarise, med=median(return.pdol))
+                
+#                 df[,paste0('cut',i)] <- factor(df[,paste0('cut',i)], 
+#                                                levels= medians[order(-medians$med),][,1] )                         
+                
+                r= ggplot(df[!is.na(df[,paste0('cut',i)]),],
+                       aes_string(x=paste0('cut',i), y=yvar, colour = paste0('cut',i))) + 
+                        geom_boxplot(alpha = 0, size = .8, outlier.size = 1)+
+                        geom_jitter(alpha= 0.4, size=1) +
+                        labs(title = paste(colnames[i], "vs.", yvar, sep=' '),
+                        x= colnames[i],
+                        y = yvar) + 
+                        theme(legend.position = 'none',
+                              text = element_text(size =12),
+                                axis.text.x= element_text(angle=45, hjust=1))+
+                        stat_summary(fun.y = mean, geom= 'point', shape = 2, size = 1)
+                
+                #save plot
+                ggsave(plot=r,
+                       filename=paste(name,i,'.png',sep=''),
+                       path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/boxplots/')
+                
+                cat(i," ")  
+                }
+        
+}
+}
+
+df<- all7c %>% select(-X, -No.Blue.Files, -contact.count, -no.users, -pc.contracttech,
+                      -pc.director, -pc.gradpro, -pc.midpro, -pc.midtech,-pc.seniorpro, -pc.seniortech,
+                      -pc.unknown, -pc.pro, -pc.tech, -Year, -Num.disc, -mean.peeps,
+                      -dis.sc.mlsto, -num.inv, -num.neginv, -client.neginv, -client.count)
+all.vars<- colnames(df)
+autonum.BP(colnames=all.vars, yvar = 'return.pdol', df= df, name='boxnum', breaks=8)
+
+
+```
+
+
+
+Visualise all percent variables, cut into 5, ie 0-20%, 20-40% etc
+
+```{r boxplots numeric vars, echo=FALSE}
+
+
+
+autopc.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= df1, name='box', breaks=5){
+
+        for (i in 1:length(colnames)){
+                
+                #how many total cols
+                        tot.num = df %>% ncol
+                        #how many numeric variables?
+                        num = df[,!sapply(df, is.factor)] %>% ncol
+                        
+                if(df[,colnames[i]] %>% class %in% c('numeric', 'integer')) {
+#                         print('yes')}
+                        
+                        #remove rows which =0
+                        df2<- df[!(df[,colnames[i]] == 0),]
+                        #cut numeric columns into new variables with 8 categories, these are called 'cuti' 
+                        df2[, paste0('cut',i)] <- cut(df2[,colnames[i]] %>% as.numeric, breaks)
+#                         df[, paste0('cut',i)] <- cut_number(df[,colnames[i]] %>% as.numeric, 8)
+                        
+                
+#                 medians= ddply(df,
+#                                .(df[,paste0('cut',i)]), summarise, med=median(return.pdol))
+                
+#                 df[,paste0('cut',i)] <- factor(df[,paste0('cut',i)], 
+#                                                levels= medians[order(-medians$med),][,1] )                         
+                
+                r= ggplot(df2[!is.na(df2[,paste0('cut',i)]),],
+                       aes_string(x=paste0('cut',i), y=yvar, colour = paste0('cut',i))) + 
+                        geom_boxplot(alpha = 0, size = .8, outlier.size = 1)+
+                        geom_jitter(alpha= 0.4, size=1) +
+                        labs(title = paste(colnames[i], "vs.", yvar, sep=' '),
+                        x= colnames[i],
+                        y = yvar) + 
+                        theme(legend.position = 'none',
+                              text = element_text(size =12),
+                                axis.text.x= element_text(angle=45, hjust=1))+
+                        stat_summary(fun.y = mean, geom= 'point', shape = 2, size = 1)
+                
+                #save plot
+                ggsave(plot=r,
+                       filename=paste(name,i,'.png',sep=''),
+                       path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/boxplots/')
+                
+                cat(i," ")  
+                }
+        
+}
+}
+
+df1<- all7c %>% select(pc.contracttech, return.pdol,
+                      pc.director, pc.gradpro, pc.midpro, pc.midtech,pc.seniorpro, pc.seniortech,
+                      pc.unknown, pc.pro, pc.tech, Year, mean.peeps, dis.sc.mlsto)
+all.vars<- colnames(df1)
+autopc.BP(colnames=all.vars, yvar = 'return.pdol', df= df1, name='boxpc', breaks=5)
+
+#test - added pc.seniorpro and pc.director together - didn't go that well
+# trial<- c('pc.seniorpro.d')
+# autopc.BP(colnames=trial, yvar = 'return.pdol', df= all7c %>% select(return.pdol,pc.seniorpro.d), name='boxpca', 
+#           breaks=5)
+
+
+
+
+
+```
+
+Plot integers which don't need cutting
+
+```{r, echo=FALSE}
+
+autoint.BP<- function(colnames=all.vars, yvar = 'return.pdol', df= all7c, name='boxint'){
+
+        for (i in 2:length(colnames)){                        
+                
+                df[,colnames[i]]<- as.factor(df[,colnames[i]])
+                
+                r= ggplot(df[!is.na(df[,colnames[i]]),],
+                       aes_string(x=colnames[i], y= yvar, colour = colnames[i] )) + 
+                        geom_boxplot(alpha = 0, size = .8, outlier.size = 1)+
+                        geom_jitter(alpha= 0.4, size=1) +
+                        labs(title = paste(colnames[i], "vs.", yvar, sep=' '),
+                        x= colnames[i],
+                        y = yvar) + 
+                        theme(legend.position = 'none',
+                              text = element_text(size =12),
+                                axis.text.x= element_text(angle=45, hjust=1))+
+                        stat_summary(fun.y = mean, geom= 'point', shape = 2, size = 1)
+                
+                #save plot
+                ggsave(plot=r,
+                       filename=paste(name,i,'.png',sep=''),
+                       path= 'C:/Users/n9232371/Documents/Consultbusiness/barplots/boxplots/')
+                
+                cat(i," ")  
+                }
+        
+}
+
+df<- all7c %>% select(return.pdol, No.Blue.Files, contact.count, no.users, Num.disc,
+                      num.inv, num.neginv, client.neginv, client.count)
+all.vars<- colnames(df)
+autoint.BP(colnames=all.vars, yvar = 'return.pdol', df= df, name='boxint')
+
+```
 
 
 

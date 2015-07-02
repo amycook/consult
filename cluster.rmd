@@ -1,0 +1,38 @@
+---
+title: "Clustering"
+author: "Amy Cook"
+date: "Thursday, July 02, 2015"
+output: word_document
+---
+
+Cluster exploration!!
+
+time to have a look at if some of these variables with many many categories can be simplified
+
+Remaining categories include:
+
+Full:
+* inv.mlsto
+* timespan
+* no.users
+* Discipline
+* pc.pro
+* client.totinv
+* code.director
+* Num.disc
+* Business
+* Biz.type
+
+Many NA:
+* code.contact
+* code.client
+* Project.Value
+* JD.Second
+* Billing.Type
+* Post.Code 
+* code.ProjEng
+* Billing.Type
+* majority.pos
+
+
+
