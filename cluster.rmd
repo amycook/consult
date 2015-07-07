@@ -1,9 +1,44 @@
 ---
-title: "Clustering"
-author: "Amy Cook"
-date: "Thursday, July 02, 2015"
+title: "clusters"
 output: word_document
 ---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+
+# library('knitr')
+# library('ggplot2')
+# library("dplyr")
+# library("plyr")
+# library('magrittr')
+# library('reshape2')
+# library("rpart")
+# library('car')
+# library('e1071')
+# library('corrgram')
+# library('party')
+# library('dendextend')
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+
+all7c<- read.csv('all7c.csv')[,-1]
+all7c$Post.Code<- as.factor(all7c$Post.Code)
+
+```
 
 Cluster exploration!!
 
@@ -12,27 +47,227 @@ time to have a look at if some of these variables with many many categories can 
 Remaining categories include:
 
 Full:
+
+inv.mlsto
+timespan
+no.users
+Discipline
+pc.pro
+client.totinv
+code.director
+Num.disc
+Business
+Biz.type
+
+Many NA:
+
+code.contact
+code.client
+Project.Value
+JD.Second
+Billing.Type
+Post.Code
+code.ProjEng
+Billing.Type
+majority.pos
+
+Create reduced dataset and have a think about what you want to cluster against each other
+
+```{r final_var, echo=FALSE}
+
+all7d<- all7c %>% select(inv.mlsto, timespan, no.users, Discipline, pc.pro, client.totinv, code.director, Num.disc, Business,
+                         Biz.type, code.contact, pc.majpos,
+                         code.client, Project.Value, JD.Second, Billing.Type, Post.Code, code.ProjEng, Billing.Type, majority.pos)
+
+```
+
+What kind of clusters are you looking for? Within the numeric variables:
+
+```{r, echo=FALSE}
+all7c[,!sapply(all7c, is.factor)] %>% colnames
+all7d[,!sapply(all7d, is.factor)] %>% colnames
+
+```
+
+
+Numeric variables in reduced dataset are: inv.mlsto, timespan, no.users, pc.pro, client.totinv, Num.disc, Project.Value, pc.majpos
+
+Numeric variables worth considering in full dataset: Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto, cost.mlsto, 
+
+So, lets choose:
+
 * inv.mlsto
 * timespan
 * no.users
-* Discipline
 * pc.pro
 * client.totinv
-* code.director
 * Num.disc
-* Business
-* Biz.type
+* Num.days
+* mean.peeps
+* hours.perday
+* balance.mlsto
+* hrs.mlsto
+* cost.mlsto
 
-Many NA:
-* code.contact
-* code.client
+Many NA - do second
+* pc.majpos
 * Project.Value
-* JD.Second
-* Billing.Type
-* Post.Code 
-* code.ProjEng
-* Billing.Type
-* majority.pos
+
+Before clustering, need to standardise variables, and have a look at 'normality' of other variables
+
+```{r var_check, echo=FALSE}
+
+#Q-Q plot of each variable
+clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, pc.majpos, return.pdol)
+
+#get rid of zeroes for log transform
+
+clust[clust$timespan ==0,]$timespan <- 1
+clust[clust$pc.pro ==0,]$pc.pro <- 5
+clust[clust$hours.perday ==0,]$hours.perday <- .1
+clust[clust$hours.perday ==0,]$hours.perday <- .1
+clust[clust$balance.mlsto ==0,]$balance.mlsto <- 1
+clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
+clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
+clust[clust$return.pdol ==0,]$return.pdol <- .01
+
+for(i in 1:ncol(clust)){
+qqPlot(clust[,i],
+       main=colnames(clust)[i])
+}
+
+#qqplots for log of each variable
+for(i in 2:ncol(clust)+1){
+qqPlot(clust[,i] %>% log,
+       main=colnames(clust)[i])
+}
+
+#qqplots for sqrt of each variable
+for(i in 2:ncol(clust[,-1])+1){
+qqPlot(clust[,i] %>% sqrt,
+       main=colnames(clust)[i])
+}
+
+#density plots - plain variables
+for(i in 1:ncol(clust)){
+print(
+        ggplot(clust, aes_string(x=colnames(clust[i]))) + geom_histogram(aes(y=..density..))
+        )
+}
+#density plots - log transformed variables
+clust.log<- log(clust)
+for(i in 1:ncol(clust.log)){
+        print(
+                ggplot(clust.log, aes_string(x=colnames(clust.log[i]))) + geom_histogram(aes(y=..density..))
+                )
+}
+
+#plot sqrt of timespan
+clust$timespan <- clust$timespan %>% sqrt
+ggplot(clust, aes_string(x='timespan')) + geom_histogram(aes(y=..density..))
+
+```
+
+taking the log worked for:
+* cost.mlsto, hrs.mlsto, hours.perday, Num.days, client.totinv, no.users, inv.mlsto
+* sqrt of timespan
+
+so we end up with a numeric data set with the above variables log transformed.
+Then scale each by subtracting the mean of each variable and then dividing by the sd of each variable.
+
+```{r clust final, echo=FALSE}
+clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, return.pdol)
+
+#get rid of zeroes for log transform
+
+clust[clust$timespan ==0,]$timespan <- 1
+clust[clust$hours.perday ==0,]$hours.perday <- .1
+clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
+clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
+
+#take log of all variables to be logged in a for loop
+logged<- c('cost.mlsto', 'hrs.mlsto', 'hours.perday', 'Num.days', 'client.totinv',
+           'no.users', 'inv.mlsto')
+for(i in 1:length(logged)){
+        clust[,logged[i]]<- clust[,logged[i]] %>% log
+}
+clust$timespan<- sqrt(clust$timespan)
+
+#now to standardise
+clust<- scale(clust[,-1]) %>% as.data.frame
+```
+
+Now to do hierarchical clustering
+
+```{r hierarch, echo=FALSE}
+
+#Ward's clustering
+
+x<- dist(clust, method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+
+rect.hclust(fit, k=5, border='red')
+#5 clusters looks pretty good
+
+#try horizontal dend with branches coloured for 8 clusters - very slow
+# dend<- fit %>% as.dendrogram
+# dend %>% color_branches(k=8) %>% plot(horiz=T)
+# rect.dendrogram(dend, k=8, horiz=T)
+
+#how many points in each cluster?
+clust$groups<- cutree(fit,k=5)
+table(clust$groups)
+
+
+
+```
+
+Now look at properties of groups using k means clustering
+
+```{r kmeans, echo=FALSE}
+
+k1<- kmeans(clust %>% select(-groups), 5)
+k1.centres<- k1$centers %>% as.data.frame
+k1.centres$group<- rownames(k1.centres)
+k1.melt<- melt(k1.centres)
+k1.melt$group<- k1.melt$group %>% as.factor
+ggplot(k1.melt, aes(x=variable, y= value, fill=variable)) + geom_bar(stat='identity', position='dodge')+
+        facet_wrap(~group) +
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+
+#try plotting means of actual values
+
+all7c$groups<- k1$cluster
+kmeans.plot<- all7c %>% select(inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, return.pdol, groups)
+all7c.plot<- ddply(kmeans.plot, .(groups), numcolwise(mean))
+all7c.plot$groups<- rownames(all7c.plot)
+k2.melt<- melt(all7c.plot)
+
+#summary means of all numeric variables in 5 clusters
+clust.summary<- all7c.plot %>% select(-groups) %>% round(2)
+tab<- table(all7c$groups) %>% prop.table %>% as.data.frame
+bal<- sum(all7c$balance.mlsto)
+hrs<-  sum(all7c$hrs.mlsto)
+clust.summary$pc.jobs<- round( tab[,2]*100, 1)
+clust.summary$bal.pc<- ddply(all7c, .(groups), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
+        select(2)
+clust.summary$hrs.pc<- ddply(all7c, .(groups), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
+        select(2)
+
+clust.summary[,c(1,12,10,11, 13, 9,2,7,6,3,4,8,5,14:16)]
+
+
+```
+
+
+
 
 
 

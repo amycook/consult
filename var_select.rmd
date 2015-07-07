@@ -32,7 +32,7 @@ library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library('e1071')
 # library('corrgram')
 # library('party')
-
+# 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
@@ -409,6 +409,11 @@ all7b<- merge(all7b, testa2 %>% select(mlsto, variable), by='mlsto', all.x=TRUE,
 colnames(all7b)[names(all7b) %in% 'variable']<-'majority.pos'
 all7b[all7b$majority.pos %in% 'unknown',]$majority.pos<- NA
 
+#create new variable - pc.majpos - percentage done by majority position
+all7b<- merge(all7b, testa2 %>% select(mlsto, value), by='mlsto', all.x=T, all.y=F)
+#if majority.pos is unknown, then value must be unknown - NA
+all7b$value<- ifelse(is.na(all7b$majority.pos), NA, all7b$value)
+colnames(all7b)[names(all7b) %in% 'value']<-'pc.majpos'
 
 # write.csv(all7b,'all7b.csv')
 
@@ -516,9 +521,6 @@ all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
 
 write.csv(all7c, 'all7c.csv')
 all7c<- read.csv('all7c.csv')[,-1]
-
-
-
 
 ```
 
@@ -864,7 +866,7 @@ experiment<- all7c
 experiment<- experiment %>% select(code.client, Post.Code, Billing.Type, Job.Source, Job.Detail.Secondary, 
                                    Job.Type.Primary, Type, Project.Value,
                                    no.employees, client.age, contact.count, JD.Primary, JD.Second, dist, code.contact,
-                                   client.age, ProjEng.Pos, code.ProjEng, majority.pos )
+                                   client.age, ProjEng.Pos, code.ProjEng, majority.pos, pc.majpos )
 experiment<- sapply(experiment, function(x) is.na(x))
 NA.plot<- melt(experiment)
 NA.plot$mlsto<- rep(all7c$mlsto, ncol(experiment))
@@ -898,8 +900,10 @@ Run 12 cforests with the core variables!!
 #function to create a subset dataframe based on extra variable
 #then runs cforest, and saves variable importance ggplot in a folder
 
-vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
-            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'pos.tech', 'majority.pos',
+vars<- list('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees',
+            'code.client',
+            'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'pos.tech', 
+            'majority.pos', 'pc.majpos',
             c('dist','Post.Code'),
             c('code.contact','contact.count'), c('Job.Type.Primary','JD.Primary'),
             c('ProjEng.Pos', 'code.ProjEng'))
@@ -959,6 +963,7 @@ From the cforests, the extra variables worth keeping are
 * Post.Code - 4th
 * code.ProjEng - 8th
 * majority.pos
+* pc.majpos
 
 Throwing out:
 * Job.Source - ranked 4th last/3rd last
@@ -978,7 +983,7 @@ Throwing out:
 vars.vec<- c('Job.Source', 'Job.Detail.Secondary', 'Type', 'Project.Value', 'no.employees','code.client',
             'client.age', 'contact.count', 'JD.Second', 'Billing.Type', 'dist','Post.Code',
             'code.contact','contact.count', 'Job.Type.Primary','JD.Primary','ProjEng.Pos', 'code.ProjEng', 'pos.tech',
-            'majority.pos')
+            'majority.pos', 'pc.majpos')
 
 aov.loop<- function(extra=vars.vec){
         for (i in 1:length(extra)){
