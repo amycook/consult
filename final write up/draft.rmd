@@ -1,0 +1,228 @@
+---
+title: "draft 1"
+author: "Amy Cook"
+date: "Tuesday, July 07, 2015"
+output: word_document
+---
+
+
+Originality Statement
+
+'I hereby declare that this submission .... look up QUT'
+
+Signed .................
+Date....................
+
+# Abstract
+
+# Contents
+
+# List of Figures
+
+# List of Tables
+
+# Glossary
+
+B2B- Business to Business
+
+# Acknowledgements
+
+# Publications
+
+# Introduction - 2 pages
+
+* vague interesting few sentences - context
+
+Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of these sort every day, guessing how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. These mental calculations can be particularly inaccurate if the individual has never performed the task before. These errors are trivial in everyday activities, but they can have more meaning for businesses that sell their time as their chief product. For example, consulting businesses give expert advice to other professionals, in exchange for a fee for the amount of time the constultant spent on the problem. The delivery of 'expert advice' is generally in the form of a document (which could be anything from a report to hundreds of drawings) and can range from an hours advice to thousands of hours work on a substantial project. Before a project commences, the client and consultant must agree on a fee for the expert advice, or a fee structure. The nature of how a fee is structured can be as creative as the engaged parties wish, however a couple of simple examples are as follows: the client agrees to pay for the consultants time by the hour until the task is completed, or the consultant provides a fixed fee to complete the project in full, regardless of their hours spent. The nature of the fee structure brings an element of financial risk to one party which must be mitigated.
+
+This thesis focuses on the risk a consulting company undertakes when setting a fixed fee for a project before their role has commenced. Clients commonly ask for competitive fixed quotes from several consultants before settling with one or negotiating further. The way a consulting manager decides on their fixed fee varies greatly from industry to industry and company to company. Typically, consulting manager has extensive experience in the type of project he is quoting and can use a combination of intuition, ratios of the entire project cost, and looking up a couple of past similar projects. Such a method often results in a wide range of profitabilities for projects depending on the ability of the manager to predict the amount of time the project will demand from the consulting team. This thesis examines a case study consulting company that has recorded internal historical project performance data since 2002. The study tests whether a statistical predictive model based on past project data can predict the profitability of a project based on characteristics available at the beginning of a project. This thesis asks further whether the prediction can impact a consulting manager's determination of a fixed fee. 
+
+
+# Chapter 1 Problem Description
+
+In this chapter the research motivations are explained along with the goals of the project and the specific research hypothesis. Finally the contributions of this body of work are outlined along with the structure of the thesis.
+
+## 1.1 Research Motivations
+
+* thousands of consulting companies globally
+* range from single consultant to 10's of 1000's of employees
+* employees broad range of people from fresh graduates, to founders with decades of experience
+* internal environment: worker feelings of morale and security can be heavily influenced by success and profitability of their projects. Not to mention possibilities for pay rises and promotions which all come together to create a positive thriving culture. 
+* harsher economic climate, particularly important to get competitive edge
+* find a source explaining how companies create their fixed fees - intuition, experience
+* find a source saying how badly it goes!
+* in the case study (and is typical of smaller organisations??), the CRM is an untapped source of information storing
+    * employee hours
+    * client information/characteristics
+    * invoicing
+    * employee costs
+    * employee charge out rates
+    * project information
+* currently the case study company uses a widely popular CRM, where they can output information but cannot perform modelling or analysis:
+    * look up one job at a time
+    * basic summaries of overall hours spent for the month
+
+### 1.1.1 Limitations
+
+* looking at a single case study company in a specific industry
+* Managers commonly price jobs based on the budget for the entire project, of which the consultant is a minor part. An example of this is a consultant who typically charges 1% of the total project cost
+    * this data has not been historically recorded. Can start being recorded and would be extremely useful
+    * even better to have expected cost of entire project at start of project, as well as actual final cost of project.
+* A fee is based off detailed information that is unique to each project, for example the size of a building in terms of storeys and square meterage. This detailed information is not available in the data, and is too complex and varied for an algorithm to digest. Therefore it is not reasonable for an algorithm to predict the fee of a project at this stage, but much more achievable to predict the profitability of a project (ie return per dollar) based on historical data. This profitability prediction relates to the profitability of the project if the fee is generated using the same method the company has used in its historical data.
+* Although the aim is to predict the profitability of a project, the model aims to change managers' fee setting decisions if the algorithm predicts low profit or a loss based on historical data. 
+
+
+## Thesis aims
+
+For the reasons explained above, the aim of this research is as follows:
+
+**General Aim** The aim of this project is to use statistical techniques to model decisions for consulting businesses. Research will focus on a case study Engineering consulting company that sells their expert advice (in the currency of time) to business clients. The business decisions include predicting project fees before project engagement and client analysis using existing invoicing and hourly employee-cost data. Several statistical and machine learning techniques will be tested, compared and refined.
+
+**Hypothesis 1** 
+k-means clustering methods can identify groups of similar projects with significant differences in profitability.
+
+Unsupervised learning to identify clusters is a successful marketing technique used by retail companies to target groups of similar customers with similar habits and preferences. In this case of consulting companies, clusters may have multiple uses. New projects may have characteristics that slot into an 'unprofitable' cluster and the decision is clear to not engage in the project. Alternatively, if past projects and accompanying clients are found to fall into a very profitable cluster, consulting managers may focus services on these clients and reach out to these clients in particular for new projects.
+
+
+**Hypothesis 2**
+A statistical or machine learning model based on historical project data can predict the profitability of a new project with sufficient confidence to influence a project manager's fee proposal.
+
+
+
+
+## 1.2 Thesis contributions - Gaps in literature
+
+* a gap in the study of predicting internal performance in businesses with business clients. The literature has assessed performance of movies, customer analytics but rarely employee performance or business clients. This is particularly relevant to consulting companies that tackle complicated discrete projects with set timelines. Statistical and machine learning models to predict the correct fee for projects according to project type, client, and other characteristics could reduce risk for a range of consulting businesses in setting initial fees.
+
+* A gap in machine learning predictive models which cater for variables with large amounts of missing data. the nature of consulting jobs is quite complex and historically, not all information about a project is possible to obtain. Variables with missing data are alternatively treated as optional bonus variables in a multi step model as opposed to missing information which must be imputed or deletion of the entire case that contains missing information.
+
+* the application of clustering methods to business to business decisions.
+
+
+
+
+
+## 1.3 Thesis structure
+
+lit review
+Background info
+present the case study
+Present the models you've developed
+summary of findings, implications for use within industry, limitations
+
+
+
+
+
+# Chapter 2 Literature Review - 25 pages for pHd
+
+This chapter provides an overview of the literature available about current business to business (B2B) decision strategy as well as methods in machine learning and statistical business prediction models. In particular, the literature on B2B decision strategy is centred around setting fixed consulting fees and methods of targeting new clients or projects. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project.
+
+## 2.1 Business to Business Decision Strategy
+
+### 2.1.1 Client and project analysis
+
+* clustering
+* how do businesses currently review their projects or clients
+
+### 2.1.2 Fixed fees
+
+* fixed fee problem in the IT consulting world - developed new techniques?
+* managers currently go by gut feeling or look up a couple of past examples
+* difficult to combine insights from similar jobs/clients
+
+### 2.1.3 Gap
+* no mobilisation of CRM data into sophisticated models in B2B world
+
+
+## 2.2 Statistical and machine learning methods applied to business problems
+
+### 2.2.1 Most simple and frequent models
+
+* K means
+* anova
+* in construction journals, commonly applied linear regression
+* do these acknowledge their data is not normally distributed?
+
+### 2.2.2 Complex models
+
+* SVM, Neural networks, random forest
+* data must not be normal
+* most successful?
+
+### 2.2.3 ensemble methods
+
+* papers
+* netflix?
+* multi step to deal with missing data
+
+### 2.2.4 similar applications
+
+* Employee churn - anything similar?
+* stepped method business application?
+* Gap
+
+## 2.3 Conclusion
+
+summary of 
+* how are B2B decisions currently made
+* what are the most popular/effective methods
+* which ensemble methods may suit our missing data situation
+* Gap in literature/contribution
+
+
+
+
+# Chapter 3 Introduction of Case study
+
+## 3.1 Obtaining dat
+
+### 3.1.1 How data was recorded
+
+* years of employees entering hours each day
+* project managers or admin entering client details
+
+### 3.1.2 How data was extracted - CRM
+
+* queried direct from CRM
+* data de-identification
+
+## 3.2 Summary of variables
+
+* categorical
+* numerical
+* significant cleaning
+    * cost sometimes entered in as hours. ie $24 entered as 24 hours
+* engineered variables
+    * grep through project names to create categories - categories developed with case study manager
+    * return per dollar = (invoiced - cost)/cost
+    * hours analysed to produce: employee position that performed majority of the hours
+        * % of hours completed by majority position
+    * timespan based on timesheet entries as well as number of days with hours recorded
+    * number of workers on project based on timesheet entries
+    * client characteristics such as mean total amount invoiced for a repeat client
+    
+* amount of missingness
+
+## 3.3 Variable selection
+
+* combination of cforest, anova, random forest
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
