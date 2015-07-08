@@ -91,7 +91,7 @@ all7a<- all7 %>% select(-Paperless,-Innovation, -JobInvCount,-job.first.inv.emai
                         -Role)
 
 # write.csv(all7a,'all7a.csv')
-all7a<- read.csv('all7a.csv')
+all7a<- read.csv('all7a.csv')[,-1]
 ```
 
 # Variable Selection
@@ -519,7 +519,7 @@ all7c$JD.Second <- as.factor(all7c$JD.Second)
 
 all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
 
-write.csv(all7c, 'all7c.csv')
+# write.csv(all7c, 'all7c.csv')
 all7c<- read.csv('all7c.csv')[,-1]
 
 ```

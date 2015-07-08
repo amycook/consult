@@ -7,8 +7,8 @@ output: word_document
 
 library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
 library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
 library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
@@ -33,7 +33,7 @@ library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 
 all7c<- read.csv('all7c.csv')[,-1]
 all7c$Post.Code<- as.factor(all7c$Post.Code)
@@ -70,6 +70,9 @@ Post.Code
 code.ProjEng
 Billing.Type
 majority.pos
+pc.majpos
+
+
 
 Create reduced dataset and have a think about what you want to cluster against each other
 
@@ -117,56 +120,56 @@ Before clustering, need to standardise variables, and have a look at 'normality'
 
 ```{r var_check, echo=FALSE}
 
-#Q-Q plot of each variable
-clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
-                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
-                         cost.mlsto, pc.majpos, return.pdol)
-
-#get rid of zeroes for log transform
-
-clust[clust$timespan ==0,]$timespan <- 1
-clust[clust$pc.pro ==0,]$pc.pro <- 5
-clust[clust$hours.perday ==0,]$hours.perday <- .1
-clust[clust$hours.perday ==0,]$hours.perday <- .1
-clust[clust$balance.mlsto ==0,]$balance.mlsto <- 1
-clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
-clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
-clust[clust$return.pdol ==0,]$return.pdol <- .01
-
-for(i in 1:ncol(clust)){
-qqPlot(clust[,i],
-       main=colnames(clust)[i])
-}
-
-#qqplots for log of each variable
-for(i in 2:ncol(clust)+1){
-qqPlot(clust[,i] %>% log,
-       main=colnames(clust)[i])
-}
-
-#qqplots for sqrt of each variable
-for(i in 2:ncol(clust[,-1])+1){
-qqPlot(clust[,i] %>% sqrt,
-       main=colnames(clust)[i])
-}
-
-#density plots - plain variables
-for(i in 1:ncol(clust)){
-print(
-        ggplot(clust, aes_string(x=colnames(clust[i]))) + geom_histogram(aes(y=..density..))
-        )
-}
-#density plots - log transformed variables
-clust.log<- log(clust)
-for(i in 1:ncol(clust.log)){
-        print(
-                ggplot(clust.log, aes_string(x=colnames(clust.log[i]))) + geom_histogram(aes(y=..density..))
-                )
-}
-
-#plot sqrt of timespan
-clust$timespan <- clust$timespan %>% sqrt
-ggplot(clust, aes_string(x='timespan')) + geom_histogram(aes(y=..density..))
+# #Q-Q plot of each variable
+# clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+#                          Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+#                          cost.mlsto, pc.majpos, return.pdol)
+# 
+# #get rid of zeroes for log transform
+# 
+# clust[clust$timespan ==0,]$timespan <- 1
+# clust[clust$pc.pro ==0,]$pc.pro <- 5
+# clust[clust$hours.perday ==0,]$hours.perday <- .1
+# clust[clust$hours.perday ==0,]$hours.perday <- .1
+# clust[clust$balance.mlsto ==0,]$balance.mlsto <- 1
+# clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
+# clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
+# clust[clust$return.pdol ==0,]$return.pdol <- .01
+# 
+# for(i in 1:ncol(clust)){
+# qqPlot(clust[,i],
+#        main=colnames(clust)[i])
+# }
+# 
+# #qqplots for log of each variable
+# for(i in 2:ncol(clust)+1){
+# qqPlot(clust[,i] %>% log,
+#        main=colnames(clust)[i])
+# }
+# 
+# #qqplots for sqrt of each variable
+# for(i in 2:ncol(clust[,-1])+1){
+# qqPlot(clust[,i] %>% sqrt,
+#        main=colnames(clust)[i])
+# }
+# 
+# #density plots - plain variables
+# for(i in 1:ncol(clust)){
+# print(
+#         ggplot(clust, aes_string(x=colnames(clust[i]))) + geom_histogram(aes(y=..density..))
+#         )
+# }
+# #density plots - log transformed variables
+# clust.log<- log(clust)
+# for(i in 1:ncol(clust.log)){
+#         print(
+#                 ggplot(clust.log, aes_string(x=colnames(clust.log[i]))) + geom_histogram(aes(y=..density..))
+#                 )
+# }
+# 
+# #plot sqrt of timespan
+# clust$timespan <- clust$timespan %>% sqrt
+# ggplot(clust, aes_string(x='timespan')) + geom_histogram(aes(y=..density..))
 
 ```
 
@@ -261,11 +264,132 @@ clust.summary$bal.pc<- ddply(all7c, .(groups), summarise, bal.pc= round(sum(bala
 clust.summary$hrs.pc<- ddply(all7c, .(groups), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
         select(2)
 
-clust.summary[,c(1,12,10,11, 13, 9,2,7,6,3,4,8,5,14:16)]
+clust.summary<- clust.summary[,c(1,12,10,11, 13, 9,2,7,6,3,4,8,5,14:16)]
+
+# add medians
+all7c.med<- ddply(kmeans.plot, .(groups), numcolwise(median))
+
+all7c.med<- all7c.med[, c(2,13,11,12,14,10,3,8,7,4,5,9,6)]
 
 
 ```
 
+
+Very interesting, now want to optimise number of clusters- refer wards tutorial
+
+```{r optimise clustnum,echo=FALSE}
+library('fpc', lib='C:/Progra~1/R/R-3.2.0/library')
+library('vegan', lib = 'C:/Progra~1/R/R-3.2.0/library')
+
+#try clustering a low number of numeric variables, trialling iffy ones to see which ones are good for clustering
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+                                      hrs.mlsto), 2, 20, iter= 100)
+plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# client.totinv indicating about 4 clusters
+# Num.days - good, indicating 18 custers
+# hrs.mlsto - ok, heavy dip, good at about 17 clusters
+# pc.pro - 5 groups good, still iffy
+# mean.peeps - good at about 4 clusters
+# Num.disc - ok, inidicating 12 groups
+# timespan: not good for clustering
+# no.users: not good for clustering
+# hours.perday: no good for clustering
+
+## try out all iffy variables together, eliminate duds
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+                                      client.totinv, Num.days, hrs.mlsto, pc.pro, mean.peeps,
+                                      Num.disc), 2, 20, iter= 100)
+plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# all together, no good
+# smaller subset of variables I am most interested in that still works for clustering:
+
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+                                      hrs.mlsto
+                                      ), 2, 20, iter= 100)
+plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+
+# 17 clusters
+# Cluster cohesion: create plots of SSE index (distance within clusters - sum of squared error) 
+# then calinksi (index of cluster homogeneity and distance where higher number is better)
+# calinski: between cluster distance/within cluster distance
+ind.plot<- melt(clust.km$results)
+ggplot(ind.plot %>% filter(Var1 == 'SSE'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( ) +
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( )+
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+# 17 clusters should be good
+
+
+```
+
+Analysis shows that inv.mlsto, balance.mlsto, return.pdol, and hrs.mlsto should be used for clustering and that 17 clusters is ideal.
+I'm not completely happy with the clustering.
+I think I should now add a new variable: inv.mlsto x return.pdol
+This will give a 'success' scale, weighing large jobs even with a smaller return.pdol as quite good and tiny jobs with a good return.pdol as average to low.
+
+this means I will need to check normality, scale the variable before adding it to clust
+
+```{r new var, echo=FALSE}
+#new variable for all7c - success
+# success= return.pdolxinv.mlsto
+
+all7c<- transform(all7c, suc= inv.mlsto*return.pdol)
+all7c$suc %>% summary
+
+all7c %>% arrange(-suc) %>% head
+
+qqPlot(all7c$suc,
+       main='success')
+
+qqPlot((all7c$suc+102700) %>% log)
+
+#can't log because of negatives
+
+#density plots - plain variables
+
+ggplot(all7c, aes_string(x='suc')) + geom_histogram(aes(y=..density..))
+
+#density plots - log transformed variables
+
+trial<- (all7c$suc) %>% as.data.frame
+ggplot(trial, aes_string(x='.')) + geom_histogram(aes(y=..density..))
+
+
+### CAN WE TAKE LOG OF ABSOLUTE VALUES AND THEN MAKE NUMBERS THAT WERE PREVIOUSLY NEG NEG AGAIN?
+
+clust$suc<- scale(all7c$suc)
+
+
+
+```
+
+
+Repeat clustering with new suc
+
+```{r new successvar, echo=FALSE}
+
+#investigate new variable a little
+
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+                                      suc, pc.pro, hrs.mlsto
+                                      ), 2, 20, iter= 100)
+plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+
+# 10 clusters
+# Cluster cohesion: create plots of SSE index (distance within clusters - sum of squared error) 
+# then calinksi (index of cluster homogeneity and distance where higher number is better)
+# calinski: between cluster distance/within cluster distance
+ind.plot<- melt(clust2.km$results)
+ggplot(ind.plot %>% filter(Var1 == 'SSE'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( ) +
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( )+
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+# 17 clusters should be good
+```
 
 
 

@@ -13,6 +13,7 @@ library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
 
 all4e<- read.csv('all4e.csv')[,-1]
 str(all4e)
+all4e<- all4e %>% filter(!(Job.Number == '2010.041.1' & dist == 1362.8))
 #delete Start.Date, tot.TS.Charge, tot.TS.cost, tot.TS.hours, Year
 all4e<- all4e %>% select(-Start.Date, -Tot.TS.Cost, -Tot.TS.Charge, -TS.Hours, -Year, -Profit, -Tot.Invoiced)
 
@@ -33,26 +34,26 @@ str(all5)
 all5<- transform(all5, profit= Tot.Invoiced-charge-Dis.subcon)
 #balance column - subtract real costs
 all5<- transform(all5, balance= Tot.Invoiced-cost-Dis.subcon)
-all5<- all5[-c(2068:2070),]
 write.csv(all5, 'all5.csv')
 all5<- read.csv('all5.csv')[,-1]
+all5<- all5 %>% filter(!Job.Number == '2003.24')
 
 #Need to sum up all the profits and balances for jobs with milestones
 # first 
 #create subset of just the things i want to add up - profits, balance, hours in each milestone
 temp<- all5 %>% select(Job.Number, hours, profit, balance, cost, Dis.subcon, Tot.Invoiced)
 temp$Job.Number<- as.character(temp$Job.Number)
-temp1<- temp[1:2426,]
+temp1<- temp[1:2425,]
 #string split to create another column with the first part of a job number. For the first half of jobs just the first bit indicates it could be invoiced together ie 2002.001 by itself
 temp1$mlsto<-sapply(temp1$Job.Number,FUN=function(x){
-        paste(strsplit(x,split='[.]')[[1]][1], strsplit(x,split='[.]')[[1]][2], sep=".")})
+        substr(x,1,8)})
 #Then ddply using this shortened job number to group. Add up all balance, profit hours in shortened job number. MErge back with original data set.
 temp1<- merge(temp1, ddply(temp1, .(mlsto), summarise, profit.mlsto= sum(profit), balance.mlsto = sum(balance), hrs.mlsto = sum(hours), cost.mlsto=sum(cost),
                            dis.sc.mlsto = sum(Dis.subcon),  inv.mlsto=sum(Tot.Invoiced)),
               by.x= 'mlsto', by.y= 'mlsto', all.x=TRUE, all.y=FALSE)
 
 #do the same with second half of data
-temp2<- temp[2427:4169,]
+temp2<- temp[2426:4168,]
 temp2$mlsto<-sapply(temp2$Job.Number,FUN=function(x){
         substr(x,1,10)})
 temp2$mlsto<- ifelse(temp2$mlsto == '2011.072.3', temp2$Job.Number, temp2$mlsto)
