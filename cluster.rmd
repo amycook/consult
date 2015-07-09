@@ -340,41 +340,63 @@ all7c$suc %>% summary
 
 all7c %>% arrange(-suc) %>% head
 
-qqPlot(all7c$suc,
+qqPlot(all7c$return.pdol,
        main='success')
 
-qqPlot((all7c$suc+102700) %>% log)
+qqPlot(sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)}))
+qqPlot((all7c$suc) %>% math.cbrt)
 
 #can't log because of negatives
 
 #density plots - plain variables
 
-ggplot(all7c, aes_string(x='suc')) + geom_histogram(aes(y=..density..))
+ggplot(all7c, aes_string(x='inv.vs.cost')) + geom_histogram(aes(y=..density..))
 
 #density plots - log transformed variables
 
-trial<- (all7c$suc) %>% as.data.frame
-ggplot(trial, aes_string(x='.')) + geom_histogram(aes(y=..density..))
+trial<- (sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)})) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+mean(trial$var)
+sd(trial$var)
+trial$scale.var<- scale(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+# ggplot still looks bimodal after scaling
 
+## conclusion - lets take neglog of suc and scale it, add it to clust
 
-### CAN WE TAKE LOG OF ABSOLUTE VALUES AND THEN MAKE NUMBERS THAT WERE PREVIOUSLY NEG NEG AGAIN?
+clust$suc<- sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)}) %>% scale()
 
-clust$suc<- scale(all7c$suc)
+## should we make return.pdol bimodal??
+math.cbrt <- function(x) {
+        sign(x) * abs(x)^(1/3)
+}
+qqPlot(all7c$return.pdol %>% math.cbrt,
+       main='success')
+trial<- (all7c$return.pdol %>% math.cbrt) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+trial$scale.var<- scale(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+#take cube root of return.pdol and scale it to clust
 
-
+clust$return.pdol<- all7c$return.pdol %>% math.cbrt %>% scale()
 
 ```
 
 
-Repeat clustering with new suc
+Repeat clustering with new suc and revised bi-modal return.pdol
 
 ```{r new successvar, echo=FALSE}
 
 #investigate new variable a little
 
 clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
-                                      suc, pc.pro, hrs.mlsto
-                                      ), 2, 20, iter= 100)
+                                      suc, hrs.mlsto), 2, 15, iter= 100)
 plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
 
 # 10 clusters
@@ -388,10 +410,62 @@ ggplot(ind.plot %>% filter(Var1 == 'SSE'), aes(x=Var2, y=value, group=1)) +
 ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) + 
         geom_line( )+
         theme(axis.text.x=element_text(angle=45,hjust=1))
-# 17 clusters should be good
+
+# 10 clusters should be good
+
+# have a look at dendrogram with 10 clusters
+
+x<- dist(clust %>% select(inv.mlsto, balance.mlsto, return.pdol, suc, hrs.mlsto), 
+         method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+
+rect.hclust(fit, k=10, border='red')
+
+#looks good!
+
+
+
 ```
 
+now want 10 clusters, based on k means optimisation, have a look at average characteristics
 
+```{r kmeans, echo=FALSE}
+
+k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto, return.pdol, suc, hrs.mlsto), 10)
+
+#try plotting means of actual values
+
+all7c$groups<- k1$cluster
+kmeans.plot<- all7c %>% select(inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, return.pdol, suc, groups)
+all7c.plot<- ddply(kmeans.plot, .(groups), numcolwise(mean))
+all7c.plot$groups<- rownames(all7c.plot)
+k2.melt<- melt(all7c.plot)
+
+#summary means of all numeric variables in 5 clusters
+clust.summary<- all7c.plot %>% select(-groups) %>% round(2)
+tab<- table(all7c$groups) %>% prop.table %>% as.data.frame
+bal<- sum(all7c$balance.mlsto)
+hrs<-  sum(all7c$hrs.mlsto)
+clust.summary$pc.jobs<- round( tab[,2]*100, 1)
+clust.summary$bal.pc<- ddply(all7c, .(groups), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
+        select(2)
+clust.summary$hrs.pc<- ddply(all7c, .(groups), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
+        select(2)
+clust.summary$job.count<- table(all7c$groups) %>% as.data.frame %>% select(Freq)
+
+clust.summary<- clust.summary %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto, hrs.mlsto, hours.perday, timespan, Num.days, Num.disc, no.users, pc.pro, mean.peeps, client.totinv, pc.jobs, bal.pc, hrs.pc)
+
+
+# add medians
+all7c.med<- ddply(kmeans.plot, .(groups), numcolwise(median))
+
+all7c.med<- all7c.med %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto, hrs.mlsto, hours.perday, timespan, Num.days, Num.disc, no.users, pc.pro, mean.peeps, client.totinv)
+
+
+```
 
 
 
