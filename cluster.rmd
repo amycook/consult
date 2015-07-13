@@ -360,13 +360,14 @@ skewness(trial$var)
 kurtosis(trial$var)
 mean(trial$var)
 sd(trial$var)
-trial$scale.var<- scale(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
 ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
 # ggplot still looks bimodal after scaling
 
 ## conclusion - lets take neglog of suc and scale it, add it to clust
 
-clust$suc<- sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)}) %>% scale()
+clust$suc<- sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)})
+clust$suc<- clust$suc/sd(clust$suc)
 
 ## should we make return.pdol bimodal??
 math.cbrt <- function(x) {
@@ -379,11 +380,30 @@ colnames(trial)[names(trial) %in% '.']<-'var'
 ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
 skewness(trial$var)
 kurtosis(trial$var)
-trial$scale.var<- scale(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
 ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
 #take cube root of return.pdol and scale it to clust
 
-clust$return.pdol<- all7c$return.pdol %>% math.cbrt %>% scale()
+clust$return.pdol<- math.cbrt(all7c$return.pdol)
+clust$return.pdol<- all7c$return.pdol/sd(all7c$return.pdol)
+
+## should we make balance.mlsto bimodal??
+
+qqPlot(all7c$balance.mlsto,
+       main='balance')
+qqPlot(sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)}),
+       main='balance')
+trial<- (sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)})) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+#take cube root of return.pdol and scale it to clust
+
+clust$balance.mlsto<- sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)})
+clust$balance.mlsto<- clust$balance.mlsto/sd(clust$balance.mlsto)
 
 ```
 
@@ -394,7 +414,7 @@ Repeat clustering with new suc and revised bi-modal return.pdol
 
 #investigate new variable a little
 
-clust.km<- cascadeKM(clust %>% select(inv.mlsto,suc), 2, 20, iter= 100)
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto), 2, 30, iter= 100)
 plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
 
 # 11 clusters
@@ -409,48 +429,48 @@ ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) +
         geom_line( )+
         theme(axis.text.x=element_text(angle=45,hjust=1))
 
-# 11 clusters should be good
+# 16 clusters should be good
 
-# have a look at dendrogram with 11 clusters
+# have a look at dendrogram with 16 clusters
 
-x<- dist(clust %>% select(inv.mlsto, balance.mlsto, return.pdol, suc, hrs.mlsto), 
+x<- dist(clust %>% select(inv.mlsto, balance.mlsto), 
          method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
 
-rect.hclust(fit, k=15, border='red')
+rect.hclust(fit, k=16, border='red')
 
 #looks good!
 
 ```
 
-now want 11 clusters, based on k means optimisation, have a look at average characteristics
+now want 16 clusters, based on k means optimisation, have a look at average characteristics
 
 ```{r, echo=FALSE}
 
-k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto, return.pdol, suc, hrs.mlsto), 15)
+k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto), 16)
 
 #try plotting means of actual values
 
-all7c$groups<- k1$cluster
+all7c$group.num<- k1$cluster
 kmeans.plot<- all7c %>% select(inv.mlsto, timespan, no.users, pc.pro, client.totinv,
                          Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
-                         cost.mlsto, return.pdol, suc, groups)
-all7c.plot<- ddply(kmeans.plot, .(groups), numcolwise(mean))
-all7c.plot$groups<- rownames(all7c.plot)
+                         cost.mlsto, return.pdol, suc, group.num)
+all7c.plot<- ddply(kmeans.plot, .(group.num), numcolwise(mean))
+all7c.plot$group.num<- rownames(all7c.plot)
 k2.melt<- melt(all7c.plot)
 
 #summary means of all numeric variables in 5 clusters
-clust.summary<- all7c.plot %>% select(-groups) %>% round(2)
-tab<- table(all7c$groups) %>% prop.table %>% as.data.frame
+clust.summary<- all7c.plot %>% select(-group.num) %>% round(2)
+tab<- table(all7c$group.num) %>% prop.table %>% as.data.frame
 bal<- sum(all7c$balance.mlsto)
 hrs<-  sum(all7c$hrs.mlsto)
 clust.summary$pc.jobs<- round( tab[,2]*100, 1)
-clust.summary$bal.pc<- ddply(all7c, .(groups), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
+clust.summary$bal.pc<- ddply(all7c, .(group.num), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
         select(2)
-clust.summary$hrs.pc<- ddply(all7c, .(groups), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
+clust.summary$hrs.pc<- ddply(all7c, .(group.num), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
         select(2)
-clust.summary$job.count<- table(all7c$groups) %>% as.data.frame %>% select(Freq)
+clust.summary$job.count<- table(all7c$group.num) %>% as.data.frame %>% select(Freq)
 
 clust.summary<- clust.summary %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto,
                                          hrs.mlsto, hours.perday, timespan, Num.days, Num.disc,
@@ -458,7 +478,7 @@ clust.summary<- clust.summary %>% select(inv.mlsto, suc, return.pdol, cost.mlsto
                                          bal.pc, hrs.pc, job.count)
 
 # add medians
-all7c.med<- ddply(kmeans.plot, .(groups), numcolwise(median)) %>% round(2)
+all7c.med<- ddply(kmeans.plot, .(group.num), numcolwise(median)) %>% round(2)
 
 all7c.med<- all7c.med %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto, hrs.mlsto, hours.perday, timespan, Num.days, Num.disc, no.users, pc.pro, mean.peeps, client.totinv)
 
@@ -467,11 +487,11 @@ clust.summary<- cbind(all7c.med %>% select(inv.mlsto, suc, return.pdol, cost.mls
                                      no.users, pc.pro, mean.peeps, client.totinv),
                       clust.summary %>% select(pc.jobs,bal.pc, hrs.pc, job.count))
 
-clust.summary$bal<- ddply(all7c, .(groups), summarise, bal= round(sum(balance.mlsto), 1)) %>% 
+clust.summary$bal<- ddply(all7c, .(group.num), summarise, bal= round(sum(balance.mlsto), 1)) %>% 
         select(2)
 
 #investigate clusters
-all7c %>% filter(groups == 5) %>% select(inv.mlsto, suc, pc.majpos, majority.pos,
+all7c[all7c$group.num == 12,] %>% select(inv.mlsto, suc, pc.majpos, majority.pos,
                                          code.client, client.meaninv, code.director, code.ProjEng,
                                          return.pdol, balance.mlsto, Year, timespan, pc.pro,
                                          pc.director, JD.Second, Business, client.count, Discipline,
@@ -484,30 +504,71 @@ Visualise confidence intervals in terms of 'success'
 ```{r CI, echo=FALSE}
 library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
 # principal component analysis
+
+#add clust columns to all7c
+all7c$clust.inv<- clust$inv.mlsto
+all7c$clust.bal<- clust$balance.mlsto
+all7c$clust.cost<- clust$cost.mlsto
+all7c$clust.return<- clust$return.pdol
+all7c$clust.hours<- clust$hrs.mlsto
+all7c$clust.suc<- clust$suc
+
+
 #convert cluster groups to integer
 
-all7c$groups<- as.integer(all7c$groups)
-p<- prcomp(~suc+ inv.mlsto + balance.mlsto + cost.mlsto + return.pdol, data=all7c, centre=T)
+all7c$group.num<- as.integer(all7c$group.num)
+p<- prcomp(~clust.inv + clust.bal+ clust.cost, data=all7c, centre=T)
 # summary(p)
-biplot(p, xlabs = as.character(all7c$groups))
+biplot(p, xlabs = as.character(all7c$group.num))
 #putlers in-house biplot shows centroids
-bpCent(p, clsAsgn = all7c$groups, centroids=TRUE, xlabs = as.character(all7c$groups))
+bpCent(p, clsAsgn = all7c$group.num, centroids=TRUE, xlabs = as.character(all7c$Business))
 
+##try ggbiplot
+library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+#visualise clusters
+q<- ggbiplot(p, obs.scale = 1, var.scale = 1, 
+              groups = all7c$group.num %>% as.factor, ellipse = TRUE,
+             labels = all7c$Business,
+              circle = TRUE)
+q <- q + scale_color_discrete(name = '')
+q <- q + theme(legend.direction = 'vertical', 
+               legend.position = 'right')
+q
 
-#now look at 3D - triplot - using prcomp
-#scores stored as 'x' variable
-p$x
-plot3d(p$x[,1:3], col=as.character(all7c$groups))
-text3d(p$x[,1:3], texts = as.character(all7c$groups), color=as.character(all7c$groups), adj=2)
-text3d(p$rotation[,1:3], text = rownames(p$rotation), color= 'red')
-coords <- NULL
-for (i in 1:nrow(p$rotation)) {
-        coords <- rbind(coords, rbind(c(0,0,0), p$rotation[i,1:3]))
-}
-lines3d(coords, col="red", lwd=4)
+#visualise factors within clusters
+g<- ggbiplot(p, obs.scale = 1, var.scale = 1, 
+              groups = all7c$Business %>% as.factor(), ellipse = TRUE, 
+              circle = TRUE)
+g <- g + scale_color_discrete(name = '')
+g <- g + theme(legend.direction = 'vertical', 
+               legend.position = 'right')
+g
+
+#confusion matrix of groups vs. categorical variables
+
+#Business
+table(all7c$group.num, all7c$Business)
+#notes
+# only single NFP - combine to institution
+all7c[all7c$Business %in% 'NFP',]$Business<- 'institution'
+#combine person and friend
+all7c[all7c$Business %in% 'friend',]$Business<- 'person'
+#fabricator labelled manufactorer/supplier
+all7c[all7c$Business %in% 'fabricator',]$Business<- 'manufacturer/supplier'
+all7c[all7c$Business %in% 'membrane fabricator',]$Business<- 'manufacturer/supplier'
+#combine remedial building services to building services
+all7c[all7c$Business %in% 'remedial building service',]$Business<- 'building services'
+#combine gov and council
+all7c[all7c$Business %in% 'council',]$Business<- 'gov'
+all7c$Business<- droplevels(all7c$Business)
 
 
 ```
+
+View counts of each category in each group as a heatmap
+
+Order groups by profitability and size
 
 
 
