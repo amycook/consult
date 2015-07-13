@@ -5,37 +5,48 @@ output: word_document
 
 ```{r, echo=FALSE, include=FALSE}
 
-library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
-library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+# library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+# library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
 
-# library('knitr')
-# library('ggplot2')
-# library("dplyr")
-# library("plyr")
-# library('magrittr')
-# library('reshape2')
-# library("rpart")
-# library('car')
-# library('e1071')
-# library('corrgram')
-# library('party')
-# library('dendextend')
+# library('RcmdrPlugin.BCA')
+library(devtools)
+library('ggbiplot')
+library('fpc')
+library('vegan')
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+library('party')
+library('dendextend')
 # 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 # opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
-all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+# all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
 all7c$Post.Code<- as.factor(all7c$Post.Code)
 
 ```
@@ -212,11 +223,11 @@ Now to do hierarchical clustering
 
 #Ward's clustering
 
-x<- dist(clust %>% select(-mlsto), method = 'euclidean')
-fit<- hclust(x, method = 'ward.D2')
-plot(fit)
-
-rect.hclust(fit, k=5, border='red')
+# x<- dist(clust %>% select(-mlsto), method = 'euclidean')
+# fit<- hclust(x, method = 'ward.D2')
+# plot(fit)
+# 
+# rect.hclust(fit, k=5, border='red')
 #5 clusters looks pretty good
 
 #try horizontal dend with branches coloured for 8 clusters - very slow
@@ -225,8 +236,8 @@ rect.hclust(fit, k=5, border='red')
 # rect.dendrogram(dend, k=8, horiz=T)
 
 #how many points in each cluster?
-clust$groups<- cutree(fit,k=5)
-table(clust$groups)
+# clust$groups<- cutree(fit,k=5)
+# table(clust$groups)
 
 
 
@@ -280,13 +291,12 @@ Now look at properties of groups using k means clustering
 Very interesting, now want to optimise number of clusters- refer wards tutorial
 
 ```{r optimise clustnum,include=FALSE}
-library('fpc', lib='C:/Progra~1/R/R-3.2.0/library')
-library('vegan', lib = 'C:/Progra~1/R/R-3.2.0/library')
+
 
 #try clustering a low number of numeric variables, trialling iffy ones to see which ones are good for clustering
-clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
-                                      hrs.mlsto), 2, 20, iter= 100)
-plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+#                                       hrs.mlsto), 2, 20, iter= 100)
+# plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
 # client.totinv indicating about 4 clusters
 # Num.days - good, indicating 18 custers
 # hrs.mlsto - ok, heavy dip, good at about 17 clusters
@@ -448,7 +458,7 @@ now want 16 clusters, based on k means optimisation, have a look at average char
 
 ```{r, echo=FALSE}
 
-k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto), 16)
+k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto), 15)
 
 #try plotting means of actual values
 
@@ -502,7 +512,7 @@ all7c[all7c$group.num == 12,] %>% select(inv.mlsto, suc, pc.majpos, majority.pos
 Visualise confidence intervals in terms of 'success'
 
 ```{r CI, echo=FALSE}
-library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
+
 # principal component analysis
 
 #add clust columns to all7c
@@ -521,15 +531,14 @@ p<- prcomp(~clust.inv + clust.bal+ clust.cost, data=all7c, centre=T)
 # summary(p)
 biplot(p, xlabs = as.character(all7c$group.num))
 #putlers in-house biplot shows centroids
-bpCent(p, clsAsgn = all7c$group.num, centroids=TRUE, xlabs = as.character(all7c$Business))
+# bpCent(p, clsAsgn = all7c$group.num, centroids=TRUE, xlabs = as.character(all7c$Business))
 
 ##try ggbiplot
-library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
-library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+
 #visualise clusters
 q<- ggbiplot(p, obs.scale = 1, var.scale = 1, 
               groups = all7c$group.num %>% as.factor, ellipse = TRUE,
-             labels = all7c$Business,
+             labels = all7c$group.num,
               circle = TRUE)
 q <- q + scale_color_discrete(name = '')
 q <- q + theme(legend.direction = 'vertical', 
@@ -546,6 +555,10 @@ g <- g + theme(legend.direction = 'vertical',
 g
 
 #confusion matrix of groups vs. categorical variables
+#reorder cluster tag levels from most amount and neg to best
+all7c$group.num<- as.factor(all7c$group.num)
+levs<- data.frame('clust' = rownames(clust.summary), 'bal' = clust.summary$balance.mlsto)
+all7c$group.num <- factor(all7c$group.num, levels=levs[order(levs$bal),]$clust)
 
 #Business
 table(all7c$group.num, all7c$Business)
@@ -563,13 +576,86 @@ all7c[all7c$Business %in% 'remedial building service',]$Business<- 'building ser
 all7c[all7c$Business %in% 'council',]$Business<- 'gov'
 all7c$Business<- droplevels(all7c$Business)
 
+#Biz.type
+table(all7c$group.num, all7c$Biz.type)
+#JD.Second table
+table(all7c$group.num, all7c$JD.Second)
+#combine JD.Second categories
+all7c$JD.Second<- as.character(all7c$JD.Second)
+#combine waste water and sewerage
+all7c[all7c$JD.Second %in% 'sewerage',]$JD.Second<- 'waste water'
+#combine re-use (water) and recycled water
+all7c[all7c$JD.Second %in% 're-use (water)',]$JD.Second<- 'recycled water'
+#combine water cycle management and water management and water strategy and flood studies
+all7c[all7c$JD.Second %in% c('water cycle management', 'water strategy', 'flood studies'),]$JD.Second<-
+        'water management'
+#combine apartments and townhouses and community housing
+all7c[all7c$JD.Second %in% c('townhouses','community housing','apartments'),]$JD.Second<- 'multi-dwelling'
+#combine childcare and community
+all7c[all7c$JD.Second %in% c('childcare', 'religious'),]$JD.Second<- 'community'
+#combine commercial shop and dining
+all7c[all7c$JD.Second %in% c('commercial shop','dining'),]$JD.Second<- 'dining/retail'
+all7c$JD.Second<- as.factor(all7c$JD.Second)
+all7c$JD.Second<- droplevels(all7c$JD.Second)
 
+#Biz.type
+table(all7c$group.num, all7c$pc.majpos)
 ```
 
 View counts of each category in each group as a heatmap
 
 Order groups by profitability and size
 
+```{r heatmaps, echo=FALSE}
+#function for heatmap
+
+heatmap<- function(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=FALSE){
+        
+        #order var levels by highest amount invoiced total
+        a = ddply(df, c(var), summarise, summ = sum(inv.mlsto))
+        df[,var] = factor(df[,var], levels= a[order(-a$summ),][,var]) 
+        
+        if(percentof_clust== FALSE){
+                #table with percentages within each category
+                tbl= round(prop.table(table(df[,clust],df[,var]),1)*100,2) %>% as.data.frame
+                p = ggplot(tbl, aes(x=Var2, y=Var1)) +
+                        geom_tile(aes(fill=Freq), colour = 'white') +
+                        scale_fill_gradient(low='white', high=colour, name = 'percent') + 
+                        labs(x='', y='', title= 'percentage of jobs in each cluster') +
+                        theme(axis.ticks=element_blank(),
+                              axis.text.x=element_text(angle=45,hjust=1))+
+                        scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) 
+        }
+        else{
+                #table with percentages within each cluster
+                tbl= round(prop.table(table(df[,clust],df[,var]),2)*100,2) %>% as.data.frame
+                p = ggplot(tbl, aes(x=Var2, y=Var1)) +
+                        geom_tile(aes(fill=Freq), colour = 'white') +
+                        scale_fill_gradient(low='white', high=colour, name = 'percent') + 
+                        labs(x='Profit measure', y='', title= 'percentage of jobs in each X-axis category') +
+                        theme(axis.ticks=element_blank(),
+                              axis.text.x=element_text(angle=45,hjust=1))+
+                        scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))       
+        }
+        print(p)
+}
+
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Business', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Business', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Num.disc', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'majority.pos', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'majority.pos', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Billing.Type', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Discipline', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Discipline', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.client', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.client', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7c, percentof_clust=TRUE)
+
+```
 
 
 
