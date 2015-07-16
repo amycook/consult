@@ -40,6 +40,8 @@ library('e1071')
 library('corrgram')
 library('party')
 library('dendextend')
+library('FNN')
+
 # 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
@@ -76,7 +78,6 @@ code.contact
 code.client
 Project.Value
 JD.Second
-Billing.Type
 Post.Code
 code.ProjEng
 Billing.Type
@@ -89,10 +90,11 @@ Create reduced dataset and have a think about what you want to cluster against e
 
 ```{r final_var, include=FALSE}
 
-all7d<- all7c %>% select(inv.mlsto, timespan, no.users, Discipline, pc.pro, client.totinv, code.director, 
+all7d<- all7c %>% select(inv.mlsto, timespan, no.users, Discipline, pc.pro, 
+                         client.totinv, code.director, 
                          Num.disc, Business,
                          Biz.type, code.contact, pc.majpos,
-                         code.client, Project.Value, JD.Second, Billing.Type, Post.Code, code.ProjEng, 
+                         code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
                          Billing.Type, majority.pos)
 
 ```
@@ -656,6 +658,38 @@ heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7
 heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7c, percentof_clust=TRUE)
 
 ```
+
+Say we are trying to retrieve the nearest neighbours.
+There will be two types of distances:
+
+* numerical nearest neighbours
+* categorical nearest neighbours
+
+Which numerical categories would we want to include in the nearest neighbour search?
+
+No NA:
+* inv.mlsto
+* timespan
+* no.users
+* Num.disc
+* pc.pro
+* client.totinv
+Discipline
+code.director
+Business
+Biz.type
+
+Many NA:
+
+* pc.majpos
+* Project.Value
+code.contact
+code.client
+JD.Second
+Post.Code
+code.ProjEng
+Billing.Type
+majority.pos
 
 
 
