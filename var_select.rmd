@@ -41,8 +41,6 @@ opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 
 
 ```{r load_data, echo=FALSE}
-all6a<- read.csv('all6a.csv')[,-1]
-all6a$Start.Date<- as.Date(all6a$Start.Date)
 all7<- read.csv('all7.csv')[,-1]
 all7$Start.Date<- as.Date(all7$Start.Date)
 ```
@@ -448,6 +446,8 @@ details<- transform(details, client.age = 2014- Biz.age)
 
 #merge client.age column of details to all7b by code.client
 all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
+
+
 # write.csv(all7b, 'all7c.csv')
 all7c<- read.csv('all7c.csv')[,-1]
 

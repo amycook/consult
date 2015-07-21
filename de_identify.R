@@ -190,3 +190,124 @@ write.csv(all6a,'all6a.csv')
 
 
 
+### grep through Role and alter JD.Second!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+all6a$Role %>% head
+#look at all entries in Role with less than 10 characters
+check<- sapply(all6a$Role %>% as.character, FUN=function(x) {nchar(x)}) %>% as.data.frame
+check$Role<- all6a$Role
+colnames(check)[names(check) %in% '.']<-'char'
+check %>% unique %>% filter(char==1)
+check %>% unique %>% filter(char==5)
+check$Discipline<- all6a$Discipline
+check$JD.Second<- all6a$JD.Second
+check$mlsto<- all6a$mlsto
+check<- check %>% arrange(mlsto)
+check$Job.Name<- all5a$Job.Name
+
+#anything with nchar<=4 should be 'NA'
+RN<- check[check$char<=4,] %>% rownames
+all6a[RN,]$Role <- NA
+all6a$Role <- droplevels(all6a$Role)
+
+#now lets view remaining Role entries
+all6a %>% filter(!is.na(Role)) %>% select(Role, JD.Second) %>% head
+
+#create data frame of category key words (that I made manually by sscrolling through all the data) 
+cat<- read.csv('Catgrep.csv', na.strings= "")
+cat<- t(cat)
+# delete columns with 29 NA values, rename columns using first row
+colnames(cat)<- cat[1,]
+cat<-cat[-c(1,2),]
+cat<-cat[ ,colSums(is.na(cat))!=nrow(cat)]
+#delete white space before and after
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+cat<- trim(cat)
+
+#create data frame of category key words (that I made manually by sscrolling through all the data) 
+sec<- read.csv('second_detail.csv', na.strings= "")
+sec<- t(sec)
+# delete columns with 29 NA values, rename columns using first row
+colnames(sec)<- sec[1,]
+sec<-sec[-c(1),]
+sec<-sec[ ,colSums(is.na(sec))!=nrow(cat)]
+#delete white space before and after
+trim <- function (x) gsub("^\\s+|\\s+$", "", x)
+sec<- trim(sec)
+
+#create trimmed vectors for each column to feed into grepping
+grep.svec<-function(df=cat){
+        for (i in 1:ncol(df)){
+                tempvec= c(df[,i])
+                assign(paste("svec",i,sep=""), tempvec[complete.cases(tempvec)]
+                       ,envir=.GlobalEnv)
+                cat(i," ")
+        }        
+}
+
+grep.svec(sec)
+
+#function for grepping columns - structural
+#group my list of svec vectors into four 'lists'. Ones that I want to apply to structural, not structural, and civil, and any
+# also create title vectors with the number column in 'sec' where you would find the title
+struc.list<- list(svec1, svec3, svec11, svec13, svec14, svec15, svec16,svec17, svec18, svec19, svec20, svec21, svec22,
+                  svec23, svec24, svec25, svec26, svec27, svec28, svec36, svec37, svec38, svec39, svec40, svec41, svec42, svec43, svec45, svec2)      
+struc.title<- c(1,3,11,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,36,37,38,39,40,41,42,43,45,2)
+civ.list<- list(svec44, svec48)
+civ.title<- c(44,48)
+nstruc.list<- list(svec5, svec6, svec8, svec29, svec30, svec31, svec32, svec33, svec34, svec35)
+nstruc.title<- c(5,6,8,29,30,31,32,33,34,35)
+any.list<- list(svec4, svec7, svec9, svec10, svec12, svec46, svec47)
+anylist.title<- c(4,7,9,10,12, 46,47)
+
+# function for greppipng through each vector in the list of vectors. Also calls the vector referring to the title in sec. Also calls up 
+#the discipline
+all6a$Role.JD<- rep(NA,nrow(all6a))
+grepster<- function(vlist = any.list, titles= anylist.title, Disc= c('Structural', 'Civil','Environmental Planning','Water','NA')){
+        for( i in 1:length(vlist)){
+                all6a$Role.JD = ifelse(grepl(paste(vlist[[i]],collapse="|"), all6a$Role, ignore.case=TRUE)
+                                         & all6a$Discipline %in% Disc, colnames(sec)[titles[i]], all6a$Role.JD)               
+        } 
+        all6a$Role.JD
+}
+
+all6a$Role.JD<- grepster(any.list, anylist.title, c('Structural', 'Civil','Environmental Planning','Water','NA') )
+all6a$Role.JD<- grepster(vlist= struc.list, titles= struc.title, Disc= c('Structural'))
+all6a$Role.JD<- grepster(civ.list, civ.title, c('Civil') )
+all6a$Role.JD<- grepster(nstruc.list, nstruc.title, c('Civil','Environmental Planning','Water','NA') )
+
+#worked!
+#now compare when JD.Second differs from Role.JD
+all6a %>% filter(!is.na(Role.JD), !is.na(JD.Second),!(Role.JD==JD.Second)) %>% select(Role, Role.JD, JD.Second, Discipline) %>% View()
+#2014.371.3 - keep JD.Second
+#2014.117.3 - keep JD.Second
+#2014.414.3 - keep JD.Second
+#2009.266 - keep JD.Second
+#2014.538.2 - keep JD.Second
+#2014.225.3 - keep JD.Second
+#2005.106 - keep JD.Second
+#2014.169.3 - keep JD.Second
+#2014.279.6 - keep JD.Second
+#2013.370.3 - keep JD.Second
+#2014.134.3 - keep JD.Second
+#2014.360.3 - keep JD.Second
+#2012.297.3 - keep JD.Second
+#2014.082.3 - keep JD.Second
+#2007.236 - keep JD.Second
+#2014.540.3 - keep JD.Second
+#2014.562.3 - keep JD.Second
+#2014.197.3 - keep JD.Second
+#2009.266 - erosion & sediment
+
+all6a$JD.Second<- as.character(all6a$JD.Second)
+all6a$Role.JD<- as.character(all6a$Role.JD)
+all6a$JD.Second<- ifelse(is.na(all6a$JD.Second), all6a$Role.JD, all6a$JD.Second)
+
+no.replace= c('2014.371.3','2014.117.3', '2014.414.3','2009.266', '2014.538.2','2014.225.3','2005.106','2014.169.3','2014.279.6',
+              '2013.370.3','2014.134.3','2014.360.3','2012.297.3','2014.082.3','2007.236','2014.540.3','2014.562.3','2014.197.3')
+all6a$JD.Second<- ifelse(!is.na(all6a$JD.Second) & !is.na(all6a$Role.JD) & !(all6a$JD.Second==all6a$Role.JD) & !(all6a$mlsto %in% no.replace), 
+                         all6a$Role.JD, all6a$JD.Second)
+all6a<- all6a %>% select(-Role.JD)
+all6a$JD.Second<- as.factor(all6a$JD.Second)
+
+write.csv(all6a,'all6b.csv')

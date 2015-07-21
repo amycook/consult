@@ -7,14 +7,14 @@ library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
 library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
 library("rpart",lib = 'C:/Program Files/R/R-3.2.0/library')
 
-all6a<- read.csv('all6a.csv')[,-1]
-all6a$Start.Date<- as.Date(all6a$Start.Date)
+all6b<- read.csv('all6b.csv')[,-1]
+all6b$Start.Date<- as.Date(all6b$Start.Date)
 
 #delete milestone rows! sort by highest hours - choose this discipline.!
 #sort by hours first
-all6a<- all6a %>% arrange(mlsto, -hours)
-dup<- all6a[,names(all6a) %in% c('mlsto')]
-all7<-all6a[!(all6a$inv.mlsto==0 | duplicated(dup)),]
+all6b<- all6b %>% arrange(mlsto, -hours)
+dup<- all6b[,names(all6b) %in% c('mlsto')]
+all7<-all6b[!(all6b$inv.mlsto==0 | duplicated(dup)),]
 
 write.csv(all7, 'all7.csv')
 all7<- read.csv('all7.csv')[,-1]

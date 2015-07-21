@@ -5,51 +5,53 @@ output: word_document
 
 ```{r, echo=FALSE, include=FALSE}
 
-# library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
-# library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
-# library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
-# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
-# library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
-# library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
+library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
+library('FNN', lib='C:/Progra~1/R/R-3.2.1/library')
+library('caret', lib='C:/Progra~1/R/R-3.2.1/library')
 
 library('RcmdrPlugin.BCA')
-library(devtools)
-library('ggbiplot')
-library('fpc')
-library('vegan')
-library('knitr')
-library('ggplot2')
-library("plyr")
-library("dplyr")
-library('magrittr')
-library('reshape2')
-library("rpart")
-library('car')
-library('e1071')
-library('corrgram')
-library('party')
-library('dendextend')
-library('FNN')
-library('caret')
+# library(devtools)
+# library('ggbiplot')
+# library('fpc')
+# library('vegan')
+# library('knitr')
+# library('ggplot2')
+# library("plyr")
+# library("dplyr")
+# library('magrittr')
+# library('reshape2')
+# library("rpart")
+# library('car')
+# library('e1071')
+# library('corrgram')
+# library('party')
+# library('dendextend')
+# library('FNN')
+# library('caret')
 
 # 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 # opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 # opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
-# all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
-all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
+all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+# all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
 all7c$Post.Code<- as.factor(all7c$Post.Code)
 
 ```
@@ -704,11 +706,42 @@ inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
         #checkout the nearest neigbours!
         df %>% slice(c(new.cases,indices[1,])) %>% print
         
-        }
+}
+
 inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
 
 
 ```
 
+Retrieve nearest neighbour - categorical
+Need to create binary matrix!!
+
+```{r, echo=FALSE}
+# want to use the following cat variables for knn:
+# Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type
+# in order to use model.matrix, need to convert NA's to 'unknown' factor.
+
+#trial model.matrix function
+vars.vec<- c('Discipline','Business','Biz.type','code.contact', 'code.client', 'JD.Second', 'Billing.Type')
+
+binary.build<- function(vars= vars.vec, df= all7d){
+        options("contrasts")
+        #create final df bin.knn
+        bin.knn= rep(0, nrow(df))
+        #loop through each variable in vars vector
+        for(i in 1:2){
+                temp = data.frame(df[, vars[i]])
+                colnames(temp)<- c(vars[i])
+                formula = paste('~',vars[i],'-1')
+                a= model.matrix( as.formula(formula), temp)
+                a= a[match(rownames(temp), rownames(a)),]
+                bin.knn= cbind(bin.knn,a)
+        }
+        
+        print(bin.knn)
+}
+
+binary.build(vars= vars.vec, df= all7d) %>% head
+```
 
 
