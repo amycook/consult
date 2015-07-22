@@ -688,7 +688,8 @@ all7d<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, Discipline, pc.pr
                          Num.disc, Business,
                          Biz.type, code.contact, pc.majpos,
                          code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
-                         Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto)
+                         Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto, balance.mlsto)
+all7d$mlsto<- as.character(all7d$mlsto)
 
 ```
 
@@ -702,11 +703,11 @@ inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
                 df$pc.pro, k=k)
         indices<- attr(inv.knn,  "nn.index")
         #checkout the nearest neigbours!
-        df %>% slice(c(new.cases,indices[1,])) %>% print
+        df %>% slice(c(new.cases, indices[1,])) %>% return
         
 }
 
-inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
+a<-inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
 
 
 ```
@@ -742,6 +743,10 @@ binary.build<- function(vars= vars.vec, df= all7d){
 knn.binary<- binary.build(vars= vars.vec, df= all7d)
 knn.binary<- as.data.frame(knn.binary)
 
+#NA values don't work in knn function so turn all NA into zeroes
+knn.binary[is.na(knn.binary)]<- 0
+knn.binary$pc.pro<- all7d$pc.pro
+
 ```
 
 Have created binary matrix
@@ -754,16 +759,30 @@ Turn into dataframe and then perform jaccard distance nearest neighbour
 new.case<- binary.build(vars= vars.vec, df= knn.binary %>% slice(2000))
 
 
-inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
+cat.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3, result.df= all7d){
         inv.knn = knn(df[,predict], df[new.cases,predict],
                 df$pc.pro, k=k)
         indices<- attr(inv.knn,  "nn.index")
+        dists<- attr(inv.knn, 'nn.dist') %>% t %>% as.data.frame %>% round(2)
         #checkout the nearest neigbours!
-        df %>% slice(c(new.cases,indices[1,])) %>% print
+        final = cbind(result.df %>% slice(c(indices[1,])), dists)
+        colnames(final)[names(final) %in% 'V1']<-'knn.dist'
+        return(final)
         
 }
 
-inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
+b<- cat.knn(df= knn.binary, predict= colnames(knn.binary), new.cases= 60, k=5, result.df= all7d)
+
+
+```
+
+Combine two knn results
+
+```{r combine_knn, echo=FALSE}
+
+b<- cat.knn(df= knn.binary, predict= colnames(knn.binary), new.cases= 60, k=20, result.df= all7d)
+c<- inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=4) %>% slice(-1)
+c
 
 
 ```
