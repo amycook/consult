@@ -413,7 +413,7 @@ all7b<- merge(all7b, testa2 %>% select(mlsto, value), by='mlsto', all.x=T, all.y
 all7b$value<- ifelse(is.na(all7b$majority.pos), NA, all7b$value)
 colnames(all7b)[names(all7b) %in% 'value']<-'pc.majpos'
 
-# write.csv(all7b,'all7b.csv')
+write.csv(all7b,'all7b.csv')
 
  
 ```
@@ -449,7 +449,7 @@ all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client',
 
 
 # write.csv(all7b, 'all7c.csv')
-all7c<- read.csv('all7c.csv')[,-1]
+# all7c<- read.csv('all7c.csv')[,-1]
 
 ```
 
@@ -520,7 +520,7 @@ all7c$JD.Second <- as.factor(all7c$JD.Second)
 all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
 
 # write.csv(all7c, 'all7c.csv')
-all7c<- read.csv('all7c.csv')[,-1]
+# all7c<- read.csv('all7c.csv')[,-1]
 
 ```
 

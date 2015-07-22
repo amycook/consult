@@ -89,19 +89,6 @@ pc.majpos
 
 
 
-Create reduced dataset and have a think about what you want to cluster against each other
-
-```{r final_var, include=FALSE}
-
-all7d<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
-                         client.totinv, code.director, 
-                         Num.disc, Business,
-                         Biz.type, code.contact, pc.majpos,
-                         code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
-                         Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto)
-
-```
-
 What kind of clusters are you looking for? Within the numeric variables:
 
 ```{r, include=FALSE}
@@ -587,12 +574,10 @@ table(all7c$group.num, all7c$Biz.type)
 table(all7c$group.num, all7c$JD.Second)
 #combine JD.Second categories
 all7c$JD.Second<- as.character(all7c$JD.Second)
-#combine waste water and sewerage
-all7c[all7c$JD.Second %in% 'sewerage',]$JD.Second<- 'waste water'
 #combine re-use (water) and recycled water
 all7c[all7c$JD.Second %in% 're-use (water)',]$JD.Second<- 'recycled water'
 #combine water cycle management and water management and water strategy and flood studies
-all7c[all7c$JD.Second %in% c('water cycle management', 'water strategy', 'flood studies'),]$JD.Second<-
+all7c[all7c$JD.Second %in% c('water cycle management', 'water strategy'),]$JD.Second<-
         'water management'
 #combine apartments and townhouses and community housing
 all7c[all7c$JD.Second %in% c('townhouses','community housing','apartments'),]$JD.Second<- 'multi-dwelling'
@@ -604,7 +589,7 @@ all7c$JD.Second<- as.factor(all7c$JD.Second)
 all7c$JD.Second<- droplevels(all7c$JD.Second)
 
 #Biz.type
-table(all7c$group.num, all7c$pc.majpos)
+table(all7c$group.num, all7c$Biz.type)
 ```
 
 View counts of each category in each group as a heatmap
@@ -694,6 +679,19 @@ code.ProjEng
 Billing.Type
 majority.pos
 
+Create reduced dataset and have a think about what you want to cluster against each other
+
+```{r final_var, include=FALSE}
+
+all7d<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
+                         client.totinv, code.director, 
+                         Num.disc, Business,
+                         Biz.type, code.contact, pc.majpos,
+                         code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
+                         Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto)
+
+```
+
 Retrieve nearest neighbour - numeric first
 
 ```{r knn, echo=FALSE}
@@ -727,9 +725,9 @@ vars.vec<- c('Discipline','Business','Biz.type','code.contact', 'code.client', '
 binary.build<- function(vars= vars.vec, df= all7d){
         options("contrasts")
         #create final df bin.knn
-        bin.knn= rep(0, nrow(df))
+        bin.knn= NULL
         #loop through each variable in vars vector
-        for(i in 1:2){
+        for(i in 1:length(vars.vec)){
                 temp = data.frame(df[, vars[i]])
                 colnames(temp)<- c(vars[i])
                 formula = paste('~',vars[i],'-1')
@@ -738,10 +736,35 @@ binary.build<- function(vars= vars.vec, df= all7d){
                 bin.knn= cbind(bin.knn,a)
         }
         
-        print(bin.knn)
+        return(bin.knn)
 }
 
-binary.build(vars= vars.vec, df= all7d) %>% head
+knn.binary<- binary.build(vars= vars.vec, df= all7d)
+knn.binary<- as.data.frame(knn.binary)
+
 ```
 
+Have created binary matrix
+Turn into dataframe and then perform jaccard distance nearest neighbour
+
+```{r knn, echo=FALSE}
+#pretend you are predicting .. post code
+
+# First turn new case into giant binary dataframe using function from above
+new.case<- binary.build(vars= vars.vec, df= knn.binary %>% slice(2000))
+
+
+inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
+        inv.knn = knn(df[,predict], df[new.cases,predict],
+                df$pc.pro, k=k)
+        indices<- attr(inv.knn,  "nn.index")
+        #checkout the nearest neigbours!
+        df %>% slice(c(new.cases,indices[1,])) %>% print
+        
+}
+
+inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
+
+
+```
 

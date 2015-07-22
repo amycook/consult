@@ -187,12 +187,14 @@ all6a<- merge(all6a, inv.eng %>% select(code.client, client.meaninv, client.invf
               by='code.client', all.x=T)
 test<- merge(all6 %>% select(mlsto), inv.eng %>% select(mlsto), by= 'mlsto', all.x=TRUE, all.y=TRUE)
 write.csv(all6a,'all6a.csv')
+all6a<- read.csv('all6a.csv')
 
 
 
 ### grep through Role and alter JD.Second!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 all6a$Role %>% head
+all6a$Role<- as.character(all6a$Role)
 #look at all entries in Role with less than 10 characters
 check<- sapply(all6a$Role %>% as.character, FUN=function(x) {nchar(x)}) %>% as.data.frame
 check$Role<- all6a$Role
@@ -202,7 +204,6 @@ check %>% unique %>% filter(char==5)
 check$Discipline<- all6a$Discipline
 check$JD.Second<- all6a$JD.Second
 check$mlsto<- all6a$mlsto
-check<- check %>% arrange(mlsto)
 check$Job.Name<- all5a$Job.Name
 
 #anything with nchar<=4 should be 'NA'
@@ -212,6 +213,8 @@ all6a$Role <- droplevels(all6a$Role)
 
 #now lets view remaining Role entries
 all6a %>% filter(!is.na(Role)) %>% select(Role, JD.Second) %>% head
+all6a$Role<- as.factor(all6a$Role)
+
 
 #create data frame of category key words (that I made manually by sscrolling through all the data) 
 cat<- read.csv('Catgrep.csv', na.strings= "")
@@ -278,7 +281,8 @@ all6a$Role.JD<- grepster(nstruc.list, nstruc.title, c('Civil','Environmental Pla
 
 #worked!
 #now compare when JD.Second differs from Role.JD
-all6a %>% filter(!is.na(Role.JD), !is.na(JD.Second),!(Role.JD==JD.Second)) %>% select(Role, Role.JD, JD.Second, Discipline) %>% View()
+all6a %>% filter(!is.na(Role.JD), !is.na(JD.Second),!(Role.JD==JD.Second)) %>% select(Role, Role.JD, JD.Second, Discipline,mlsto) %>% View()
+
 #2014.371.3 - keep JD.Second
 #2014.117.3 - keep JD.Second
 #2014.414.3 - keep JD.Second
