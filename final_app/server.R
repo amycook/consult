@@ -25,6 +25,71 @@ df2 <- within(df2,
               probability <- factor(probability, 
                                     levels=c('95%','75%','50%')))
 
+#### CREATE TABLE DATA FRAME FOR NEAREST NEIGHBOURS ####
+
+all7d<- read.csv('all7d.csv')
+all7d$mlsto<- as.character(all7d$mlsto)
+
+# test.case<- all7d %>% select(Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type)
+
+#function for retrieving nearest neighbours by inv.mlsto:
+inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
+        invo.knn = knn(df[,predict], df[new.cases,predict],
+                       df$pc.pro, k=k)
+        indices<- attr(invo.knn,  "nn.index")
+        #checkout the nearest neigbours!
+        df %>% slice(c(new.cases, indices[1,])) %>% return
+        
+}
+
+#function for retrieving nearest neighbours by category - must first build binary matrix
+#call binary matrix 'knn.binary'
+vars.vec<- c('Discipline','Business','Biz.type','code.contact', 'code.client', 'JD.Second', 'Billing.Type')
+
+binary.build<- function(vars= vars.vec, df= all7d){
+        options("contrasts")
+        #create final df bin.knn
+        bin.knn= NULL
+        #loop through each variable in vars vector
+        for(i in 1:length(vars.vec)){
+                temp = data.frame(df[, vars[i]])
+                colnames(temp)<- c(vars[i])
+                formula = paste('~',vars[i],'-1')
+                a= model.matrix( as.formula(formula), temp)
+                a= a[match(rownames(temp), rownames(a)),]
+                bin.knn= cbind(bin.knn,a)
+        }
+        
+        return(bin.knn)
+}
+
+knn.binary<- binary.build(vars= vars.vec, df= all7d)
+knn.binary<- as.data.frame(knn.binary)
+
+#NA values don't work in knn function so turn all NA into zeroes
+knn.binary[is.na(knn.binary)]<- 0
+knn.binary$pc.pro<- all7d$pc.pro
+knn.binary$mlsto<- all7d$mlsto
+
+bin<- knn.binary %>% select(-mlsto)
+
+#knn function for categorical retrieving:
+
+cat.knn<- function(df= all7d, nn.by= 'inv.mlsto', predict='pc.pro', case= c(1000), k=3, result.df= all7d){
+        invo.knn = knn(df[,nn.by], df[case,nn.by],
+                       df[,predict], k=k)
+        indices= attr(invo.knn,  "nn.index")
+        dists= attr(invo.knn, 'nn.dist') %>% t %>% as.data.frame %>% round(2)
+        #checkout the nearest neigbours!
+        final = cbind(result.df %>% slice(c(indices[1,])), dists)
+        colnames(final)[names(final) %in% 'V1']<-'knn.dist'
+        
+        #final actions
+        assign('index', indices, envir=.GlobalEnv)
+        return(final)
+}
+
+
 
 
 ########SHINY FUNCTION #########
@@ -47,6 +112,16 @@ shinyServer(
                 
                 #generate a plot of requested variable
                 
+                #produce table dataframe
+                b<- reactive({
+                        cat.knn(df= bin, nn.by= colnames(bin)[!grepl('pc.pro', colnames(bin))], 
+                            predict = 'pc.pro', case= input$case, k=10, result.df= all7d)
+                })
+                
+#                 c<- reactive({
+#                         inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=input$ks) %>% slice(-1)
+#                 })
+                
                 
                 output$fee.plot<- renderPlot( {
 
@@ -68,6 +143,15 @@ shinyServer(
                         
                         print(s)
 
+                })
+                
+                output$knn.table<- renderTable({
+                        k = b() %>% select(mlsto, Discipline, Billing.Type, inv.mlsto, cost.mlsto, balance.mlsto, return.pdol, JD.Second,
+                                           code.client, code.contact, Business, Biz.type, client.totinv
+                                           
+                                           )
+                        
+                        print(k)
                 })
                 
         }

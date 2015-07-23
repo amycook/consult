@@ -156,13 +156,42 @@ shinyUI(fluidPage(
                 
                 column(9,
                        #main panel. show plot of each position and percentage within selected variable
-
-                       
-                       plotOutput("fee.plot")
+                       tabsetPanel(type='tabs',
+                                   tabPanel('Plot', plotOutput("fee.plot")),
+                                   tabPanel('Similar Jobs', 
+                                            titlePanel(""),
+                                            
+                                            wellPanel(
+                                            fluidRow(
+                                                    column(6,
+                                                           numericInput('case', 'Demo job- range: 1-2321', 80, min=1, max=2321),
+                                                           numericInput('ks','Number of similar jobs:', 4, min=1, max=8)
+                                                                   
+                                                           ),
+                                                    
+                                                    column(6,
+                                                           selectInput("Column", "Narrow search by:",
+                                                                       list('none'='NA',
+                                                                            "Client" = "code.client", 
+                                                                            "Contact" = "code.contact", 
+                                                                            "Billing Type" = "Billing.Type",
+                                                                            "Discipline" = "Discipline",
+                                                                            'Business' = 'Business'
+                                                                       )),
+                                                           submitButton(text="Update")
+                                                           )
+                                                    
+                                                    )),
+                                            
+                                            fluidRow(
+                                                    tableOutput('knn.table')
+                                                    )
+                                   )
+          
                        )
                 )
                                   
-))
+)))
 
 
 

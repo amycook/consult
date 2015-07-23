@@ -691,6 +691,8 @@ all7d<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, Discipline, pc.pr
                          Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto, balance.mlsto)
 all7d$mlsto<- as.character(all7d$mlsto)
 
+write.csv(all7d,'all7d.csv')
+
 ```
 
 Retrieve nearest neighbour - numeric first
@@ -699,9 +701,9 @@ Retrieve nearest neighbour - numeric first
 #pretend you are predicting .. post code
 
 inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
-        inv.knn = knn(df[,predict], df[new.cases,predict],
+        invo.knn = knn(df[,predict], df[new.cases,predict],
                 df$pc.pro, k=k)
-        indices<- attr(inv.knn,  "nn.index")
+        indices<- attr(invo.knn,  "nn.index")
         #checkout the nearest neigbours!
         df %>% slice(c(new.cases, indices[1,])) %>% return
         
@@ -746,6 +748,8 @@ knn.binary<- as.data.frame(knn.binary)
 #NA values don't work in knn function so turn all NA into zeroes
 knn.binary[is.na(knn.binary)]<- 0
 knn.binary$pc.pro<- all7d$pc.pro
+knn.binary$mlsto<- all7d$mlsto
+
 
 ```
 
@@ -759,19 +763,22 @@ Turn into dataframe and then perform jaccard distance nearest neighbour
 new.case<- binary.build(vars= vars.vec, df= knn.binary %>% slice(2000))
 
 
-cat.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3, result.df= all7d){
-        inv.knn = knn(df[,predict], df[new.cases,predict],
-                df$pc.pro, k=k)
-        indices<- attr(inv.knn,  "nn.index")
-        dists<- attr(inv.knn, 'nn.dist') %>% t %>% as.data.frame %>% round(2)
+cat.knn<- function(df= all7d, nn.by= 'inv.mlsto', predict='pc.pro', case= c(1000), k=3, result.df= all7d){
+        invo.knn = knn(df[,nn.by], df[case,nn.by],
+                df[,predict], k=k)
+        indices= attr(invo.knn,  "nn.index")
+        dists= attr(invo.knn, 'nn.dist') %>% t %>% as.data.frame %>% round(2)
         #checkout the nearest neigbours!
         final = cbind(result.df %>% slice(c(indices[1,])), dists)
         colnames(final)[names(final) %in% 'V1']<-'knn.dist'
-        return(final)
         
+        #final actions
+        assign('index', indices, envir=.GlobalEnv)
+        return(final)
 }
 
-b<- cat.knn(df= knn.binary, predict= colnames(knn.binary), new.cases= 60, k=5, result.df= all7d)
+bin<- knn.binary %>% select(-mlsto)
+b<- cat.knn(df= bin, nn.by= colnames(bin)[-length(colnames(bin))], predict = 'pc.pro', case= 60, k=5, result.df= all7d)
 
 
 ```
@@ -779,11 +786,15 @@ b<- cat.knn(df= knn.binary, predict= colnames(knn.binary), new.cases= 60, k=5, r
 Combine two knn results
 
 ```{r combine_knn, echo=FALSE}
-
-b<- cat.knn(df= knn.binary, predict= colnames(knn.binary), new.cases= 60, k=20, result.df= all7d)
-c<- inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=4) %>% slice(-1)
+bin<- knn.binary %>% select(-mlsto)
+b<- cat.knn(df= bin, nn.by= colnames(bin)[!grepl('pc.pro', colnames(bin))], predict = 'pc.pro', case= 80, k=10, result.df= all7d)
+c<- inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=5) %>% slice(-1)
 c
-
+ #step 2 for user - option to sort by code.client?
+d<- b[b[,'code.contact'] %in% b[,'code.contact'][1], ]
+d
+e<- inv.knn(df= d, predict= 'inv.mlsto', new.cases= 1, k=5) %>% slice(-1)
+e
 
 ```
 
