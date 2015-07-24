@@ -42,15 +42,22 @@ This thesis focuses on the risk a consulting company undertakes when setting a f
 
 In this chapter the research motivations are explained along with the goals of the project and the specific research hypothesis. Finally the contributions of this body of work are outlined along with the structure of the thesis.
 
-## 1.1 Research Motivations
+## 1.1 Research Motivations - 4.5 pages
 
-* thousands of consulting companies globally
-* range from single consultant to 10's of 1000's of employees
-* employees broad range of people from fresh graduates, to founders with decades of experience
-* internal environment: worker feelings of morale and security can be heavily influenced by success and profitability of their projects. Not to mention possibilities for pay rises and promotions which all come together to create a positive thriving culture. 
-* harsher economic climate, particularly important to get competitive edge
-* find a source explaining how companies create their fixed fees - intuition, experience
-* find a source saying how badly it goes!
+description of problem:
+
+Project decision makers have struggled with forecasting project costs accurately for decades, across many industries. A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% (Flyvbjerg, 2006). A study across 1471 IT projects showed that 27% of projects ran over budget, and one in 6 of those projects were over 200% over budget on average (Flyvbjerg and Budzier, 2011). Complex longer term projects produce outcomes ranging from railways, houses, websites, and movies which involve professionals across a variety of industries. Depending on the industry, consulting companies are enlisted to complete portions of a project, and some of the financial risk of the overall project may be transferred to the consultant. This is achieved by requiring a fixed flat fee from the consultant and a committment to perform their role for the nominated price. In a similar way to the aforementioned infrastructure and IT projects, consultants are susceptible to underestimating the amount of their time that will be spent in their role, and must wear the cost of extra employee hours. For privately owned businesses, mitigating this risk would increase the chances of the business surviving as well as growing and thriving.
+
+The ramifications of unprofitable projects in a private business are multifold. Employee morale deteoriates and employees may view themselves as incompetent if they are responsible for the project's delivery. Employees also experience stress attempting to complete the project within a disappearing budget and may perform their work at a lower quality in exchange for speed. This is unfortunate if the reality is that the project fee was under estimated. Unprofitable projects also limit a business' opportunity to invest money into marketing or staff training, which would improve a business' standing. The financial risk taken on fixed flat fee projects (and disappointing results) may also discourage business' from taking different risks with more potential for return, such as expanding the business into a new area. Clearly, failure to predict fixed fee project costs has the potential to negatively affect a business' growth opportunities and staff morale.
+
+In some industries, consulting projects are often very different from one project to the next, covering complex subjectmatter with a range of subconstultants and stakeholders involved. This often means the consultant takes on financial risk by predicting the number of hours they will spend on a project and committing to this value until project completion. Depending on the situation, consultants may be able to negotiate fee variations, however this may not be beneficial in the long term. A fee variation has a negative impact on the consultant's client relationship. 
+
+
+Why its not easily solvable:
+* often can't change fixed fees - client relationships and reputation. people talk.
+
+
+case study:
 * in the case study (and is typical of smaller organisations??), the CRM is an untapped source of information storing
     * employee hours
     * client information/characteristics
@@ -62,6 +69,13 @@ In this chapter the research motivations are explained along with the goals of t
     * look up one job at a time
     * basic summaries of overall hours spent for the month
 
+REference class forecasting
+* find a source explaining how companies create their fixed fees - intuition, experience
+* predicting cost of construction from other perspectives - builders.
+
+Other industries
+* relates to other customer prediction problems - but this is for clients. 
+
 ### 1.1.1 Limitations
 
 * looking at a single case study company in a specific industry
@@ -70,6 +84,7 @@ In this chapter the research motivations are explained along with the goals of t
     * even better to have expected cost of entire project at start of project, as well as actual final cost of project.
 * A fee is based off detailed information that is unique to each project, for example the size of a building in terms of storeys and square meterage. This detailed information is not available in the data, and is too complex and varied for an algorithm to digest. Therefore it is not reasonable for an algorithm to predict the fee of a project at this stage, but much more achievable to predict the profitability of a project (ie return per dollar) based on historical data. This profitability prediction relates to the profitability of the project if the fee is generated using the same method the company has used in its historical data.
 * Although the aim is to predict the profitability of a project, the model aims to change managers' fee setting decisions if the algorithm predicts low profit or a loss based on historical data. 
+* external factors forcing price down in some cases - competiton. clients 
 
 
 ## Thesis aims
