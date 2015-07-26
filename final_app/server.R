@@ -145,18 +145,8 @@ shinyServer(
                                 test= inv.knn(df= test, predict= 'inv.mlsto', new.cases= 1, k= input$ks) %>% slice(-1)
                         }    
                 })
-
-#                 else{
-#                         d<- reactive({b()[b()[,input$column] %in% b()[,input$column][1], ]
-#                         })
-#                         
-#                         e<- reactive({
-#                                 inv.knn(df= d(), predict= 'inv.mlsto', new.cases= 1, k=input$ks) %>% slice(-1)
-#                         })
-#                 }
                         
-                
-                
+                                
                 output$fee.plot<- renderPlot( {
 
                         
