@@ -1,12 +1,19 @@
-setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 # library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
 # library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
 # library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
 # library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
 # library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('shiny')
+# library('shiny',lib='C:/Progra~1/R/R-3.1.3/library')
 # library('shinythemes',lib='C:/Progra~1/R/R-3.2.0/library')
+# library('ggplot2')
+library("dplyr")
+library("plyr")
+library('magrittr')
+library('reshape2')
+library('shiny')
+library('shinythemes')
 
 
 all7<- read.csv('all7.csv')[,-1]
@@ -118,9 +125,36 @@ shinyServer(
                             predict = 'pc.pro', case= input$case, k=10, result.df= all7d)
                 })
                 
-#                 c<- reactive({
-#                         inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=input$ks) %>% slice(-1)
+                c<- reactive({
+                        inv.knn(df= b(), predict= 'inv.mlsto', new.cases= 1, k=input$ks) %>% slice(-1)
+                })
+                
+#                 e<- reactive({
+#                         b()[,input$column, drop=FALSE]
 #                 })
+
+
+                e= reactive({
+                        if(input$column == 'NA'){
+                                test= c()
+                        }
+                        else {
+                                f=b()
+#                                 g= f[,input$column,drop=FALSE] %in% f[,input$column,drop=FALSE][1]
+                                test= f[f[,input$column] %in% f[,input$column][1],,drop=FALSE]
+                                test= inv.knn(df= test, predict= 'inv.mlsto', new.cases= 1, k= input$ks) %>% slice(-1)
+                        }    
+                })
+
+#                 else{
+#                         d<- reactive({b()[b()[,input$column] %in% b()[,input$column][1], ]
+#                         })
+#                         
+#                         e<- reactive({
+#                                 inv.knn(df= d(), predict= 'inv.mlsto', new.cases= 1, k=input$ks) %>% slice(-1)
+#                         })
+#                 }
+                        
                 
                 
                 output$fee.plot<- renderPlot( {
@@ -146,10 +180,11 @@ shinyServer(
                 })
                 
                 output$knn.table<- renderTable({
-                        k = b() %>% select(mlsto, Discipline, Billing.Type, inv.mlsto, cost.mlsto, balance.mlsto, return.pdol, JD.Second,
-                                           code.client, code.contact, Business, Biz.type, client.totinv
-                                           
-                                           )
+                        k = e() 
+#                         %>% select(mlsto, Discipline, Billing.Type, inv.mlsto, cost.mlsto, balance.mlsto, return.pdol, JD.Second,
+#                                            code.client, code.contact, Business, Biz.type, client.totinv
+#                                            
+#                                            )
                         
                         print(k)
                 })

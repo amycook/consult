@@ -170,7 +170,7 @@ shinyUI(fluidPage(
                                                            ),
                                                     
                                                     column(6,
-                                                           selectInput("Column", "Narrow search by:",
+                                                           selectInput("column", "Narrow search by:",
                                                                        list('none'='NA',
                                                                             "Client" = "code.client", 
                                                                             "Contact" = "code.contact", 
