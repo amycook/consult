@@ -682,7 +682,7 @@ Create reduced dataset and have a think about what you want to cluster against e
 
 ```{r final_var, include=FALSE}
 
-all7d<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
+all7d<- all7c %>% select(mlsto, Year, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
                          client.totinv, code.director, 
                          Num.disc, Business,
                          Biz.type, code.contact, pc.majpos,
@@ -794,6 +794,8 @@ d<- b[b[,'code.contact'] %in% b[,'code.contact'][1], ]
 d
 e<- inv.knn(df= d, predict= 'inv.mlsto', new.cases= 1, k=5) %>% slice(-1)
 e
+
+head(all7d)
 
 ```
 

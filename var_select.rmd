@@ -20,6 +20,7 @@ library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('RColorBrewer',lib='C:/Progra~1/R/R-3.2.1/library')
 
 # library('knitr')
 # library('ggplot2')
@@ -335,7 +336,7 @@ all7b[is.na(all7b$Biz.size),]$Biz.size <- 'local'
 all7b[is.na(all7b$Biz.type),]$Biz.type <- 'private'
 all7b[all7b$code.client %in% 'C2503',]$Biz.type <- 'gov'
 #delete charge.ph and charge.pc, Start.Date and End.Date
-all7b<- all7b %>% select(-charge.ph, -charge.pc, -Start.Date, -End.Date)
+all7b<- all7b %>% select(-charge.ph, -charge.pc, -End.Date)
 #impute NA no.users as 2 = median and mode
 all7b[is.na(all7b$no.users),]$no.users <- 2
 #impute NA num.disc as 1 - overwhelmingly the most common
@@ -413,8 +414,8 @@ all7b<- merge(all7b, testa2 %>% select(mlsto, value), by='mlsto', all.x=T, all.y
 all7b$value<- ifelse(is.na(all7b$majority.pos), NA, all7b$value)
 colnames(all7b)[names(all7b) %in% 'value']<-'pc.majpos'
 
-write.csv(all7b,'all7b.csv')
-
+# write.csv(all7b,'all7b.csv')
+all7b<- read.csv('all7b.csv')[,-1]
  
 ```
 
@@ -424,32 +425,32 @@ write.csv(all7b,'all7b.csv')
 
 ```{r, echo=FALSE}
 #read csv file with all the client details - want to merge this with client df
-details<- read.csv('17marchclients.csv',
-                   na.strings = c("", " ", "NA"))
-head(details)
-#delete client.contact, client.count, and contact.count columns
-details<- details[,c(1,5:9)]
-#rename columns
-names(details)[2]<- 'Business'
-names(details)[4]<- 'Biz.size'
-names(details)[5]<- 'Biz.type'
-names(details)[6]<- 'Biz.age'
+# details<- read.csv('17marchclients.csv',
+#                    na.strings = c("", " ", "NA"))
+# head(details)
+# #delete client.contact, client.count, and contact.count columns
+# details<- details[,c(1,5:9)]
+# #rename columns
+# names(details)[2]<- 'Business'
+# names(details)[4]<- 'Biz.size'
+# names(details)[5]<- 'Biz.type'
+# names(details)[6]<- 'Biz.age'
+# 
+# #delete rows with 4 NA values
+# details<-details[rowSums(is.na(details))!=5,]
+# details<-details[rowSums(is.na(details))!=4,]
+# 
+# #add row for client code
+# code.client<- read.csv('code_client2.csv')[,-1]
+# details<- merge(details, code.client, by.x ='client', by.y ='client2', all.x=TRUE, all.y=FALSE)
+# details<- transform(details, client.age = 2014- Biz.age)
+# 
+# #merge client.age column of details to all7b by code.client
+# all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
 
-#delete rows with 4 NA values
-details<-details[rowSums(is.na(details))!=5,]
-details<-details[rowSums(is.na(details))!=4,]
 
-#add row for client code
-code.client<- read.csv('code_client2.csv')[,-1]
-details<- merge(details, code.client, by.x ='client', by.y ='client2', all.x=TRUE, all.y=FALSE)
-details<- transform(details, client.age = 2014- Biz.age)
-
-#merge client.age column of details to all7b by code.client
-all7b<- merge(all7b, details %>% select(code, client.age), by.x = 'code.client', by.y = 'code', all.x=TRUE, all.y=FALSE)
-
-
-# write.csv(all7b, 'all7c.csv')
-# all7c<- read.csv('all7c.csv')[,-1]
+write.csv(all7b, 'all7c.csv')
+all7c<- read.csv('all7c.csv')[,-1]
 
 ```
 
@@ -524,7 +525,7 @@ all7c<- all7c %>% select(-Job.Detail.Primary, -Job.Type.Secondary)
 
 ```
 
-First need to change code.client and code.contact. Need to assign NA to any code.client or code.contact with less than 3 counts
+First need to change code.client and code.contact. Need to assign NA to any code.client or code.contact with less than 2 counts
 
 ```{r NA into code.client, echo=FALSE}
 #Job.Source - 'twitter' should be NA
@@ -547,7 +548,7 @@ all7c[all7c$code.Eng2 %in% c('Unknown'),]$code.Eng2<- NA
 client.check<- ddply(all7c,.(code.client), nrow)
 all7c<- merge(all7c, client.check, by='code.client', all.x=TRUE)
 all7c$code.client<- as.character(all7c$code.client)
-all7c$code.client<- ifelse(all7c$V1>2, all7c$code.client, NA)
+all7c$code.client<- ifelse(all7c$V1>1, all7c$code.client, NA)
 all7c$code.client<- as.factor(all7c$code.client)
 all7c<- all7c %>% select(-V1)
 
@@ -555,7 +556,7 @@ all7c<- all7c %>% select(-V1)
 #code for 'unknown' which should be NA
 all7c[all7c$code.contact %in% 'CN1983',]$code.contact <- NA
 contact.check<- ddply(all7c,.(code.contact), nrow)
-contact.check<- contact.check %>% filter(V1>2)
+contact.check<- contact.check %>% filter(V1>1)
 all7c$code.contact<- as.character(all7c$code.contact)
 all7c$code.contact<- ifelse(all7c$code.contact %in% contact.check$code.contact, all7c$code.contact,
                             NA)

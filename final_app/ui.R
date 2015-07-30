@@ -176,7 +176,8 @@ shinyUI(fluidPage(
                                                                             "Contact" = "code.contact", 
                                                                             "Billing Type" = "Billing.Type",
                                                                             "Discipline" = "Discipline",
-                                                                            'Business' = 'Business'
+                                                                            'Business' = 'Business',
+                                                                            'Job Type'='JD.Second'
                                                                        )),
                                                            submitButton(text="Update")
                                                            )
@@ -184,7 +185,15 @@ shinyUI(fluidPage(
                                                     )),
                                             
                                             fluidRow(
-                                                    tableOutput('knn.table')
+                                                    h4('Job Details'),
+                                                    tableOutput('knn.table'),
+                                                    h4('Finances'),
+                                                    tableOutput('knn.table1'),
+                                                    h4('Client Details'),
+                                                    tableOutput('knn.table2'),
+                                                    h4('Staff Details'),
+                                                    tableOutput('knn.table3')
+                                                    
                                                     )
                                    )
           

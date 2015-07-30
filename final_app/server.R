@@ -1,23 +1,24 @@
-# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-# library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-# library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('shiny',lib='C:/Progra~1/R/R-3.1.3/library')
-# library('shinythemes',lib='C:/Progra~1/R/R-3.2.0/library')
+setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
+library('shiny',lib='C:/Progra~1/R/R-3.1.3/library')
+library('shinythemes',lib='C:/Progra~1/R/R-3.2.0/library')
+library('FNN',lib='C:/Progra~1/R/R-3.2.1/library')
 # library('ggplot2')
-library("dplyr")
-library("plyr")
-library('magrittr')
-library('reshape2')
-library('shiny')
-library('shinythemes')
+# library("dplyr")
+# library("plyr")
+# library('magrittr')
+# library('reshape2')
+# library('shiny')
+# library('shinythemes')
 
 
-all7<- read.csv('all7.csv')[,-1]
-all7$Start.Date<- as.Date(all7$Start.Date)
+all7<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7.csv')[,-1]
+ all7$Start.Date<- as.Date(all7$Start.Date)
 #delete anything more than 4 for inv.vs.cost
 #delete anything less than .2 for inv.vs.cost
 all7<- all7 %>% filter(!(inv.vs.cost<0.2), !(inv.vs.cost>4))
@@ -34,7 +35,7 @@ df2 <- within(df2,
 
 #### CREATE TABLE DATA FRAME FOR NEAREST NEIGHBOURS ####
 
-all7d<- read.csv('all7d.csv')
+all7d<- read.csv('all7d.csv')[,-1]
 all7d$mlsto<- as.character(all7d$mlsto)
 
 # test.case<- all7d %>% select(Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type)
@@ -168,15 +169,37 @@ shinyServer(
                         print(s)
 
                 })
-                
+                #Job Details
                 output$knn.table<- renderTable({
-                        k = e() 
-#                         %>% select(mlsto, Discipline, Billing.Type, inv.mlsto, cost.mlsto, balance.mlsto, return.pdol, JD.Second,
-#                                            code.client, code.contact, Business, Biz.type, client.totinv
-#                                            
-#                                            )
+                        k = e() %>% select(mlsto, Discipline, JD.Second, Num.disc, timespan, knn.dist
+                                           
+                                           )
                         
                         print(k)
+                })
+                #Finances
+                output$knn.table1<- renderTable({
+                        k1 = e() %>% select(mlsto, Billing.Type, inv.mlsto, return.pdol, cost.mlsto, balance.mlsto
+                                           
+                                           )
+                        
+                        print(k1)
+                })
+                #Client details
+                output$knn.table2<- renderTable({
+                        k2 = e() %>% select(mlsto, code.client, code.contact, Business, Biz.type, client.totinv
+                                           
+                                           )
+                        
+                        print(k2)
+                })
+                #staff details
+                output$knn.table3<- renderTable({
+                        k3 = e() %>% select(mlsto, code.director, pc.pro, majority.pos, pc.majpos, code.ProjEng 
+                                           
+                                           )
+                        
+                        print(k3)
                 })
                 
         }
