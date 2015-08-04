@@ -70,5 +70,5 @@ all5<- merge(all5, temp[,names(temp) %in% c('mlsto','Job.Number','profit.mlsto',
 all5 <- transform(all5, return.pdol= balance.mlsto/(cost.mlsto+dis.sc.mlsto))
 all5 <- transform(all5, inv.vs.cost= inv.mlsto/(cost.mlsto+dis.sc.mlsto))
 
-all5<- write.csv(all5, 'all5a.csv')
+ all5<- write.csv(all5, 'all5a.csv')
 # go to de_identify.R
