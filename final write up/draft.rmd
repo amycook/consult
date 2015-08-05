@@ -3,6 +3,7 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output: word_document
+bibliography: Library.bib
 ---
 
 
@@ -57,30 +58,31 @@ Why its not easily solvable:
 
 The challenge for consultants to reduce the risk of a project going over budget, in terms of hours spent, is not easily solved. The reason is that complex projects are always different from each other, and similar work may take significantly different amounts of time. For example, an ad filmed in a remote location for chocolate will cost significantly more than an ad filmed on an exisitng set, even though the product structure is almost identical. Therefore, a fixed product price, which you could apply to products such as appliances, is inappropriate for film projects. One option is charging for consultants' time and the hiring of materials by the hour; a zero risk fee structure. However in many industries this is not competitive enough. Other consultancies may be willing to offer a fixed flat fee for the same work, reducing financial risk for the client, and luring the client away. Another fee strategy may be to track worker hours, and stop work once the consulting fee has been depleted. Then, negotiate further fees, or variations, with the client and persuade them to accept. This also satisfactorily reduces consultant financial risk, and in some cases, depending on the nature of the work or uncontrollable changes, this method can be effective. However, if the project has been following a predictable process but the hours are nevertheless inflating beyond expectation (a common situation), consultants may prefer to wear losses or low profits to preserve the relationship with their client. Consultant's may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry over creating financial friction. Clearly, there is no straightforward solution to reducing the financial risk taken on by consultant's who offer fixed fees in complex projects. In some indusries, fixed flat fee structures are expected and business' must conform to survive.
 
-Solutions:
 
-Little research has been done into surveying the pricing methods of consulting projects, however 
+current practise:
 
+Limited research is available on the cost estimation techniques performed by industry for complex projects, however two surveys were performed in 2000: one on construction projects, the other on IT projects. The construction cost estimation study by @Akintoye2000 surveyed 84 UK construction contractors, ranging from small to medium to large, about their estimating practises. They found that the main method for cost estimation was breaking the project into detailed parts and adding up the cost of each item. The next two most popular methods were comparison with similar projects based on documented facts, and comparison with similar projects based on personal experience. These can all be classified as experience based models [@Akintoye2000]. A survey by Moores and Edwards in 1992 of 54 software developing companies found that detailed project planning tools were used by most companies as opposed to cost estimation tools, suggesting that projects were priced based on an analysis of a detailed breakdown of tasks within a project. In the same survey, 91% of software companies cited cost estimation as a problem. Although limited recent literature is available on industry cost estimation practises, historically it can be observed that for complex construction and software projects, cost predictions are chiefly made with a mixture of experience, project comparisons, and an analysis of the project details and tasks. It is also acknowledged that cost estimation is a problem and hypothesised that inexperience and lack of time are chief contributors [@Akintoye2000].
 
-- current practise: literature available on IT and construction projects
-        - detailed analysis of project
-        - comparison to previous projects by experts - case based reasoning
-        - intuition
-        - some predictive statistics based on past data 
-        - reviewing - trying to find places where things keep going wrong
+theory about problem with current practise:
+
+@Lovallo2003 tackled the psychology behind the high failure rates of executives in predicting costs of projects such as manufacturing plant construction, mergers and acquisitions, large infrastructure and software development. Their theory stems from Kahneman's work on decision making that won him the nobel prize for economics in 2002. The research argues that humans' natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project. A manager sees challenges in a project as something that can be overcome by the team's high skill level, and downplay or ignore the risk of problems that are out of the team's control. It is for this reason that it does not matter if the project is broken down to the highest level of detail for cost prediction, all complex projects are at risk of encountering a multitude of problems that the manager could never foresee. Each problem has a low chance of occurring, but in combination the risk is much greater [@Lovallo2003]. @Lovallo2003 call the practise of analysing a project based on project details and its unique complexities the 'inside view'. Research has shown that if people are forced to make predictions about their skills after being exposed to an 'outside view', their predictions are significantly more accurate. This outside view can be applied to complex projects, and involves ignoring the details of the current project and instead analysing the outcomes of several projects of a similar description. This is called reference class forecasting [@Lovallo2003]. One method @Lovallo2003 recommend is to obtain correlation statistics from past similar projects - the correlation between the forecast cost and the actual cost. The correlation for the current project can then be estimated via a statistical model which is used to adjust the forecasted cost made by detailed analysis (inside view) [@Flyvbjerg2011]. The traditional way to think about a project is to focus on the project details. Even though gathering data from similar projects could significantly improve a cost prediction, it is rarely thought of by managers [@Flyvbjerg2011].
+
+The implementation of reference class forecasting began in project management for the first time in 2004, was endorsed by the American Planning Association in 2005, and is now used in some governments and private companies in Europe, South Africa, Australia. An example of the type of output from a reference class statistical model is a plot showing the relationship between the acceptable chance of cost overrun and the required uplift to the original forecasted cost [@Flyvbjerg2011]. 
+
+![This method was implemented by the British government for a rail project which is still under completion](C:/Users/n9232371/Documents/github/consult/final write up/UKrail.JPG)
+
+The visualisation presents a powerful communication tool for influencing decision makers and improving forecast cost accuracy, however access to credible data to a sufficient number of projects can be a challenge [@Flyvbjerg2011]. Overall, the theory of optimism bias is a credible explanation for the problem of persistant underestimation of project costs. The accompanying solution of reference class forecasting presents a promising solution given enough accurate data.
+
         
 - research: dozens of papers using statistical and machine learning to predict project costs
         - construc
         - IT
         - film costs?
 
-- has any of this research been mobilised into practise, if not, why?
         - reference class forecasting - pioneered in british government large gov infrastructure
         
 Previous research has been done on the prediction of final costs of a complex project with varying success. In the prediction of IT software development, formal estimation methods have existed for many years, however expert judgment is still the dominant method and available evidence does not suggest the models improve on expert judgment (Jorgensen and Shepperd, 2007). Construction industry research has used models ranging from neural networks to case based reasoning to regression to predict final building costs. However, often expert judgment was not mobilised, and the models were not comprehensive enough to be used in industry. Manager's experience and intuition is still the dominant method for construction cost calculation.
 
-
-- method for fee pricing has remained the same for decades - detailed analysis of project, add up time based on tasks, allow buffer time for error.
 
 
 Potential solution:
