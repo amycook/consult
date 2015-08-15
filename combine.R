@@ -47,6 +47,7 @@ temp1<- temp[1:2425,]
 #string split to create another column with the first part of a job number. For the first half of jobs just the first bit indicates it could be invoiced together ie 2002.001 by itself
 temp1$mlsto<-sapply(temp1$Job.Number,FUN=function(x){
         substr(x,1,8)})
+temp1$mlsto<- ifelse(temp1$mlsto %in% c('2004.056','2010.236'), temp1$Job.Number, temp1$mlsto)
 #Then ddply using this shortened job number to group. Add up all balance, profit hours in shortened job number. MErge back with original data set.
 temp1<- merge(temp1, ddply(temp1, .(mlsto), summarise, profit.mlsto= sum(profit), balance.mlsto = sum(balance), hrs.mlsto = sum(hours), cost.mlsto=sum(cost),
                            dis.sc.mlsto = sum(Dis.subcon),  inv.mlsto=sum(Tot.Invoiced)),
@@ -56,7 +57,7 @@ temp1<- merge(temp1, ddply(temp1, .(mlsto), summarise, profit.mlsto= sum(profit)
 temp2<- temp[2426:4168,]
 temp2$mlsto<-sapply(temp2$Job.Number,FUN=function(x){
         substr(x,1,10)})
-temp2$mlsto<- ifelse(temp2$mlsto == '2011.072.3', temp2$Job.Number, temp2$mlsto)
+temp2$mlsto<- ifelse(temp2$mlsto %in% c('2011.072.3','2011.063.3','2012.453.3'), temp2$Job.Number, temp2$mlsto)
 temp2<- merge(temp2, ddply(temp2, .(mlsto), summarise, profit.mlsto= sum(profit), balance.mlsto = sum(balance), hrs.mlsto = sum(hours), cost.mlsto=sum(cost),
                            dis.sc.mlsto= sum(Dis.subcon), inv.mlsto=sum(Tot.Invoiced)),
               by.x= 'mlsto', by.y= 'mlsto', all.x=TRUE, all.y=FALSE)

@@ -414,7 +414,7 @@ all7b<- merge(all7b, testa2 %>% select(mlsto, value), by='mlsto', all.x=T, all.y
 all7b$value<- ifelse(is.na(all7b$majority.pos), NA, all7b$value)
 colnames(all7b)[names(all7b) %in% 'value']<-'pc.majpos'
 
-# write.csv(all7b,'all7b.csv')
+write.csv(all7b,'all7b.csv')
 all7b<- read.csv('all7b.csv')[,-1]
  
 ```

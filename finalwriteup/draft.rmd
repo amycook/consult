@@ -69,21 +69,24 @@ theory about problem with current practise:
 
 The implementation of reference class forecasting began in project management for the first time in 2004, was endorsed by the American Planning Association in 2005, and is now used in some governments and private companies in Europe, South Africa, Australia. An example of the type of output from a reference class statistical model is a plot showing the relationship between the acceptable chance of cost overrun and the required uplift to the original forecasted cost [@Flyvbjerg2011]. 
 
-![This method was implemented by the British government for a rail project which is still under completion](C:/Users/n9232371/Documents/github/consult/final write up/UKrail.JPG)
+![This method was implemented by the British government for a rail project which is still under completion](UKrail.JPG)
 
 The visualisation presents a powerful communication tool for influencing decision makers and improving forecast cost accuracy, however access to credible data to a sufficient number of projects can be a challenge [@Flyvbjerg2011]. Overall, the theory of optimism bias is a credible explanation for the problem of persistant underestimation of project costs. The accompanying solution of reference class forecasting presents a promising solution given enough accurate data.
 
-        
-- research: dozens of papers using statistical and machine learning to predict project costs
-        - construc
-        - IT
-        - film costs?
+previous research:
 
-        - reference class forecasting - pioneered in british government large gov infrastructure
-        
+Given this theory of reference class forecasting was first clearly published in 2003, the idea of predicting project costs from previous data has been the subect of research for many years before that and continues to this day. Although research results have often been promising, industry uptake of the idea is not yet established. 
+
+First an overview of the methods used will be presented followed by published theories for the lack of industry uptake.
+
+***need to really do more research on this!!***
+
+A substantial amount of research on project costprediction has been dedicated to the fields of software development and construction projects in particular. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects from around the world, and each project a different client and project team. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks. Most studies report neural networks are more accurate than regression
+
+
 Previous research has been done on the prediction of final costs of a complex project with varying success. In the prediction of IT software development, formal estimation methods have existed for many years, however expert judgment is still the dominant method and available evidence does not suggest the models improve on expert judgment (Jorgensen and Shepperd, 2007). Construction industry research has used models ranging from neural networks to case based reasoning to regression to predict final building costs. However, often expert judgment was not mobilised, and the models were not comprehensive enough to be used in industry. Manager's experience and intuition is still the dominant method for construction cost calculation.
 
-
+*** ^^^more research^^^ ***
 
 Potential solution:
 * stat analysis like reference class forecasting and building construction except analysis performed internally using the company's historical data on past projects.
@@ -182,10 +185,13 @@ This chapter provides an overview of the literature available about current busi
 
 ### 2.2.1 Most simple and frequent models
 
-* K means
 * anova
-* in construction journals, commonly applied linear regression
-* do these acknowledge their data is not normally distributed?
+
+* linear regression
+    * pros
+    
+    * cons
+        * do these acknowledge their data is not normally distributed?
 
 ### 2.2.2 Complex models
 

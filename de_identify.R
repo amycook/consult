@@ -281,7 +281,7 @@ all6a$Role.JD<- grepster(nstruc.list, nstruc.title, c('Civil','Environmental Pla
 
 #worked!
 #now compare when JD.Second differs from Role.JD
-all6a %>% filter(!is.na(Role.JD), !is.na(JD.Second),!(Role.JD==JD.Second)) %>% select(Role, Role.JD, JD.Second, Discipline,mlsto) %>% View()
+# all6a %>% filter(!is.na(Role.JD), !is.na(JD.Second),!(Role.JD==JD.Second)) %>% select(Role, Role.JD, JD.Second, Discipline,mlsto) %>% View()
 
 #2014.371.3 - keep JD.Second
 #2014.117.3 - keep JD.Second
