@@ -156,7 +156,8 @@ shinyServer(
                                               fill='blue', linetype='blank', width=0.25)+
                                 geom_errorbar(aes(ymax=150, ymin=150, x=id, y=min), width=0.25, colour='navyblue', size=1.5) +
                                 geom_errorbar(aes(ymax=100, ymin=100, x=id, y=min), width=0.25, colour='red') +
-                                scale_y_continuous(breaks = seq(80, 170, by = 10), limits=c(80,170)) +
+                                scale_y_continuous(breaks = seq(80, 170, by = 10)) +
+                                ylim(80,170) +
                                 labs(y="Final Spend divided by Quote (%)", x="New Project", title= "Prediction of Final Spend vs Initial Quote") +
                                 theme(axis.text.y = element_blank(),
                                       plot.title = element_text(size=18, face='plain'),

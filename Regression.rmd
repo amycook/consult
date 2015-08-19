@@ -1,0 +1,124 @@
+---
+title: "Regression"
+author: "Amy Cook"
+date: "August 15, 2015"
+output: word_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+# library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+# library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+
+
+library(devtools)
+library('ggbiplot')
+library('fpc')
+library('vegan')
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+
+
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
+# all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
+all7c$Post.Code<- as.factor(all7c$Post.Code)
+
+```
+
+
+This file is to do a multi-step regression to predict RETURN PER DOLLAR.
+The reason for multistepping is to allow for multiple variables with lots of missing NA values.
+
+Variables to include:
+
+Full:
+
+inv.mlsto
+timespan
+no.users
+Discipline
+pc.pro
+client.totinv
+code.director
+Num.disc
+Business
+Biz.type
+
+Many NA:
+
+code.contact
+code.client
+Project.Value
+JD.Second
+Post.Code
+code.ProjEng
+Billing.Type
+majority.pos
+pc.majpos
+
+The 'Many NA' variables will be split into groups:
+
+* code.contact: 1652 NA
+* code.client: 422 NA
+* Project.Value: 2333 NA
+* JD.Second: 1057 NA
+* Post.Code: 356 NA
+* code.ProjEng: 47 NA
+* Billing.Type: 1314 NA
+* majority.pos: 377 NA
+* pc.majpos: 377 NA
+
+
+
+
+```{r echo=FALSE}
+some <- all7c %>% select(return.pdol, mlsto, inv.mlsto, timespan,no.users,Discipline,pc.pro,
+                         client.totinv,code.director,Num.disc,Business,Biz.type,
+                         code.contact,code.client,Project.Value,JD.Second,Post.Code,code.ProjEng,Billing.Type,majority.pos,
+                         pc.majpos)
+
+#heatmap of any similar NA value ranges
+
+experiment<- sapply(some, function(x) is.na(x))
+NA.plot<- melt(experiment)
+NA.plot$mlsto<- rep(all7c$mlsto, ncol(experiment))
+#reorder levels for ggplot by total number of NA TRUE
+# table(NA.plot$Var2, NA.plot$value)[,'TRUE']
+NA.plot <- within(NA.plot, 
+                         Var2 <- factor(Var2, 
+                                               levels=names(sort(table(NA.plot$Var2, NA.plot$value)[,'TRUE'], 
+                                                                 decreasing=FALSE))))
+
+ggplot(NA.plot, aes(x=Var2, y=mlsto)) +
+        geom_tile(aes(fill = value)) + 
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+
+```
+
+
