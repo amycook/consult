@@ -301,6 +301,8 @@ no.users - 4 NA values - impute
 pc.usersss - 7 NA's - what to do. 0 for all? averages for all?
 Num.disc - 84 NA's - impute 1?
 num.inv and mean.inv- 1 NA?
+code.ProjEng - impute: all from pre 2005. All projEng can = director for that job
+code.director - impute only 'unknown' to be S121 - by far the majority and fits job description
 
 
 
@@ -350,6 +352,13 @@ pc<- c('pc.contracttech','pc.director', 'pc.midtech', 'pc.midpro', 'pc.gradpro',
 for (i in 1:length(pc)){
         all7b[is.na(all7b[,pc[i]]),][,pc[i]] <-0
 }
+
+#impute code.director Unknown to be S168
+all7b[all7b$code.director == 'Unknown',]$code.director<-'S168'
+all7b$code.director<- droplevels(all7b$code.director)
+#impute code.ProjEng to be Director codes for that job
+all7b[is.na(all7b$code.ProjEng),]$code.ProjEng<- all7b[is.na(all7b$code.ProjEng),]$code.director
+all7b$code.ProjEng<- droplevels(all7b$code.ProjEng)
 
 #redo client.count and contact.count according to this reduced dataset!!
 client.count<- ddply(all7b, .(code.client), nrow)

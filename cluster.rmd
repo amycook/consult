@@ -5,14 +5,14 @@ output: word_document
 
 ```{r, echo=FALSE, include=FALSE}
 
-# library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
 # library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
 # library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
-# library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
@@ -49,8 +49,8 @@ library('caret')
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 # opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
-# all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
-all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
+all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+# all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
 all7c$Post.Code<- as.factor(all7c$Post.Code)
 
 ```
@@ -678,7 +678,7 @@ code.ProjEng
 Billing.Type
 majority.pos
 
-Create reduced dataset and have a think about what you want to cluster against each other
+Create reduced dataset and have a think about what you want to cluster against each otherim
 
 ```{r final_var, include=FALSE}
 
