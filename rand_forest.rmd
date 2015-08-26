@@ -7,22 +7,25 @@ output: word_document
 
 ```{r, echo=FALSE, include=FALSE}
 
-library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('caret',lib='C:/Progra~1/R/R-3.2.1/library')
-# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
-library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
-# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
-# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.2/library')
+library('caret',lib='C:/Progra~1/R/R-3.2.2/library')
+library('randomForest',lib='C:/Progra~1/R/R-3.2.2/library')
+library('rpart',lib='C:/Progra~1/R/R-3.2.2/library')
+library('rpart.plot',lib='C:/Progra~1/R/R-3.2.2/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.2/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.2/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.2/library')
 
 
 library(devtools)
@@ -42,7 +45,7 @@ library('caret')
 
 # 
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 # opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
 all7d<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')[,-1]
@@ -127,7 +130,7 @@ test <- all7d[-train_ind, ]
 tree.all7d<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
                      client.totinv + code.director + 
                   Num.disc + Business + Biz.type + code.ProjEng, data=train, control = rpart.control(cp= 0.001))
-summary(tree.all7d)
+# summary(tree.all7d)
 
 #have a look at cp values, automatic cross validation in rpart
 printcp(tree.all7d)
@@ -135,7 +138,8 @@ plotcp(tree.all7d)
 #min cp = 0.013 will give simplest tree within 1 std of x-val rel error
 tree.all7d<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
                      client.totinv + code.director + 
-                  Num.disc + Business + Biz.type + code.ProjEng, data=train, control = rpart.control(cp= 0.011))
+                  Num.disc + Business + Biz.type + code.ProjEng, data=train,
+                  control = rpart.control(cp= 0.013))
 
 
 split.fun <- function(x, labs, digits, varlen, faclen){
@@ -153,7 +157,7 @@ prp(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type
 tree.pred<-predict(tree.all7d, test)
 #calculate RMSE for test data
 RMSE(test$return.pdol, tree.pred)
-# 51.4 cents, already close to regression..
+# 49.8 cents, already close to regression..
 
 
 #try to make a rainbow tree
@@ -175,7 +179,7 @@ heat.tree(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branc
 ```
 
 
-RMSE is 0.514 which is worse than regression in predicting return per dollar.
+RMSE is 0.498 which is worse than regression in predicting return per dollar.
 
 Decision trees not affected by too many variables - leave all in
 
@@ -195,8 +199,9 @@ train.rpart <- train( return.pdol ~ inv.mlsto + timespan + no.users + Discipline
                   Num.disc + Business + Biz.type + code.ProjEng, data=all7d, method="rpart",trControl=tc,
                   tuneGrid=rpart.grid)
 
-#RMSE = 0.50386
-# Rsquared = 0.0844, quite bad
+#RMSE = 0.505
+# Rsquared = 0.095, quite bad
+
 
 ```
 
@@ -213,6 +218,11 @@ addone<- function(var= 'JD.Second', df= all7d){
                   Num.disc + Business + Biz.type + code.ProjEng", var, sep=" + ")
         add.one = rpart(as.formula(formula), data = reduced)
         
+        #select cp
+        cp.new = add.one$cptable[which.min(add.one$cptable[,"xerror"]),"CP"]-0.0002
+        add.one = rpart(as.formula(formula), data = reduced,
+                        control = rpart.control(cp= cp.new))
+        
         #plot decision tree
         print(
           heat.tree(add.one, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
@@ -221,7 +231,7 @@ addone<- function(var= 'JD.Second', df= all7d){
         #perform 10 fold xval using caret package
         tc = trainControl("cv",10)
         #keep cp static at 0.011
-        rpart.grid = expand.grid(.cp=0.011)
+        rpart.grid = expand.grid(.cp=cp.new)
         train.rpart = train(as.formula(formula), data=df, method="rpart",trControl=tc,
                   tuneGrid=rpart.grid)
         
@@ -235,36 +245,29 @@ addone<- function(var= 'JD.Second', df= all7d){
 #without additional variables, RMSE sits at 0.4759
 
 addone(var='JD.Second', df=all7d)
-#RMSE = .4709
+#RMSE = .528
 addone(var='Post.Code', df=all7d)
-#RMSE = .4353
+#RMSE = .499
 addone(var='majority.pos', df=all7d)
-#RMSE = .4541
-addone(var='pc.majpos.log', df=all7d)
-#RMSE = .4553
+#RMSE = .49
+addone(var='pc.majpos', df=all7d)
+#RMSE = .486
 addone(var='code.client', df=all7d)
-#RMSE = .4394
+#RMSE = .534
 addone(var='Billing.Type', df=all7d)
-#RMSE = .4579
+#RMSE = .502
 addone(var='code.contact', df=all7d)
-#RMSE = .3972
+#RMSE = .535
 
-#dont use post code ever. 
-#JD.Second doesn't help that much. acutally makes RMSE worse.
+# none of the extra variables actually appear in the revised trees except JD.Second
+# can only assume the different subsets are what is causing the variation in RMSE
 
 ```
 
-Delete Post.Code option
 
-Billing.Type should be paired with inv.mlsto and maybe Discipline
-
-maybe client should be paired with inv.mlsto
-maybe JD.Second should be paired with inv.mlsto and code.client and timespan and pc.pro and no.users?? which ever one does something.
-
-majority.pos pair with inv.mlsto
-pc.majpos pair with inv.mlsto
-
-Write a function that lists the extra variable you're trying and write out the interaction.
+Write a function that can plot a tree
+Limit Year
+choose additional variables to include.
 
 
 ```{r, echo=FALSE}
@@ -322,25 +325,6 @@ It is worthwhile to include:
 * JD.Second by no.users. Brought down RMSE from 0.4709 to 0.4612...
 
 
-Now look at cross validation for full variable set:
-
-```{r, echo=FALSE}
-
-#using caret package
-tc <- trainControl("cv",10,savePred=F)
-fit<- train(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users + pc.pro + Business + 
-                      inv.mlsto.log*pc.pro + inv.mlsto.log*Business,
-              data=all7d,
-            method = 'lm', trControl = tc)
-
-#RMSE = 0.49246
-#compared to non-cross validated
-# RMSE = 0.4759
-```
-
-Not really trying to tune anything via cross validation, however RMSE increased from 0.4759 to 0.49246.
-
-Not THAT bad.
 
 Now, how to get variable importance from lm..
 

@@ -694,6 +694,49 @@ write.csv(all7d,'all7d.csv')
 
 ```
 
+Adjust inv.mlsto, cost.mlsto, balance.mlsto, for inflation!!!! 
+
+```{r, echo=FALSE}
+
+library('quantmod', lib= 'C:/Progra~1/R/R-3.2.2/library')
+getSymbols("CPIAUCSL", src='FRED') #Consumer Price Index for All Urban Consumers: All Items
+#[1] "CPIAUCSL"
+tail(CPIAUCSL)
+
+# make an df object of costs
+p<- data.frame('Year' = all7d$Year, 'inv.mlsto'= all7d$inv.mlsto, 'balance.mlsto' = all7d$balance.mlsto,
+               'cost.mlsto' = all7d$cost.mlsto, 'mlsto' = all7d$mlsto)
+
+#calculate annual averave inflation since 2004
+avg.cpi <- apply.yearly(CPIAUCSL, mean)
+#ratio using 2014 as base year
+cf <- avg.cpi/as.numeric(avg.cpi['2014'])
+#create new cf column for date and extract year
+cf<- as.data.frame(cf)
+cf$Date<- rownames(cf)
+cf$Date<- cf$Date %>% as.Date()
+cf$Date<- format(cf$Date,"%Y")
+p<- merge(p, cf, by.x='Year', by.y= 'Date')
+#divide all dollar values by CPIAUCSL column
+p<- transform(p, adj.inv.mlsto = inv.mlsto/CPIAUCSL,
+          adj.balance.mlsto = balance.mlsto/CPIAUCSL,
+          adj.cost.mlsto = cost.mlsto/CPIAUCSL)
+#check
+s<- sample(1:nrow(all7d),10)
+p[s,]
+#replace existing all7d columns
+all7d<- merge(all7d, p %>% select(mlsto, adj.inv.mlsto, adj.balance.mlsto, adj.cost.mlsto) , by='mlsto')
+all7d<- all7d %>% select(-inv.mlsto, - balance.mlsto, -cost.mlsto)
+colnames(all7d)[names(all7d) %in% "adj.inv.mlsto"] <- "inv.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.balance.mlsto"] <- "balance.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.cost.mlsto"] <- "cost.mlsto"
+
+write.csv(all7d, 'all7d.csv')
+
+```
+
+
+
 Retrieve nearest neighbour - numeric first
 
 ```{r knn, echo=FALSE}
