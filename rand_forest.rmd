@@ -173,7 +173,7 @@ heat.tree <- function(tree, low.is.green=FALSE, ...) { # dots args passed to prp
   prp(tree, branch.col=cols, box.col=cols, ...)
   }
 
-heat.tree(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
+heat.tree(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
 
 
 ```
@@ -211,11 +211,11 @@ Let's try adding more variables:
 ```{r, echo=FALSE}
 #try adding code.client
 
-addone<- function(var= 'JD.Second', df= all7d){
-        reduced = df[!(is.na(df[,var])),]
+addone<- function(var= 'JD.Second', min.Year = 2008, df= all7d){
+        reduced = df[!(is.na(df[,var])) & df$Year > min.Year,]
         formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
                      client.totinv + code.director + 
-                  Num.disc + Business + Biz.type + code.ProjEng", var, sep=" + ")
+                  Num.disc + Business + Biz.type", var, sep=" + ")
         add.one = rpart(as.formula(formula), data = reduced)
         
         #select cp
@@ -239,24 +239,23 @@ addone<- function(var= 'JD.Second', df= all7d){
         print(
         train.rpart$results
         )
-        
 }
 
 #without additional variables, RMSE sits at 0.4759
 
-addone(var='JD.Second', df=all7d)
+addone(var='JD.Second', min.Year = 2008, df=all7d)
 #RMSE = .528
-addone(var='Post.Code', df=all7d)
+addone(var='Post.Code', min.Year = 2008, df=all7d)
 #RMSE = .499
-addone(var='majority.pos', df=all7d)
+addone(var='majority.pos', min.Year = 2008, df=all7d)
 #RMSE = .49
-addone(var='pc.majpos', df=all7d)
+addone(var='pc.majpos', min.Year = 2008, df=all7d)
 #RMSE = .486
-addone(var='code.client', df=all7d)
+addone(var='code.client', min.Year = 2008, df=all7d)
 #RMSE = .534
-addone(var='Billing.Type', df=all7d)
+addone(var='Billing.Type', min.Year = 2008, df=all7d)
 #RMSE = .502
-addone(var='code.contact', df=all7d)
+addone(var='code.contact', min.Year = 2008, df=all7d)
 #RMSE = .535
 
 # none of the extra variables actually appear in the revised trees except JD.Second
@@ -272,73 +271,156 @@ choose additional variables to include.
 
 ```{r, echo=FALSE}
 
-addmult<- function(var= c('JD.Second', 'code.client'), combos= c('JD.Second*inv.mlsto.log'), df= all7d){
-        reduced = df[complete.cases(df[,var]),]
-        formula = paste("return.pdol ~ inv.mlsto.log + timespan.cbrt + no.users + Discipline + pc.pro + inv.mlsto.log*pc.pro + inv.mlsto.log*Business")
+addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7d){
+        reduced = df[complete.cases(df[,var]) & df$Year>min.Year,]
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type")
         
         for(i in 1:length(var)){
                 formula = paste(formula, var[i], sep= " + ")
         }
-        
-        for(i in 1:length(combos)){
-                formula = paste(formula, combos[i], sep= " + ")
-        }
 
-        add.one = lm(as.formula(formula), data = reduced)
+        add.mult = rpart(as.formula(formula), data = reduced)
         
-        print(summary(add.one))
+        #select cp
+        cp.new = add.mult$cptable[which.min(add.mult$cptable[,"xerror"]),"CP"]-0.0002
+        add.mult = rpart(as.formula(formula), data = reduced,
+                        control = rpart.control(cp= cp.new))
         
-        ans= data.frame(answer= reduced$return.pdol, addone.lm = predict(add.one, reduced, interval= 'predict'))
+        #plot decision tree
+        print(
+          heat.tree(add.mult, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
+          )
         
-        print(head(ans))
+        #perform 10 fold xval using caret package
+        tc = trainControl("cv",10)
+        #keep cp static at 0.011
+        rpart.grid = expand.grid(.cp=cp.new)
+        train.rpart = train(as.formula(formula), data=df, method="rpart",trControl=tc,
+                  tuneGrid=rpart.grid)
+        
         
         print(
-        paste("RMSE=", RMSE(ans$answer, ans$addone.lm.fit) %>% round(4), sep= " ")
+        train.rpart$results
         )
         
 }
 
 #try Billing.Type with inv.mlsto.log
-addmult(var= c('Billing.Type'), combos= c('Billing.Type*inv.mlsto.log'), df= all7d)
-# no
+## YES! print this one!! 
+addmult(var= c('pc.majpos', 'majority.pos'), min.Year = 2008, df= all7d)
+#RMSE at 48.6 cents
 
-#try code.client*inv.mlsto.log
-addmult(var= c('code.client'), combos= c('code.client*inv.mlsto.log'), df= all7d)
-#made a difference, brought RMSE down to .4076 :)!
-
-#try JD.Second with inv.mlsto.log (no), code.client (too intense), timespan (no), pc.pro (no), no.users (yes)?
-addmult(var= c('JD.Second'), combos= c('JD.Second*no.users'), df= all7d)
-#add JD.Second*no.users
-
-addmult(var= c('majority.pos'), combos= c('majority.pos*inv.mlsto.log'), df= all7d)
-#no
-
-addmult(var= c('pc.majpos.log'), combos= c('pc.majpos.log*inv.mlsto.log'), df= all7d)
-#no
 
 
 ```
 
-It is worthwhile to include:
+Adding aditional variables is making everything worse.
+Try randomForest
 
-* code.client by inv.mlsto.log because brought down RMSE from 0.4394 (code.client) to 0.4076 (code.client + code.client by inv.mlsto.log)
-* JD.Second by no.users. Brought down RMSE from 0.4709 to 0.4612...
+```{r, echo=FALSE}
+#perform 10 fold xval using caret package
+tc = trainControl("cv",5)
+rf.grid = expand.grid(mtry= 1:10)
+min.form= "return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type"
+train.rf = train(as.formula(min.form), data=all7d, method="rf",trControl=tc,
+                    tuneGrid=rf.grid)
+#result - use mtry= 5
+
+#make first single randomForest
+first.rf<- randomForest(as.formula(min.form),
+                  data=all7d,mtry=1,ntree=500,importance=TRUE)
+
+#already have made train and test set
+#try to predict medv
+rf.all<-randomForest(as.formula(min.form),data=all7d,mtry=1,ntree=500,importance=TRUE)
+
+#create vectors full of '0's
+oob.err<-double(7)
+test.err<-double(7)
+for(mtry in 1:7){
+        fit<-randomForest(as.formula(min.form),data=train, mtry=ntry, ntree=500)
+        oob.err[mtry]<-fit$mse[mtry]
+        test.err[mtry]<- mean((predict(fit,test)-test$return.pdol)^2) %>% sqrt()
+        cat(mtry," ")
+}
+
+qplot(1:mtry,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:mtry,oob.err),colour="blue")+
+        geom_point(aes(1:mtry,oob.err),colour="blue")
+
+#mtry = 3 is optimal! test RMSE of 48.2 cents ....
+oob.err<-double(5)
+test.err<-double(5)
+ntree = c(300,400,500,600,700)
+for(i in 1:5){
+        fit<-randomForest(as.formula(min.form),data=train, mtry=3, ntree=ntree[i])
+        oob.err[i]<-fit$mse[i]
+        test.err[i]<- mean((predict(fit,test)-test$return.pdol)^2) %>% sqrt()
+        cat(i," ")
+}
+
+qplot(ntree,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(ntree,oob.err),colour="blue")+
+        geom_point(aes(ntree,oob.err),colour="blue")
+#doesn't really matter, use 400!
+
+#final forest with full variables
+
+full.forest<- randomForest(as.formula(min.form),data=all7d,mtry=5,ntree=500,importance=TRUE)
+plot(full.forest)
+importance(full.forest)
+varImpPlot(full.forest)
 
 
+full.forest<- randomForest(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type +code.client, data= all7d[complete.cases(all7d$code.client),],
+                  mtry=5,ntree=500,importance=TRUE)
 
-Now, how to get variable importance from lm..
+```
+
+
+Try adding variables
 
 ```{r, echo=FALSE}
 
-#variable importance for full variables only - pairs.lm
-#use varImp from caret package - uses t-test statistic
+addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7d){
+        reduced = df[complete.cases(df[,var]) & df$Year>min.Year,]
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type")
+        
+        for(i in 1:length(var)){
+                formula = paste(formula, var[i], sep= " + ")
+        }
 
-imp<- varImp(pairs.lm, scale=FALSE)
-imp$variable<- rownames(imp)
-imp<- imp %>% select(variable, Overall)
-imp %>% arrange(-Overall) %>% head()
+        add.mult = randomForest(as.formula(formula),mtry=5, ntree=500, data = reduced)
 
-sum(imp$Overall)
+        
+        #perform 10 fold xval using caret package
+        tc = trainControl("cv",5)
+        #keep cp static at 0.011
+        rf.grid = expand.grid(mtry= 5:6)
+        train.rf = train(as.formula(formula), data=df, method="rf",trControl=tc,
+                  tuneGrid=rf.grid)
+        
+        
+        print(
+        train.rf
+        )
+        
+}
+
+#try Billing.Type with inv.mlsto.log
+## YES! print this one!! 
+addmult(var= c('pc.majpos', 'majority.pos'), min.Year = 2008, df= all7d)
+#RMSE at 48.6 cents
+
+
 
 ```
 
