@@ -312,7 +312,13 @@ addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7
 addmult(var= c('pc.majpos', 'majority.pos'), min.Year = 2008, df= all7d)
 #RMSE at 48.6 cents
 
+addmult(var= c('pc.majpos', 'majority.pos','JD.Second'), min.Year = 2008, df= all7d)
 
+
+test<- all7d[complete.cases(all7d[,c('code.client','pc.majpos')]) &
+                     all7d$Year>2008 & all7d$Discipline == 'Structural',]
+test$code.client<- droplevels(test$code.client)
+test %>% str
 
 ```
 
@@ -388,23 +394,48 @@ Try adding variables
 
 ```{r, echo=FALSE}
 
-addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7d){
-        reduced = df[complete.cases(df[,var]) & df$Year>min.Year,]
-        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+addmult<- function(var= c('pc.majpos','majority.pos', 'code.client', 'code.contact'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural"){
+        #subset data frame based on complete cases with additional variables
+        reduced = df[complete.cases(df[,var]) & df$Year>min.Year & df$Discipline == Disc,]
+        
+        if('code.client' %in% var){
+        sample = factor(sample(unique(reduced$code.client),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.client %in% sample,]
+
+        reduced$code.client= factor(reduced$code.client)
+        }
+        
+        if('code.contact' %in% var){
+        sample1 = factor(sample(unique(reduced$code.contact),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.contact %in% sample1,]
+
+        reduced$code.contact= factor(reduced$code.contact)
+        }
+        
+        #make formula
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + pc.pro + 
                      client.totinv + code.director + 
                   Num.disc + Business + Biz.type")
         
         for(i in 1:length(var)){
                 formula = paste(formula, var[i], sep= " + ")
         }
-
-        add.mult = randomForest(as.formula(formula),mtry=5, ntree=500, data = reduced)
+        
+        #make forest
+        red.forest= randomForest(as.formula(formula), data=reduced, mtry=5,ntree=500,importance=TRUE)
+        
+        print(
+                varImpPlot(red.forest)
+        )
 
         
         #perform 10 fold xval using caret package
         tc = trainControl("cv",5)
         #keep cp static at 0.011
-        rf.grid = expand.grid(mtry= 5:6)
+        rf.grid = expand.grid(mtry= 5)
         train.rf = train(as.formula(formula), data=df, method="rf",trControl=tc,
                   tuneGrid=rf.grid)
         
@@ -415,12 +446,15 @@ addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7
         
 }
 
-#try Billing.Type with inv.mlsto.log
-## YES! print this one!! 
-addmult(var= c('pc.majpos', 'majority.pos'), min.Year = 2008, df= all7d)
-#RMSE at 48.6 cents
+addmult(var= c('pc.majpos','majority.pos', 'code.client'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural")
 
+#with code.client i'm still getting 48.9 cents RMSE! that sucks!!!! with linear regression i was getting
 
+addmult(var= c('pc.majpos','majority.pos','code.contact'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural")
+#50.6 cents
+#importance levels of code.client and code.contact are up there but they're not THAT high. like midway out of all options.
 
 ```
 

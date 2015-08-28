@@ -445,6 +445,13 @@ fit<- train(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users 
 #RMSE = 0.49246
 #compared to non-cross validated
 # RMSE = 0.4759
+
+#try using caret package on code.client
+fit<- train(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users + pc.pro + Business + 
+                      inv.mlsto.log*pc.pro + inv.mlsto.log*Business + code.client,
+              data=all7d,
+            method = 'lm', trControl = tc)
+
 ```
 
 Not really trying to tune anything via cross validation, however RMSE increased from 0.4759 to 0.49246.
