@@ -48,9 +48,9 @@ library('caret')
 setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
 # opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
-all7d<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')[,-1]
-all7d<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
-all7d$Post.Code<- as.factor(all7d$Post.Code)
+all7d.tree<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')[,-1]
+all7d.tree<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
+all7d.tree$Post.Code<- as.factor(all7d$Post.Code)
 
 ```
 
@@ -121,22 +121,22 @@ Try rpart first
 
 ```{r, echo=FALSE}
 
-train_ind <- sample(seq_len(nrow(all7d)), size = nrow(all7d)*2/3)
+train_ind <- sample(seq_len(nrow(all7d.tree)), size = nrow(all7d.tree)*2/3)
 
-train <- all7d[train_ind, ]
-test <- all7d[-train_ind, ]
+train <- all7d.tree[train_ind, ]
+test <- all7d.tree[-train_ind, ]
 
 #create tree with training data only
-tree.all7d<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+tree.all7d.tree<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
                      client.totinv + code.director + 
                   Num.disc + Business + Biz.type + code.ProjEng, data=train, control = rpart.control(cp= 0.001))
-# summary(tree.all7d)
+# summary(tree.all7d.tree)
 
 #have a look at cp values, automatic cross validation in rpart
-printcp(tree.all7d)
-plotcp(tree.all7d)
+printcp(tree.all7d.tree)
+plotcp(tree.all7d.tree)
 #min cp = 0.013 will give simplest tree within 1 std of x-val rel error
-tree.all7d<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+tree.all7d.tree<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
                      client.totinv + code.director + 
                   Num.disc + Business + Biz.type + code.ProjEng, data=train,
                   control = rpart.control(cp= 0.013))
@@ -152,9 +152,9 @@ split.fun <- function(x, labs, digits, varlen, faclen){
   labs
   }
 
-prp(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
+prp(tree.all7d.tree, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
 #make prediction with current tree
-tree.pred<-predict(tree.all7d, test)
+tree.pred<-predict(tree.all7d.tree, test)
 #calculate RMSE for test data
 RMSE(test$return.pdol, tree.pred)
 # 49.8 cents, already close to regression..
@@ -173,7 +173,7 @@ heat.tree <- function(tree, low.is.green=FALSE, ...) { # dots args passed to prp
   prp(tree, branch.col=cols, box.col=cols, ...)
   }
 
-heat.tree(tree.all7d, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
+heat.tree(tree.all7d.tree, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
 
 
 ```

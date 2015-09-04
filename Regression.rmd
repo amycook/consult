@@ -503,7 +503,7 @@ RMSE<- function(answer, guess){
 }
 
 
-final.output<- function(df=all7d, samp = 800) {
+final.output<- function(df=all7d, samp = 600) {
         #create sample df
         sample = df[samp,]
         sample = sample[,!is.na(sample)]
@@ -514,11 +514,13 @@ final.output<- function(df=all7d, samp = 800) {
         variables = vars
         
         print(
-                list("sample case", t(sample %>% select(-Year, -timespan.cbrt, -inv.mlsto.log, -client.totinv.log, -pc.majpos.log)))
+                list("sample case", t(sample %>% select(-Year, -timespan.cbrt, -inv.mlsto.log, -client.totinv.log)))
         )
-        
+
+
         #make reduced dataset with complete cases for all variables we want to use
-        reduced = df[complete.cases(df[,variables]),]
+        reduced = df[-samp,]
+        reduced = reduced[complete.cases(reduced[,variables]),]
         
         print(
                 paste(nrow(reduced), "cases in full model")
@@ -590,7 +592,16 @@ final.output<- function(df=all7d, samp = 800) {
                         }
         }
         
-        final.RMSE= RMSE(ans$answer, ans$final.lm.fit) %>% round(4)
+        #random RMSE
+        r= mean(reduced$return.pdol)
+        random.RMSE= RMSE(reduced$return.pdol, r, print=T) %>% round(3)
+        
+        print(
+        paste("Random Guess RMSE=", random.RMSE , sep= " ")
+        )
+        
+        #final RMSE for all rows in reduced in a regression
+        final.RMSE= RMSE(ans$answer, ans$final.lm.fit) %>% round(3)
         
         print(
         paste("Overall predicted RMSE=", final.RMSE , sep= " ")
@@ -608,23 +619,46 @@ final.output<- function(df=all7d, samp = 800) {
         )
         
         print(
-                paste("Invoiced= $", sample$inv.mlsto, ",   predicted cost= $", predict.cost %>% round(1), sep="")
+                paste("Invoiced= $", sample$inv.mlsto %>% round(2), ",   predicted cost= $", predict.cost %>% round(1), sep="")
         )
         
         print(
-                paste("Actual cost= $", sample$cost.mlsto, sep="")
+                paste("Actual cost= $", sample$cost.mlsto %>% round(2), sep="")
         )
 
         
 }
 
-final.output(df=all7d, samp = 500)
+final.output(df=all7d, samp = 800)
 
 ```
 
 
 
+Check what RMSE would be for random guess
 
+```{r, echo=F}
+
+m<- mean(all7d$return.pdol)
+
+RMSE<- function(answer, guess, print= TRUE){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        if(print == TRUE){
+        print(root.error)
+        }
+}
+
+
+RMSE(all7d$return.pdol, m, print=T)
+
+
+```
+
+RMSE from random guess is 53 cents.
+
+# delete any code.client or contact. client which has less than 3 entries!
+# need to revisit how i got my inv.mlsto, balance.mlsto, cost.mlsto for job 2013.301.2
 
 
 

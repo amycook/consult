@@ -1,13 +1,13 @@
 setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.1.2/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.1.3/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.1.3/library')
-library('shiny',lib='C:/Progra~1/R/R-3.1.3/library')
-library('shinythemes',lib='C:/Progra~1/R/R-3.2.0/library')
-library('FNN',lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.2/library')
+library('shiny',lib='C:/Progra~1/R/R-3.2.2/library')
+library('shinythemes',lib='C:/Progra~1/R/R-3.2.2/library')
+library('FNN',lib='C:/Progra~1/R/R-3.2.2/library')
 # library('ggplot2')
 # library("dplyr")
 # library("plyr")
@@ -18,7 +18,7 @@ library('FNN',lib='C:/Progra~1/R/R-3.2.1/library')
 
 
 all7<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7.csv')[,-1]
- all7$Start.Date<- as.Date(all7$Start.Date)
+all7$Start.Date<- as.Date(all7$Start.Date)
 #delete anything more than 4 for inv.vs.cost
 #delete anything less than .2 for inv.vs.cost
 all7<- all7 %>% filter(!(inv.vs.cost<0.2), !(inv.vs.cost>4))
