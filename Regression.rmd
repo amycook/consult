@@ -100,7 +100,8 @@ The 'Many NA' variables will be split into groups:
 ```{r echo=FALSE}
 some <- all7d %>% select(return.pdol, mlsto, inv.mlsto, timespan,no.users,Discipline,pc.pro,
                          client.totinv,code.director,Num.disc,Business,Biz.type,
-                         code.contact,code.client,Project.Value,JD.Second,Post.Code,code.ProjEng,Billing.Type,majority.pos,
+                         code.contact,code.client,Project.Value,JD.Second,Post.Code,code.ProjEng,Billing.Type,
+                         majority.pos,
                          pc.majpos)
 
 #heatmap of any similar NA value ranges
@@ -495,21 +496,29 @@ vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv',
                'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
 vars
 
+#make new dataframe for future use with normalised variables and variables that you want to use only
+all8a<- all7d %>% select(no.users, Discipline, pc.pro, Business, code.client, JD.Second, timespan.cbrt,
+                         inv.mlsto.log,client.totinv.log, pc.majpos.log, code.contact, Billing.Type,
+                         majority.pos, return.pdol, mlsto, Year)
+write.csv(all8a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')
 
-RMSE<- function(answer, guess){
+RMSE<- function(answer, guess, print= TRUE){
         error= answer-guess
         root.error= sqrt(mean(error^2))
-        # print(root.error)
+        if(print == TRUE){
+        print(root.error)
+        }
 }
 
 
-final.output<- function(df=all7d, samp = 600) {
+final.output<- function(df=all7d, samp = 800) {
         #create sample df
         sample = df[samp,]
         sample = sample[,!is.na(sample)]
         vars= names(sample)
         vars = vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc',
                                   'Biz.type','Post.Code','code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto',
+                                  'dis.sc.mlsto',
                                   'balance.mlsto','client.totinv.log','pc.majpos')]
         variables = vars
         
@@ -576,7 +585,7 @@ final.output<- function(df=all7d, samp = 600) {
         
         reduced$predict= ans$final.lm.fit
         
-        cats= c('code.client', 'code.contact', 'JD.Second', 'Business', 'Discipline', 'majority.pos')
+        cats= c('code.client', 'code.contact', 'JD.Second', 'Business', 'no.users', 'majority.pos')
         
         for(i in 1:length(cats)){
                 if(cats[i] %in% vars){
@@ -590,6 +599,34 @@ final.output<- function(df=all7d, samp = 600) {
                                 head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto','return.pdol','predict',cats[i])])
                         )
                         }
+        }
+        
+        num.cats= c('timespan.cbrt', 'inv.mlsto.log', 'pc.pro')
+        
+        for(i in 1:length(num.cats)){
+                if(num.cats[i] %in% vars){
+                        span = 0.05*(max(reduced[,num.cats][i])-min(reduced[,num.cats[i]]))
+                        range = c(df[samp,num.cats[i]]-span, 
+                                  df[samp,num.cats[i]]+span)
+                        cats.red = reduced[reduced[,num.cats[i]]<range[2] & reduced[,num.cats[i]]>range[1],]
+                        cat.RMSE = RMSE(cats.red$return.pdol, cats.red$predict) %>% round(4)
+                        print(
+                                paste(num.cats[i], "RMSE =", cat.RMSE, sep= " "))
+                        print(
+                                paste("Number of cases =", nrow(cats.red), sep= " "))
+                        print(
+                                if(num.cats[i] == 'pc.pro'){
+                                        head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto','return.pdol','predict',
+                                                 num.cats[i])])} 
+                                else if(num.cats[i] == 'timespan.cbrt'){
+                                                head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto',
+                                                                 'return.pdol','predict', 'timespan')])}
+                                else {
+                                        head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto',
+                                                                 'return.pdol','predict')])
+                                }
+                                
+                        )}
         }
         
         #random RMSE
@@ -641,13 +678,7 @@ Check what RMSE would be for random guess
 
 m<- mean(all7d$return.pdol)
 
-RMSE<- function(answer, guess, print= TRUE){
-        error= answer-guess
-        root.error= sqrt(mean(error^2))
-        if(print == TRUE){
-        print(root.error)
-        }
-}
+
 
 
 RMSE(all7d$return.pdol, m, print=T)

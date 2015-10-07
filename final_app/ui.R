@@ -32,13 +32,14 @@ shinyUI(fluidPage(
                 
                 column(3,
                        
-                       selectInput("jobtype", "Primary Job Type:",
-                                   list("Building Structures" = "1. BuildingStructures", 
-                                        "Land Infrastructure" = "2. LandInfrastructure", 
-                                        "Environmental Planning" = "3. EnvironmentalPlanning",
-                                        "Integrated Water Management" = "4. IntegratedWaterManagement",
-                                        "Special Structures"= "5. Special Structures",
-                                        "Other" = "Other")),
+                       selectizeInput(
+                               'JD.Second', 'Job Type:', 
+                               choices = levels(all7$JD.Second),
+                               options = list(
+                                       placeholder = 'Please start typing',
+                                       onInitialize = I('function() { this.setValue(""); }'),
+                                       maxItems=1
+                               )),
                        
                        selectizeInput(
                                'Business', 'Client Industry:', 
@@ -83,7 +84,7 @@ shinyUI(fluidPage(
                 
                 column(3,
                        
-                       selectInput("bulk.pos", "Bulk of Work by:",
+                       selectInput("majority.pos", "Bulk of Work by:",
                                    list("Director" = "Director", 
                                         "Senior Professional" = "Senior Professional", 
                                         "Mid Professional" = "Mid Professional",
@@ -101,14 +102,9 @@ shinyUI(fluidPage(
                 
                 column(3,
                        
-                       selectizeInput(
-                               'JD.Second', 'Secondary Job Type:', 
-                               choices = levels(all7$JD.Second),
-                               options = list(
-                                       placeholder = 'Please start typing',
-                                       onInitialize = I('function() { this.setValue(""); }'),
-                                       maxItems=1
-                               )),
+                       sliderInput(
+                               'pc.pro', '% Hours by Professional:', 
+                               min=0, max=100, value=50, step=5, round=0),
                        
                        sliderInput("inv.mlsto", "Approximate Fee:",
                                    min=500, max=250000, value=20000, step=500, round=2
@@ -145,8 +141,8 @@ shinyUI(fluidPage(
                                         "Public" = "public"
                                         )),
                        
-                       sliderInput("pc.pro", "% Hours by Professional:",
-                                   min=0, max=100, value=50, step=5, round=0
+                       sliderInput("timespan", "Timespan (days):",
+                                   min=0, max=365, value=60, step=20, round=0
                        ),
                        
                        submitButton(text="Calculate")                 

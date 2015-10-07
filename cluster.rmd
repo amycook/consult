@@ -20,7 +20,7 @@ library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
 # library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
 # library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
-# library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
 # library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
 # library('FNN', lib='C:/Progra~1/R/R-3.2.1/library')
 # library('caret', lib='C:/Progra~1/R/R-3.2.1/library')
@@ -685,7 +685,7 @@ Create reduced dataset and have a think about what you want to cluster against e
 all7d<- all7c %>% select(mlsto, Year, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
                          client.totinv, code.director, 
                          Num.disc, Business,
-                         Biz.type, code.contact, pc.majpos,
+                         Biz.type, code.contact, pc.majpos, dis.sc.mlsto
                          code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
                          Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto, balance.mlsto)
 all7d$mlsto<- as.character(all7d$mlsto)
@@ -705,7 +705,7 @@ tail(CPIAUCSL)
 
 # make an df object of costs
 p<- data.frame('Year' = all7d$Year, 'inv.mlsto'= all7d$inv.mlsto, 'balance.mlsto' = all7d$balance.mlsto,
-               'cost.mlsto' = all7d$cost.mlsto, 'mlsto' = all7d$mlsto)
+               'cost.mlsto' = all7d$cost.mlsto, 'mlsto' = all7d$mlsto, 'dis.sc.mlsto'=all7d$dis.sc.mlsto)
 
 #calculate annual averave inflation since 2004
 avg.cpi <- apply.yearly(CPIAUCSL, mean)
@@ -720,16 +720,18 @@ p<- merge(p, cf, by.x='Year', by.y= 'Date')
 #divide all dollar values by CPIAUCSL column
 p<- transform(p, adj.inv.mlsto = inv.mlsto/CPIAUCSL,
           adj.balance.mlsto = balance.mlsto/CPIAUCSL,
-          adj.cost.mlsto = cost.mlsto/CPIAUCSL)
+          adj.cost.mlsto = cost.mlsto/CPIAUCSL,
+          adj.dis.sc = dis.sc.mlsto/CPIAUCSL)
 #check
 s<- sample(1:nrow(all7d),10)
 p[s,]
 #replace existing all7d columns
-all7d<- merge(all7d, p %>% select(mlsto, adj.inv.mlsto, adj.balance.mlsto, adj.cost.mlsto) , by='mlsto')
-all7d<- all7d %>% select(-inv.mlsto, - balance.mlsto, -cost.mlsto)
+all7d<- merge(all7d, p %>% select(mlsto, adj.inv.mlsto, adj.balance.mlsto, adj.cost.mlsto, adj.dis.sc), by='mlsto')
+all7d<- all7d %>% select(-inv.mlsto, - balance.mlsto, -cost.mlsto, -dis.sc.mlsto)
 colnames(all7d)[names(all7d) %in% "adj.inv.mlsto"] <- "inv.mlsto"
 colnames(all7d)[names(all7d) %in% "adj.balance.mlsto"] <- "balance.mlsto"
 colnames(all7d)[names(all7d) %in% "adj.cost.mlsto"] <- "cost.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.dis.sc"] <- "dis.sc.mlsto"
 
 write.csv(all7d, 'all7d.csv')
 

@@ -28,7 +28,8 @@ df <- read.table(text = " id  min  max
     Sp1     150          151     ", header=TRUE)
 
 #make a new dataframe with information about crossbar sizes
-df2<- data.frame(id=c(rep("Sp1",3)), ymin= c(130, 139,146), ymax=c(170, 158, 155), probability=c('95%','75%','50%'))
+df2<- data.frame(id=c(rep("Sp1",3)), ymin= c(19000, 22000,24000),
+                 ymax=c(33000, 30000, 28000), probability=c('95%','75%','50%'))
 df2 <- within(df2, 
               probability <- factor(probability, 
                                     levels=c('95%','75%','50%')))
@@ -154,17 +155,17 @@ shinyServer(
                         s= ggplot(df[1,]) +
                                 geom_crossbar(data=df2, aes(ymin = ymin, ymax = ymax, x = id, y=ymin, alpha=probability),
                                               fill='blue', linetype='blank', width=0.25)+
-                                geom_errorbar(aes(ymax=150, ymin=150, x=id, y=min), width=0.25, colour='navyblue', size=1.5) +
-                                geom_errorbar(aes(ymax=100, ymin=100, x=id, y=min), width=0.25, colour='red') +
-                                scale_y_continuous(breaks = seq(80, 170, by = 10)) +
-                                ylim(80,170) +
-                                labs(y="Final Spend divided by Quote (%)", x="New Project", title= "Prediction of Final Spend vs Initial Quote") +
+                                geom_errorbar(aes(ymax=26000, ymin=26000, x=id, y=min), width=0.25, colour='navyblue', size=1.5) +
+                                geom_errorbar(aes(ymax=20000, ymin=20000, x=id, y=min), width=0.25, colour='red', linetype = 2) +
+                                scale_y_continuous(breaks = seq(15000, 40000, by = 5000)) +
+                                ylim(15000,40000) +
+                                labs(y="Final Spend ($)", x="New Project", title= "Prediction of Final Spend") +
                                 theme(axis.text.y = element_blank(),
                                       plot.title = element_text(size=18, face='plain'),
                                       axis.title.y = element_text(size = 16),
                                       axis.title.x = element_text(size=16),
                                       axis.text = element_text(size = 16)) +
-                                annotate("text", x = 1.3, y = 101, label = "Final Spend = Initial Quote", colour='red', size=4)+
+                                annotate("text", x = 1.3, y = 20000, label = "Final Spend = Initial Quote", colour='red', size=4)+
                                 coord_flip()
                         
                         print(s)
