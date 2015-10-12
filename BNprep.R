@@ -6,7 +6,7 @@ library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
 library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('hclust',lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
 
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')[,-1]
@@ -146,7 +146,7 @@ for(i in 1:k.choose){
 #create clusters based on summary:
 
 all8a$b.pcmajpos <- man.clust(first.vec=all8a$pc.majpos.log, 
-                                   breaks.man=c(3.1,3.9,4.1,4.3,4.5,4.6))
+                                   breaks.man=c(3.1,3.9,4.1,4.3,4.5,4.7))
 
 summary(all8a$b.pcmajpos)
 
@@ -173,10 +173,13 @@ for(i in 1:k.choose){
 
 #create clusters based on summary:
 
-all8a$b.rpdol <- man.clust(first.vec=all8a$return.pdol, 
-                                   breaks.man=c(-1,-.5,0,.15,0.3,0.6,0.85,1.3,1.76,3))
-
-summary(all8a$b.rpdol)
+#experiment with cut_number function because we want even sized bins for prediction
+all8a$b.rpdol<- cut_number(all8a$return.pdol,8) #this works fine! comment out cluster method below
+# summary(all8a$b.rpdol)
+# all8a$b.rpdol <- man.clust(first.vec=all8a$return.pdol, 
+#                                    breaks.man=c(-1,-.5,0,.15,0.3,0.6,0.85,1.3,1.76,3))
+# 
+# summary(all8a$b.rpdol)
 
 ####
 ##users
@@ -203,7 +206,19 @@ summary(all8b)
 
 write.csv(all8b,'C:/Users/n9232371/Documents/Consultbusiness/data/all8b.csv' )
 
-#what happens to missing values if i look at post 2008?
-all8b<- merge(all8b, all8a %>% select(Year, mlsto), by='mlsto')
+#look at complete cases for no.users, discipline, pc.pro, business, code.client,
+#JD.Second, majority.pos, timespan.cbrt, inv.mlsto.log, pc.majpos.log
 
+all8b<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8b.csv',
+                 na.strings = "")
+all8c<- all8b %>% select(b.no.users,Discipline,b.pc.pro, Business, code.client,
+                         JD.Second, majority.pos, b.timespan.cbrt, 
+                         b.inv.log, b.pcmajpos, b.rpdol)
+all8c<- all8c[complete.cases(all8c),]
+dim(all8c)
 
+write.csv(all8c,'C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
+
+summary(all8c)
+
+# 

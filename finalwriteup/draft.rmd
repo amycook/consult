@@ -260,7 +260,28 @@ summary of
 
 
 
+# Chapter ? Method
 
+##Bayesian Network
+
+* could not handle _any_ numeric variables, had to discretise all numeric vars
+    * used normalised numeric variables
+    * I did this by making a hierarchical dendrogram to visualise the clusters
+    * then I chose the number of clusters, drew the red rectangle
+    * summarised the clusters to find max and min values for the variable within each cluster. Rounded this value up
+    * manually discretised variable using rounded values
+
+* first trialled complete cases of number of users, Discipline, percent pro, Business, client code, job detail, majority position, timespan, invoiced amount, percent hours by majority position, and return per dollar. This gave 907 complete cases to work with.
+
+*using Genie Smile.
+   * noticed that because most of the cases (31%) fall under a return per dollar of between ___ and ____, results are heavily biased towards that category. This could be a problem in the random forest model I made and possibly the regression model.
+   * Need to implement a package that oversamples from the minority classes to create a balanced range of return per dollar classes.
+       * after doing some reading about ROSE and SMOTE package (which employs oversampling) readers suggest oversampling is best for very very skewed data. Otherwise assigning weighted costs for misclassification to functions is better.
+       * Another alternative to oversampling with multiple classes is to use one function to classify as in the majority class or not. and then another function to figure out _which_ minority class the case would belong to.
+       * never mind can just re-bin return per dollar so that classes are equal sizes!!! 
+       
+   
+   
 
 
 
