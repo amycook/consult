@@ -20,13 +20,13 @@ head(all8a)
 x<- dist(all8a$pc.pro, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-rect.hclust(fit, k = 6)
+rect.hclust(fit, k = 5)
 
 #assign a cluster number to all rows in data frame
-all8a$b.pc.pro<- as.factor(cutree(fit, k=6))
+all8a$b.pc.pro<- as.factor(cutree(fit, k=5))
 head(all8a$b.pc.pro)
 
-for(i in 1:6){
+for(i in 1:5){
         print(
         summary(all8a %>% select(b.pc.pro, pc.pro) %>% filter(b.pc.pro ==i))
         )
@@ -34,18 +34,20 @@ for(i in 1:6){
 
 #create clusters based on summary:
 all8a[all8a$pc.pro>100,'pc.pro']<- 100
-all8a$b.pc.pro<- cut(all8a$pc.pro, breaks=c(0,15,40,55,75,95,100), include.lowest=TRUE)
+all8a$b.pc.pro<- cut(all8a$pc.pro, breaks=c(0,15,40,75,95,100), include.lowest=TRUE,
+                     labels= c("p0_15", "p15_40", "p40_75", "p75_95", "p100"))
 
 ###
 #timespan.cbrt
+first.vec<- all8a$timespan.cbrt
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-k.choose=8
+k.choose=3
 rect.hclust(fit, k = k.choose)
 
 #assign a cluster number to all rows in data frame
-all8a$b.timespan.cbrt<- as.factor(cutree(fit, k=8))
+all8a$b.timespan.cbrt<- as.factor(cutree(fit, k= k.choose))
 head(all8a$b.timespan.cbrt)
 
 for(i in 1:k.choose){
@@ -56,13 +58,15 @@ for(i in 1:k.choose){
 }
 
 #create clusters based on summary:
-man.clust<- function(first.vec=all8a$timespan.cbrt, breaks.man=c(0,1,3,4,5,6.5,8,11,14.02)){
-        final = cut(first.vec, breaks=breaks.man, include.lowest=TRUE)
+man.clust<- function(first.vec=all8a$timespan.cbrt, breaks.man=c(0,4.16,6.558,15),
+                     labs = c("t0_70", "t70_280", "t280_")){
+        final = cut(first.vec, breaks=breaks.man, include.lowest=TRUE, labels= labs)
         return(final)
 }
 
 all8a$b.timespan.cbrt<- man.clust(first.vec=all8a$timespan.cbrt, 
-                                  breaks.man=c(0,1,3,4,5,6.5,8,11,14.02))
+                                  breaks.man=c(0,4.16,6.558,15),
+                                  labs = c("t0_70", "t70_280", "t280_"))
 
 summary(all8a$b.timespan.cbrt)
 
@@ -72,7 +76,7 @@ first.vec=all8a$inv.mlsto.log
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-k.choose=9
+k.choose=4
 rect.hclust(fit, k = k.choose)
 
 #assign a cluster number to all rows in data frame
@@ -89,7 +93,8 @@ for(i in 1:k.choose){
 #create clusters based on summary:
 
 all8a$b.inv.log<- man.clust(first.vec=all8a$inv.mlsto.log, 
-                                  breaks.man=c(4.7,6.5,7,8,8.3,9,10,11,12,14.5))
+                                  breaks.man=c(4.5, 7.81, 9, 11, 14.4),
+                            labs = c("i_0_2_5k", "i_2_5k_8_1k", "i_8_1k_60k", "i_60k_1_6m"))
 
 summary(all8a$b.inv.log)
 
@@ -100,7 +105,7 @@ first.vec=all8a$client.totinv.log
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-k.choose=9
+k.choose=3
 rect.hclust(fit, k = k.choose)
 
 #assign a cluster number to all rows in data frame
@@ -117,7 +122,8 @@ for(i in 1:k.choose){
 #create clusters based on summary:
 
 all8a$b.client.totinv <- man.clust(first.vec=all8a$client.totinv.log, 
-                            breaks.man=c(5,7.5,8,8.75,9,10,11,12,14.2))
+                            breaks.man=c(5, 8.75, 10, 14.4),
+                            labs= c("ci_100_6k", "ci_6k_22k", "ci_22k_1m"))
 
 summary(all8a$b.client.totinv)
 
@@ -128,7 +134,7 @@ first.vec=all8a$pc.majpos.log[!is.na(all8a$pc.majpos.log)]
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-k.choose=5
+k.choose=3
 rect.hclust(fit, k = k.choose)
 
 #assign a cluster number to all rows in data frame
@@ -146,18 +152,21 @@ for(i in 1:k.choose){
 #create clusters based on summary:
 
 all8a$b.pcmajpos <- man.clust(first.vec=all8a$pc.majpos.log, 
-                                   breaks.man=c(3.1,3.9,4.1,4.3,4.5,4.7))
+                                   breaks.man=c(3, 3.9, 4.1, 4.5, 4.7),
+                              labs= c("pm_20_50", "pm_50_60", "pm60_90","pm_90_100"))
 
 summary(all8a$b.pcmajpos)
 
 
 ###
 #return.pdol
+# split into profit/loss
+
 first.vec=all8a$return.pdol
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
 plot(fit)
-k.choose=9
+k.choose=2
 rect.hclust(fit, k = k.choose)
 
 #assign a cluster number to all rows in data frame
@@ -173,13 +182,11 @@ for(i in 1:k.choose){
 
 #create clusters based on summary:
 
-#experiment with cut_number function because we want even sized bins for prediction
-all8a$b.rpdol<- cut_number(all8a$return.pdol,8) #this works fine! comment out cluster method below
-# summary(all8a$b.rpdol)
-# all8a$b.rpdol <- man.clust(first.vec=all8a$return.pdol, 
-#                                    breaks.man=c(-1,-.5,0,.15,0.3,0.6,0.85,1.3,1.76,3))
-# 
-# summary(all8a$b.rpdol)
+all8a$b.rpdol<- all8a$return.pdol 
+all8a$b.rpdol<- ifelse(all8a$return.pdol<=0, "loss", "profit")
+all8a$b.rpdol<- as.factor(all8a$b.rpdol)
+
+summary(all8a$b.rpdol)
 
 ####
 ##users
@@ -188,7 +195,8 @@ summary(all8a$no.users)
 all8a$no.users<- as.numeric(all8a$no.users)
 #create clusters based on summary:
 all8a$b.no.users<- man.clust(first.vec=all8a$no.users, 
-                           breaks.man=c(0,1,2,3,4,5,6,50))
+                           breaks.man=c(0,1,2,4,35),
+                           labs= c("u1", "u2", "u3_4", "u_5_30"))
 
 summary(all8a$b.no.users)
 
