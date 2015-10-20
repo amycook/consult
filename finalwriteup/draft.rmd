@@ -262,6 +262,10 @@ summary of
 
 # Chapter ? Method
 
+## Regression
+    * tried predicting return per dollar as a numeric outcome.
+        * proved very difficult. Find error rate compared to just guessing the mean. Not far off.
+
 ##Bayesian Network
 
 * could not handle _any_ numeric variables, had to discretise all numeric vars
@@ -274,14 +278,82 @@ summary of
 * first trialled complete cases of number of users, Discipline, percent pro, Business, client code, job detail, majority position, timespan, invoiced amount, percent hours by majority position, and return per dollar. This gave 907 complete cases to work with.
 
 *using Genie Smile.
-   * noticed that because most of the cases (31%) fall under a return per dollar of between ___ and ____, results are heavily biased towards that category. This could be a problem in the random forest model I made and possibly the regression model.
-   * Need to implement a package that oversamples from the minority classes to create a balanced range of return per dollar classes.
-       * after doing some reading about ROSE and SMOTE package (which employs oversampling) readers suggest oversampling is best for very very skewed data. Otherwise assigning weighted costs for misclassification to functions is better.
-       * Another alternative to oversampling with multiple classes is to use one function to classify as in the majority class or not. and then another function to figure out _which_ minority class the case would belong to.
-       * never mind can just re-bin return per dollar so that classes are equal sizes!!! 
-       
+   * turned return per dollar into profit/loss. This gave 182 loss cases and 725 profit cases. A good distribution for working with bayesian networks. Ie not too biased
+   * a good, simple problem to start with
    
+* establish a baseline. Using ROC, area under the curve method
+    * to test our classifiers we need to beat random chance. Ie AUC = 0.5
+    * will also establish the AUC for using one variable only! See table below:
+       *Note all using 10 fold cross validation
+
+Single Variable  | AUC from ROC chart | Num losses correct
+---------------- | ------------------ | ------------------
+Random chance    | 0.5                | ?                 
+percent pro      | 0.618              | 0
+percent maj pos  | 0.616              | 0
+number of users  | 0.661              | 0
+timespan         | 0.600              | 0
+amount invoiced  | 0.535              | 0
+Discipline       | 0.514              | 0
+Majority pos     | 0.605              | 3
+Job detail       | 0.605              | 1
+client code      | 0.567              | 25
+client Business  | 0.524              | 5
+
+* try using the following variables:
+
+```{r, echo=FALSE, include=FALSE}
+
+read.csv(all8c,'C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
+
+vars<- names(all8c)
+vars<- vars[-c("Business", "JD_Second", "code_client")]
+
+```
+
+* number of users
+* Discipline
+* percent hours by a professional
+* position that completed the majority of hours
+* timespan
+* amount invoiced
+* percent of hours completed by majority position
+
+The results are as follows:
+
+AUC = 0.705
+Number of losses predicted correctly: 124
+
+This is our 'base' model. Now try adding one complex variable at a time:
+
+Added Variable   | AUC from ROC chart | Num losses correct (tp) | Num losses wrong (fp)
+---------------- | ------------------ | ----------------------- | --------------------
+none/base        | 0.710              | 122                     | 272
+client code      | 0.624              | 171                     | 528
+Busines          | 0.667              | 144                     | 381
+job detail       | 0.653              | 150                     | 438 
+
+
+
+## Boosted Trees
+
+### Advantages
+    
+    * Wonderful in that NA's don't interfere with prediciton process
+        * explain..
+        * can comfortably include the entire dataset without having to worry about imputing
+        
+tuned which variables to include:
+    * exclude JD.Second, Business, code.client, code.contact
+    * tuned parameters:
+        * shrinkage = 0.001
+        * n.trees = 4000
+        * interaction.depth = 3
+        * min.nobs = 10
+    * manage to get AUC up to 0.785!!
    
+can we improve this by bringing huge variables back in a smarter way?
+
 
 
 

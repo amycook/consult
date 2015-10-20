@@ -14,6 +14,7 @@ library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
 library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
 library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
 library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('ROCR',lib='C:/Progra~1/R/R-3.2.2/library')
 
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 ```
@@ -24,11 +25,13 @@ Read in data. Change return.pdol to 0,1 variable
 all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')[,-1]
 
 all8a$b.rpdol<- all8a$return.pdol 
-all8a$b.rpdol<- ifelse(all8a$return.pdol<=0, 0, 1)
+all8a$b.rpdol<- ifelse(all8a$return.pdol<=0, 1, 0)
 
 summary(all8a$b.rpdol)
 
 all9a<- all8a
+write.csv(all9a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')
+
 ```
 
 
@@ -75,167 +78,366 @@ a
 
 First tune shrinkage and plot. Get rid of year because in future, won't have historical data on year..
 
+Try deleting code.client variable
+
 ```{r, echo=FALSE}
-formula = "b.rpdol~.- mlsto - return.pdol-Year-code.client-code.contact"
+
+#tune which variables should be included!!
+vars.excl = c("JD.Second", "Business", "JD.Second-Business","")
 
 errors<- double(4)
-shrink.seq<-c(.001,.005,.01,.05)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)))
+auc<- double(4)
+colours <- c("red","green","blue", "pink")
+        
+for(i in 1:4){
+        if(vars.excl[i] %in% ""){
+              formula<- "b.rpdol~.- mlsto - return.pdol-Year - code.contact - code.client"  
+        } else{
+        formula<- paste("b.rpdol~.- mlsto - return.pdol-Year-code.client - code.contact",
+                        "-", vars.excl[i], sep=" ")
+        }
+        
+        fit<-gbm(as.formula(formula), 
+                 data=train, distribution="bernoulli", n.trees=5000,
+                 shrinkage=0.001,
+                 interaction.depth=3)
+        pred<- predict(fit, test, n.tree=5000, type="response")
+        errors[i]<- sum(temp)/nrow(test)
+        
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres=T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE, print.thres=T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
+        #confusion matrix
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred1' = pred1, 'ans' = test$b.rpdol)
+        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred1, temp2$ans))
+        cat(i," ")
+}
+
+conf.matrix
+auc
+
+#create new data frame 'shrink' to place trees and errors vectors together, then plot:
+shrink<- data.frame("shrinkage"=shrink.seq, "auc" = auc[1:4])
+ggplot(shrink, aes(x=shrinkage, y= auc)) + geom_line() + geom_point()+ geom_line()
+
+#best to not have JD.Second OR Business!!!  :(
+```
+
+Tune shrinkage value:
+```{r, echo=FALSE}
+
+formula<- "b.rpdol~.- mlsto - return.pdol-Year-code.client - code.contact-JD.Second - Business"
+
+errors<- double(4)
+shrink.seq<-c(0.0005, .001,.005, 0.01)
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
+                   '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)))
+auc<- double(4)
+colours <- c("red", "yellow", "green", "blue")
+        
 for(i in 1:4){
         fit<-gbm(as.formula(formula), 
                  data=train, distribution="bernoulli", n.trees=5000,
                  shrinkage=shrink.seq[i],interaction.depth=3)
         pred<- predict(fit, test, n.tree=5000, type="response")
-        pred<- ifelse(pred>=0.5,1,0)
-        temp<- ifelse(pred == test$b.rpdol, 0,1)
         errors[i]<- sum(temp)/nrow(test)
         
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres=T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE, print.thres=T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
         #confusion matrix
-        temp2<- data.frame('pred' = pred, 'ans' = test$b.rpdol)
-        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred1' = pred1, 'ans' = test$b.rpdol)
+        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred1, temp2$ans))
         cat(i," ")
 }
 
 conf.matrix
-errors
+auc
 
 #create new data frame 'shrink' to place trees and errors vectors together, then plot:
-shrink<- data.frame("shrinkage"=shrink.seq, "error" = errors[1:4])
-ggplot(shrink, aes(x=shrinkage, y=error)) + geom_line() + geom_point()+ geom_line()
+shrink<- data.frame("shrinkage"=shrink.seq, "auc" = auc[1:4])
+ggplot(shrink, aes(x=shrinkage, y= auc)) + geom_line() + geom_point()+ geom_line()
+
+#best case auc = 0.756 with shrinkage = 0.001
 
 ```
-
-Try caret method of tuning
-
-```{r, echo=FALSE, include=FALSE}
-# must turn outcome into two level factor
-# all9a$f.rpdol<- as.factor(all9a$b.rpdol)
-# set.seed(100)
-# sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
-# train<- all9a[sample,]
-# test<- all9a[-sample,]
-# 
-# # set seeds
-# set.seed(123)
-# seeds <- vector(mode = "list", length = 51)
-# for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
-# ## For the last model:
-# seeds[[51]] <- sample.int(1000, 1)
-# 
-# # first tune shrinkage and number of trees
-# cv.Control <- trainControl(method = "cv",
-#                            number = 10,
-#                            seeds= seeds)
-# gbmGrid <- expand.grid(shrinkage = c(.001,.005),
-#                        n.trees = c(2000), interaction.depth = 2,
-#                        n.minobsinnode = 10)
-# set.seed(2)
-# gbmFit <- train(f.rpdol~.- mlsto - return.pdol-Year, data= train,
-#                  method = "gbm", trControl = cv.Control, verbose = FALSE,
-#                  bag.fraction = 0.5, tuneGrid = gbmGrid,
-#                 metric = 'kappa')
-# 
-# plot(gbmFit)
-```
-
-Caret package is not working, tune manually:
 
 ```{r, echo=FALSE}
 
+
 #shrinkage should be 0.001, now find number of trees
 errors<- double(5)
-ntree.seq<-c(4000,8000,10000,12000,14000)
+ntree.seq<-c(2000,3000,4000,6000,8000)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
                    '5' = data.frame(c(0,0), c(0,0)))
+auc<- double(5)
+colours <- c("red", "yellow", "green", "blue", "purple")
+
 for(i in 1:5){
         fit<-gbm(as.formula(formula), 
                  data=train, distribution="bernoulli", n.trees= ntree.seq[i],
                  shrinkage=0.001,interaction.depth=3)
         pred<- predict(fit, test, n.tree=ntree.seq[i], type="response")
-        pred<- ifelse(pred>=0.5,1,0)
-        temp<- ifelse(pred == test$b.rpdol, 0,1)
         errors[i]<- sum(temp)/nrow(test)
         
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres=T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE, print.thres=T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
         #confusion matrix
-        temp2<- data.frame('pred' = pred, 'ans' = test$b.rpdol)
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
         cat(i," ")
 }
 
 conf.matrix
-errors
+auc
 
 #create new data frame 'shrink' to place trees and errors vectors together, then plot:
-shrink<- data.frame("shrinkage"=ntree.seq, "error" = errors[1:5])
-ggplot(shrink, aes(x=shrinkage, y=error)) + geom_line() + geom_point()+ geom_line()
+shrink<- data.frame("shrinkage"=ntree.seq, "auc" = auc[1:5])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
 
-#10000 trees seems best?
+#4000 trees seems best?
 
 #----------------------------------------------------------------------
 
-#shrinkage should be 0.001, 10000 trees, now find interaction.depth
+#shrinkage should be 0.001, 4000 trees, now find interaction.depth
 errors<- double(5)
-int.seq<-c(1,2,4,6,8)
+int.seq<-c(1,2,3,4,6)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
                    '5' = data.frame(c(0,0), c(0,0)))
+auc<- double(5)
+colours <- c("red", "yellow", "green", "blue", "purple")
+
 for(i in 1:5){
         fit<-gbm(as.formula(formula), 
-                 data=train, distribution="bernoulli", n.trees= 10000,
+                 data=train, distribution="bernoulli", n.trees= 4000,
                  shrinkage=0.001,interaction.depth=int.seq[i])
-        pred<- predict(fit, test, n.tree=10000, type="response")
-        pred<- ifelse(pred>=0.5,1,0)
-        temp<- ifelse(pred == test$b.rpdol, 0,1)
+        pred<- predict(fit, test, n.tree=4000, type="response")
         errors[i]<- sum(temp)/nrow(test)
         
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres=T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE, print.thres=T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
         #confusion matrix
-        temp2<- data.frame('pred' = pred, 'ans' = test$b.rpdol)
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
         cat(i," ")
 }
 
 conf.matrix
-errors
+auc
 
 #create new data frame 'shrink' to place trees and errors vectors together, then plot:
-shrink<- data.frame("shrinkage"=int.seq, "error" = errors[1:5])
-ggplot(shrink, aes(x=shrinkage, y=error)) + geom_line() + geom_point()+ geom_line()
+shrink<- data.frame("shrinkage"=int.seq, "auc" = auc[1:5])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
 
-## use interaction.depth = 4?
+## use interaction.depth = 3
 
 
 
 #------------------------------------------------
 # now tune min obs in node
+
 errors<- double(4)
 obs.seq<-c(10,20,40,50)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)))
+auc<- double(4)
+colours <- c("red", "yellow", "green", "blue")
+
 for(i in 1:4){
         fit<-gbm(as.formula(formula), 
-                 data=train, distribution="bernoulli", n.trees= 10000,
-                 shrinkage=0.001,interaction.depth=4,
+                 data=train, distribution="bernoulli", n.trees= 4000,
+                 shrinkage=0.001,interaction.depth=3,
                  n.minobsinnode = obs.seq[i])
-        pred<- predict(fit, test, n.tree=10000, type="response")
-        pred<- ifelse(pred>=0.5,1,0)
-        temp<- ifelse(pred == test$b.rpdol, 0,1)
-        errors[i]<- sum(temp)/nrow(test)
+        pred<- predict(fit, test, n.tree=4000, type="response")
+
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres = T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = T)
+        }
+        
+        auc[i]<- auc(pred.p)
         
         #confusion matrix
-        temp2<- data.frame('pred' = pred, 'ans' = test$b.rpdol)
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
         cat(i," ")
 }
 
 conf.matrix
-errors
+auc
 
 #create new data frame 'shrink' to place trees and errors vectors together, then plot:
-shrink<- data.frame("shrinkage"=obs.seq, "error" = errors[1:4])
-ggplot(shrink, aes(x=shrinkage, y=error)) + geom_line() + geom_point()+ geom_line()
+shrink<- data.frame("shrinkage"=obs.seq, "auc" = auc[1:4])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
+
+#go with 10
+
+```
+
+So paramters are .... 
+
+    * shrinkage = 0.001
+    * exclude vars = JD.Second, Business, code.client, Year, code.contact
+    * n.trees = 4000
+    * interaction.depth = 3
+    * minobsinnode = 10
+    
+to obtain AUC = 0.785
+
+But can we improve the AUC by bringing back some of the missing variables in a smart way?? 
+
+For example, bring back code.client, but only if clients have more than say 10 jobs?
+
+```{r, echo=FALSE}
+
+#new variable for clients with more than 10 jobs
+#list of clients with more than 10 jobs
+all9b<- all9a
+client.count<- ddply(all9b, .(code.client), nrow)
+client.count<- arrange(client.count, -V1)
+
+client.count2<- client.count[client.count$V1>20 & !is.na(client.count$code.client),]
+
+all9b$code.client<- as.character(all9b$code.client)
+all9b$reduc.client<- ifelse(all9b$code.client %in% client.count2$code.client,
+                            all9b$code.client,
+                            NA)
+all9b$code.client<- as.factor(all9b$code.client)
+all9b$reduc.client<- as.factor(all9b$reduc.client)
+
+#see if ROC improves
+
+formula<- "b.rpdol~.- mlsto - return.pdol-Year-code.client - code.contact-JD.Second - Business"
+
+client.lim <- c(20,30,40,60,70)
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
+                   '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
+                   '5' = data.frame(c(0,0), c(0,0)))
+auc<- double(5)
+colours <- c("red", "yellow", "green", "blue", "purple")
+
+for(i in 1:5){
+        
+        client.count2<- client.count[client.count$V1> client.lim[i] &
+                                             !is.na(client.count$code.client),]
+        all9b$code.client<- as.character(all9b$code.client)
+        all9b$reduc.client<- ifelse(all9b$code.client %in% client.count2$code.client,
+                            all9b$code.client,
+                            NA)
+        all9b$code.client<- as.factor(all9b$code.client)
+        all9b$reduc.client<- as.factor(all9b$reduc.client)
+
+        #see if ROC improves
+
+        #redo train and test
+        set.seed = 300
+        sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+        train<- all9a[sample,]
+        test<- all9a[-sample,]
+        
+        #make boosted tree
+        fit<-gbm(as.formula(formula), 
+                 data=train, distribution="bernoulli", n.trees= 4000,
+                 shrinkage=0.001,interaction.depth=3,
+                 n.minobsinnode = 10)
+        pred<- predict(fit, test, n.tree=4000, type="response")
+
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres = T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
+        #confusion matrix
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
+        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+        cat(i," ")
+        
+}
+
+conf.matrix
+auc
+
+#create new data frame 'shrink' to place trees and errors vectors together, then plot:
+shrink<- data.frame("shrinkage"=client.lim, "auc" = auc[1:5])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
+
+#best I can do is 0.783
+```
+
+Make a function to do the same with code.contact, JD.Second, and Business????
 
 
 
 
+    
+    
+    
+    
+    
+    

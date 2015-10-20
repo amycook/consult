@@ -212,16 +212,25 @@ all8b[is.na(all8b)]<- ""
 all8b[]<- lapply(all8b, as.factor)
 summary(all8b)
 
+#remove spaces, '.' and '/' from column titles
+names(all8b)<- gsub("\\.|\\/|\\s", "_", names(all8b))
+
+#remove spaces, '.' and '/' from all variable levels
+all8b[]<- sapply(all8b, function(x) {gsub("\\.|\\/|\\s", "_", x)} )
+all8b[]<- lapply(all8b, factor)
+
 write.csv(all8b,'C:/Users/n9232371/Documents/Consultbusiness/data/all8b.csv' )
 
 #look at complete cases for no.users, discipline, pc.pro, business, code.client,
 #JD.Second, majority.pos, timespan.cbrt, inv.mlsto.log, pc.majpos.log
 
 all8b<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8b.csv',
-                 na.strings = "")
-all8c<- all8b %>% select(b.no.users,Discipline,b.pc.pro, Business, code.client,
-                         JD.Second, majority.pos, b.timespan.cbrt, 
-                         b.inv.log, b.pcmajpos, b.rpdol)
+                 na.strings = "")[,-1]
+all8c<- all8b %>% select(b_no_users, Discipline, b_pc_pro, Business, code_client,
+                         JD_Second, majority_pos, b_timespan_cbrt,
+                         b_inv_log, b_pcmajpos, b_rpdol)
+
+
 all8c<- all8c[complete.cases(all8c),]
 dim(all8c)
 
