@@ -26,11 +26,13 @@ all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')[,
 
 all8a$b.rpdol<- all8a$return.pdol 
 all8a$b.rpdol<- ifelse(all8a$return.pdol<=0, 1, 0)
+all8a$timespan.cbrt <- ifelse(all8a$timespan.cbrt ==0, 1, all8a$timespan.cbrt)
 
 summary(all8a$b.rpdol)
 
 all9a<- all8a
 write.csv(all9a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')
+all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,-1]
 
 ```
 
@@ -38,7 +40,7 @@ write.csv(all9a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')
 Create test and train sample
 
 ```{r, echo=FALSE}
-set.seed(300)
+set.seed(200)
 sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
 train<- all9a[sample,]
 test<- all9a[-sample,]
@@ -190,7 +192,7 @@ ggplot(shrink, aes(x=shrinkage, y= auc)) + geom_line() + geom_point()+ geom_line
 
 
 #shrinkage should be 0.001, now find number of trees
-errors<- double(5)
+
 ntree.seq<-c(2000,3000,4000,6000,8000)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
@@ -232,12 +234,12 @@ auc
 shrink<- data.frame("shrinkage"=ntree.seq, "auc" = auc[1:5])
 ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
 
-#4000 trees seems best?
+#6000 trees seems best?
 
 #----------------------------------------------------------------------
 
 #shrinkage should be 0.001, 4000 trees, now find interaction.depth
-errors<- double(5)
+
 int.seq<-c(1,2,3,4,6)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
@@ -247,10 +249,9 @@ colours <- c("red", "yellow", "green", "blue", "purple")
 
 for(i in 1:5){
         fit<-gbm(as.formula(formula), 
-                 data=train, distribution="bernoulli", n.trees= 4000,
+                 data=train, distribution="bernoulli", n.trees= 6000,
                  shrinkage=0.001,interaction.depth=int.seq[i])
-        pred<- predict(fit, test, n.tree=4000, type="response")
-        errors[i]<- sum(temp)/nrow(test)
+        pred<- predict(fit, test, n.tree=6000, type="response")
         
         #pROC
         pred.p<- roc(test$b.rpdol, pred)
@@ -286,7 +287,6 @@ ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line(
 #------------------------------------------------
 # now tune min obs in node
 
-errors<- double(4)
 obs.seq<-c(10,20,40,50)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)))
@@ -295,10 +295,10 @@ colours <- c("red", "yellow", "green", "blue")
 
 for(i in 1:4){
         fit<-gbm(as.formula(formula), 
-                 data=train, distribution="bernoulli", n.trees= 4000,
+                 data=train, distribution="bernoulli", n.trees= 6000,
                  shrinkage=0.001,interaction.depth=3,
                  n.minobsinnode = obs.seq[i])
-        pred<- predict(fit, test, n.tree=4000, type="response")
+        pred<- predict(fit, test, n.tree=6000, type="response")
 
         #pROC
         pred.p<- roc(test$b.rpdol, pred)
@@ -327,7 +327,7 @@ auc
 shrink<- data.frame("shrinkage"=obs.seq, "auc" = auc[1:4])
 ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
 
-#go with 10
+#go with 10????!
 
 ```
 
@@ -340,6 +340,123 @@ So paramters are ....
     * minobsinnode = 10
     
 to obtain AUC = 0.785
+
+Can we change timespan to discretised without affecting AUC??
+
+
+```{r, echo=FALSE}
+
+formula<- "b.rpdol~.- mlsto - return.pdol-Year-code.client - code.contact-JD.Second - Business - timespan.cbrt"
+
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
+                   '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)))
+auc<- double(4)
+colours <- c("red", "yellow", "green", "blue")
+timeclust.seq<- c(4:7)
+
+x<- dist(all9a$timespan.cbrt, method = 'euclidean')
+h.fit<- hclust(x, method = 'ward.D2')
+
+for(i in 1:4){
+        #create timespan cluster number column
+        all9a$b.timespan.cbrt<- as.factor(cutree(h.fit, k= timeclust.seq[i]))
+        
+        set.seed(300)
+        sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+        train<- all9a[sample,]
+        test<- all9a[-sample,]
+        
+        fit<-gbm(as.formula(formula), 
+                 data=train, distribution="bernoulli", n.trees= 4000,
+                 shrinkage=0.001,interaction.depth=3,
+                 n.minobsinnode = 10)
+        pred<- predict(fit, test, n.tree=4000, type="response")
+
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres = T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
+        #confusion matrix
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
+        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+        cat(i," ")
+}
+
+conf.matrix
+auc
+
+#create new data frame 'shrink' to place trees and errors vectors together, then plot:
+shrink<- data.frame("shrinkage"= timeclust.seq, "auc" = auc[1:4])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
+
+#takes it down to 0.781 with 5 clusters, not too bad for the ability to use timespan clusters.
+#takes it down to 0.783 with 6 clusters
+
+```
+
+6 timespan clusters seems to give quite good performance :) 0.783. Lets see what those clusters are:
+
+```{r, echo=FALSE}
+
+#timespan.cbrt
+first.vec<- all9a$timespan.cbrt
+x<- dist(first.vec, method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+k.choose=6
+rect.hclust(fit, k = k.choose)
+
+#assign a cluster number to all rows in data frame
+all9a$b.timespan.cbrt<- as.factor(cutree(fit, k= k.choose))
+
+for(i in 1:k.choose){
+        print(
+        summary(all9a %>% select(b.timespan.cbrt, timespan.cbrt) %>% 
+                        filter(b.timespan.cbrt ==i))
+        )
+}
+
+#clusters roughly break down to 1 day, 3 wks, 2.5m, 9m, 1.5yr, 3 yr, over 3 yr
+# in cbrt days this is equivalent to breaks of 0,1,2,7589, 4.2358, 6.5, 8.183, 10.307, 14.1
+#make new clusters:
+all9a$b.timespan.cbrt<- cut(all9a$timespan.cbrt, 
+                            breaks= c(0,2.7589, 4.2358, 6.5, 8.183, 10.307, 14.1), 
+                            include.lowest=TRUE, 
+                            labels= c("1d-3wk","3wk-2.5m", "2.5m-9m","9m-1.5y","1.5y-3y",">3y"))
+
+set.seed(300)
+sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+train<- all9a[sample,]
+test<- all9a[-sample,]
+
+fit<-gbm(as.formula(formula), 
+        data=train, distribution="bernoulli", n.trees= 4000,
+        shrinkage=0.001,interaction.depth=3,
+        n.minobsinnode = 10)
+pred<- predict(fit, test, n.tree=4000, type="response")
+
+#pROC
+pred.p<- roc(test$b.rpdol, pred)
+plot.roc(pred.p, col= "pink", print.thres = T)
+auc(pred.p)
+
+#reduces AUC to 0.780 :(
+#go through tuning process again?
+
+all9a<- all9a %>% select(-timespan.cbrt)
+```
+
+
 
 But can we improve the AUC by bringing back some of the missing variables in a smart way?? 
 
@@ -387,7 +504,7 @@ for(i in 1:5){
         #see if ROC improves
 
         #redo train and test
-        set.seed = 300
+        set.seed = 200
         sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
         train<- all9a[sample,]
         test<- all9a[-sample,]

@@ -39,6 +39,8 @@ all8a$b.pc.pro<- cut(all8a$pc.pro, breaks=c(0,15,40,75,95,100), include.lowest=T
 
 ###
 #timespan.cbrt
+# all timespan == 0 should be timespan ==1. Checked all7a and they all have at least 0.5 hour booked, max 18 hours.
+all8a$timespan.cbrt <- ifelse(all8a$timespan.cbrt ==0, 1, all8a$timespan.cbrt)
 first.vec<- all8a$timespan.cbrt
 x<- dist(first.vec, method = 'euclidean')
 fit<- hclust(x, method = 'ward.D2')
