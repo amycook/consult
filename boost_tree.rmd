@@ -14,7 +14,7 @@ library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
 library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
 library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
 library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('ROCR',lib='C:/Progra~1/R/R-3.2.2/library')
+library('pROC',lib='C:/Progra~1/R/R-3.2.2/library')
 
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 ```
@@ -26,6 +26,7 @@ all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')[,
 
 all8a$b.rpdol<- all8a$return.pdol 
 all8a$b.rpdol<- ifelse(all8a$return.pdol<=0, 1, 0)
+all8a$pc.pro<- ifelse(all8a$pc.pro == 0 & is.na(all8a$pc.majpos.log), NA, all8a$pc.pro)
 all8a$timespan.cbrt <- ifelse(all8a$timespan.cbrt ==0, 1, all8a$timespan.cbrt)
 
 summary(all8a$b.rpdol)
@@ -457,6 +458,86 @@ all9a<- all9a %>% select(-timespan.cbrt)
 ```
 
 
+Attempt at caret package with gbm
+
+```{r, echo=FALSE}
+
+# must turn outcome into two level factor
+all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,-1]
+all9a$f.rpdol<- as.factor(all9a$b.rpdol)
+set.seed(100)
+sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+train<- all9a[sample,]
+test<- all9a[-sample,]
+
+# set seeds
+set.seed(123)
+seeds <- vector(mode = "list", length = 51)
+for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
+## For the last model:
+seeds[[51]] <- sample.int(1000, 1)
+
+# first tune shrinkage and number of trees
+train2<- train
+train2$b.rpdol<- as.factor(train2$b.rpdol)
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="0"] <- "profit"
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="1"] <- "loss"
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log +
+client.totinv.log + pc.majpos.log + Billing.Type + majority.pos"
+
+cv.Control <- trainControl(method = "cv",
+                           number = 10,
+                           seeds= seeds
+                           , summaryFunction=twoClassSummary,
+                           classProbs=TRUE
+                           )
+gbmGrid <- expand.grid(shrinkage = c(0.001),
+                       n.trees = c(10000), interaction.depth = c(1,2,3,4,5),
+                       n.minobsinnode = c(10,20,30))
+set.seed(2)
+gbmFit <- train(as.formula(formula), data= train2,
+                 method = "gbm", trControl = cv.Control, verbose = FALSE,
+                 bag.fraction = 0.5, tuneGrid = gbmGrid,
+                metric = 'ROC',
+                na.action = na.pass)
+
+plot(gbmFit)
+plot(gbmFit, plotType = 'level')
+
+#conclusion:
+# min num in terminal node = 10
+# max tree depth = 4
+# n.trees = 10000
+# shrinkage = 0.001
+
+```
+
+After caret tuning, find AUC for test data set for set.seed = 100
+
+```{r, echo = FALSE}
+set.seed(300)
+sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+train<- all9a[sample,]
+test<- all9a[-sample,]
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + pc.majpos.log + Billing.Type + majority.pos"
+
+fit<-gbm(as.formula(formula), 
+                 data=train, distribution="bernoulli", n.trees= 10000,
+                 shrinkage=0.001,interaction.depth=4,
+                 n.minobsinnode = 10)
+pred<- predict(fit, test, n.tree=10000, type="response")
+
+#pROC
+pred.p<- roc(test$b.rpdol, pred)
+plot.roc(pred.p, col= colours[i], print.thres = T)
+
+
+#auc = 0.7788
+
+```
+
 
 But can we improve the AUC by bringing back some of the missing variables in a smart way?? 
 
@@ -481,16 +562,26 @@ all9b$reduc.client<- as.factor(all9b$reduc.client)
 
 #see if ROC improves
 
-formula<- "b.rpdol~.- mlsto - return.pdol-Year-code.client - code.contact-JD.Second - Business"
+formula<- "b.rpdol~.- mlsto - return.pdol- Year- code.client - code.contact- JD.Second - Business-timespan.cbrt"
 
-client.lim <- c(20,30,40,60,70)
+client.lim <- c(20,30,40,60,70, 90)
 conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
                    '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
-                   '5' = data.frame(c(0,0), c(0,0)))
-auc<- double(5)
-colours <- c("red", "yellow", "green", "blue", "purple")
+                   '5' = data.frame(c(0,0), c(0,0)), '6' = data.frame(c(0,0), c(0,0)))
+auc<- rep(list(rep(0,6)),6)
+colours <- c("red", "yellow", "green", "blue", "purple", "pink")
 
-for(i in 1:5){
+
+#set up train and test
+        set.seed = 100
+        sample<- sample(1:nrow(all9a), .75*nrow(all9a), replace=F)
+        train<- all9a[sample,]
+        test<- all9a[-sample,]
+        #set up 10 fold cv using caret function
+        folds <- createFolds(train$b.rpdol, k=10, list=T, returnTrain=F)
+        #now have folds[[1]] through folds[[5]] list of rows to exclude 
+        
+for(i in 1:6){
         
         client.count2<- client.count[client.count$V1> client.lim[i] &
                                              !is.na(client.count$code.client),]
@@ -500,21 +591,130 @@ for(i in 1:5){
                             NA)
         all9b$code.client<- as.factor(all9b$code.client)
         all9b$reduc.client<- as.factor(all9b$reduc.client)
+        
 
         #see if ROC improves
-
-        #redo train and test
-        set.seed = 200
-        sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
-        train<- all9a[sample,]
-        test<- all9a[-sample,]
         
-        #make boosted tree
+        for (j in 1:10){
+                #make boosted tree
+                fit<-gbm(as.formula(formula), 
+                         data=train[-folds[[j]],], distribution="bernoulli", n.trees= 10000,
+                         shrinkage=0.001,interaction.depth=4,
+                         n.minobsinnode = 10)
+                
+                pred<- predict(fit, train[folds[[j]], ], n.tree=10000, type="response")
+                
+                        #pROC
+                        pred.p<- roc(train[folds[[j]],'b.rpdol'], pred)
+        
+                        if(i==1 & j==1){
+                                plot.roc(pred.p, col= colours[i], print.thres = F)
+                
+                        } else{
+                                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = F)
+                        }
+        
+                        auc[[i]][j]<- auc(pred.p)
+        
+                        #confusion matrix
+#                         conf.mat<- coords(pred.p, "best")
+#                         pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+#                         temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
+#                         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+#                         cat(i," ")  
+                        cat(j, " ")
+        }
+        
+        
+        print(i)        
+}
+
+conf.matrix
+auc
+
+#create new data frame 'shrink' to place trees and errors vectors together, then plot:
+shrink<- data.frame("shrinkage"=client.lim, "auc" = auc[[1:5]][6])
+means<- sapply(auc, function(x) tail(x,1))
+ggplot(shrink, aes(x=shrinkage, y=means)) + geom_line() + geom_point()
+a<- ggplot(melt(auc), aes(x= factor(L1), y= value)) + geom_boxplot()
+
+
+#save AUC for each 10 fold cross validation iteration, where client count cut off varied from 
+client.cutoff<- melt(auc)
+client.cutoff$L1<- as.factor(client.cutoff$L1)
+levels(client.cutoff$L1)<- c("20","30","40","60","70", "90")
+colnames(client.cutoff)[names(client.cutoff) %in% 'L1']<-'min.client.count'
+colnames(client.cutoff)[names(client.cutoff) %in% 'value']<-'AUC'
+write.csv(client.cutoff, 'C:/Users/n9232371/Documents/github/consult/finalwriteup/images/boosted tree/client_cutoff.csv')
+
+a<- ggplot(client.cutoff, aes(x= min.client.count, y= AUC)) + geom_boxplot()
+ggsave('C:/Users/n9232371/Documents/github/consult/finalwriteup/images/boosted tree/clientcode.jpg', a)
+
+#client id useless for boosted trees!!
+
+```
+
+
+What about JD.Second?
+
+```{r,echo=FALSE}
+
+#compact JD.Second into less categories
+all9a$JD.Second<- as.character(all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("heritage|expert", all9a$JD.Second), 
+                          "heritage_expert", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("wharf|bridges", all9a$JD.Second), 
+                          "wharf_bridge", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("membrane|art|awning|facade", all9a$JD.Second), 
+                          "art_facade_awn_memb", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("hosp|emerg|health|carpark", all9a$JD.Second), 
+                          "hosp_health_carpark", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("sign|product", all9a$JD.Second), 
+                          "sign_product", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("hotel|office|dining", all9a$JD.Second), 
+                          "hotel_office_dining", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("report|investigation", all9a$JD.Second), 
+                          "report", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("waste water|management", all9a$JD.Second), 
+                          "waste_wat_manage", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("univ|commun|school|exten", all9a$JD.Second), 
+                          "edu_exten_community", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("multi|house", all9a$JD.Second), 
+                          "residential", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("flood|harvest|recycled", all9a$JD.Second), 
+                          "flood_h2o_harvest", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("bldg|subdiv|sewer", all9a$JD.Second), 
+                          "civBldg_subdiv_sewer", all9a$JD.Second)
+all9a$JD.Second <- ifelse(grepl("aged|erosion", all9a$JD.Second), 
+                          NA, all9a$JD.Second)
+
+all9a$JD.Second<- as.factor(all9a$JD.Second)
+
+
+#now see if improvement with JD.Second
+
+var.seq<-c("no.users + JD.Second", 
+           "no.users")
+
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)))
+auc<- double(2)
+colours <- c("red", "yellow")
+
+#make fresh random sample of data
+set.seed(1000)
+sample<- sample(1:nrow(all9a), 2/3*nrow(all9a), replace=F)
+train<- all9a[sample,]
+test<- all9a[-sample,]
+
+for(i in 1:2){
+        
+        formula<- paste("b.rpdol~ Discipline + pc.pro + inv.mlsto.log + pc.majpos.log + majority.pos + b.timespan.cbrt + client.totinv.log + Billing.Type", var.seq[i], sep= " + ")
+        
         fit<-gbm(as.formula(formula), 
-                 data=train, distribution="bernoulli", n.trees= 4000,
-                 shrinkage=0.001,interaction.depth=3,
+                 data=train, distribution="bernoulli", n.trees= 10000,
+                 shrinkage=0.001,interaction.depth=4,
                  n.minobsinnode = 10)
-        pred<- predict(fit, test, n.tree=4000, type="response")
+        pred<- predict(fit, test, n.tree=10000, type="response")
 
         #pROC
         pred.p<- roc(test$b.rpdol, pred)
@@ -534,21 +734,21 @@ for(i in 1:5){
         temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
         cat(i," ")
-        
 }
 
 conf.matrix
 auc
 
 #create new data frame 'shrink' to place trees and errors vectors together, then plot:
-shrink<- data.frame("shrinkage"=client.lim, "auc" = auc[1:5])
+shrink<- data.frame("shrinkage"=1:2, "auc" = auc[1:2])
 ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
 
-#best I can do is 0.783
+# generally slightly better without JD.Second :(
+
+
 ```
 
-Make a function to do the same with code.contact, JD.Second, and Business????
-
+What about Business?
 
 
 
