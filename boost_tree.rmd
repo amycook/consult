@@ -750,11 +750,215 @@ ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line(
 
 What about Business?
 
+```{r,echo=FALSE}
+
+#compact JD.Second into less categories
+
+all9a$Business<- as.character(all9a$Business)
+all9a$Business <- ifelse(grepl("lawyer|body", all9a$Business), 
+                     "lawyer_bodyC", all9a$Business)
+all9a$Business <- ifelse(grepl("univ|school", all9a$Business), 
+                     "uni_school", all9a$Business)
+all9a$Business <- ifelse(grepl("sign|manuf", all9a$Business), 
+                     "sign_manufac", all9a$Business)
+all9a$Business <- ifelse(grepl("environ|water", all9a$Business), 
+                     "enviro_water", all9a$Business)
+all9a$Business <- ifelse(grepl("road|gov|util", all9a$Business), 
+                     "road_rail_gov_util", all9a$Business)
+all9a$Business <- ifelse(grepl("artist|landscape", all9a$Business), 
+                     "artist_landarch", all9a$Business)
+all9a$Business <- ifelse(grepl("hospit|institut|health", all9a$Business), 
+                     "hosp_institut_health", all9a$Business)
+all9a$Business <- ifelse(grepl("business|building|internal", all9a$Business), 
+                     "biz_bldgserv_internal", all9a$Business)
+
+all9a$Business<- as.factor(all9a$Business)
+
+write.csv(all9a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv') # c for compacted variables
+all9c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
+    
+#now see if improvement with JD.Second
+
+var.seq<-c("no.users + Business", 
+           "no.users")
+
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)))
+auc<- double(2)
+colours <- c("red", "yellow")
+
+#make fresh random sample of data
+set.seed(200)
+sample<- sample(1:nrow(all9c), 2/3*nrow(all9c), replace=F)
+train<- all9c[sample,]
+test<- all9c[-sample,]
+
+for(i in 1:1){
+        
+        formula<- paste("b.rpdol~ Discipline + pc.pro + inv.mlsto.log + pc.majpos.log + majority.pos + b.timespan.cbrt + client.totinv.log + Billing.Type", var.seq[i], sep= " + ")
+        
+        fit<-gbm(as.formula(formula), 
+                 data=train, distribution="bernoulli", n.trees= 10000,
+                 shrinkage=0.001,interaction.depth=4,
+                 n.minobsinnode = 20)
+        pred<- predict(fit, test, n.tree=10000, type="response")
+
+        #pROC
+        pred.p<- roc(test$b.rpdol, pred)
+        
+        if(i==1){
+                plot.roc(pred.p, col= colours[i], print.thres = T)
+                
+        } else{
+                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = T)
+        }
+        
+        auc[i]<- auc(pred.p)
+        
+        #confusion matrix
+        conf.mat<- coords(pred.p, "best")
+        pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+        temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
+        conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+        cat(i," ")
+}
+
+conf.matrix
+auc
+
+#create new data frame 'shrink' to place trees and errors vectors together, then plot:
+shrink<- data.frame("shrinkage"=1:2, "auc" = auc[1:2])
+ggplot(shrink, aes(x=shrinkage, y=auc)) + geom_line() + geom_point()+ geom_line()
+
+# Business helps!!!!!!!!
+
+```
+    
+Tune again with caret package, INCLUDING Business category. 
+    
+```{r, echo=FALSE}
+
+# set seeds
+set.seed(123)
+seeds <- vector(mode = "list", length = 51)
+for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
+## For the last model:
+seeds[[51]] <- sample.int(1000, 1)
+
+#create test train
+sample<- sample(1:nrow(all9c), 2/3*nrow(all9c), replace=F)
+train<- all9c[sample,]
+test<- all9c[-sample,]
+
+# first tune shrinkage and number of trees
+train2<- train
+train2$b.rpdol<- as.factor(train2$b.rpdol)
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="0"] <- "profit"
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="1"] <- "loss"
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log +
+client.totinv.log + pc.majpos.log + Billing.Type + majority.pos + Business"
+
+cv.Control <- trainControl(method = "cv",
+                           number = 5,
+                           seeds= seeds
+                           , summaryFunction=twoClassSummary,
+                           classProbs=TRUE
+                           )
+gbmGrid <- expand.grid(shrinkage = c(0.001),
+                       n.trees = c(10000), interaction.depth = c(1,2,3,4,5),
+                       n.minobsinnode = c(10,20,30,40))
+set.seed(2)
+gbmFit <- train(as.formula(formula), data= train2,
+                 method = "gbm", trControl = cv.Control, verbose = FALSE,
+                 bag.fraction = 0.5, tuneGrid = gbmGrid,
+                metric = 'ROC',
+                na.action = na.pass)
+
+plot(gbmFit)
+plot(gbmFit, plotType = 'level')
+
+# therefore:
+# shrinkage = 0.001
+# no trees = 10000
+# min terminal node size = 20
+# max tree depth = 4
+
+# AUC approx 0.770 in 5 fold CV 
+
+```
+
+Does the boosted tree perform better with a subset of the data based on later years?
+
+```{r, echo=FALSE}
 
 
-    
-    
-    
-    
-    
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log +
+client.totinv.log + pc.majpos.log + majority.pos + Business"
+
+Year.lim <- c(2000, 2004, 2006, 2008, 2009, 2010)
+conf.matrix<- list('1' = data.frame(c(0,0), c(0,0)), '2' = data.frame(c(0,0), c(0,0)),
+                   '3' = data.frame(c(0,0), c(0,0)), '4' = data.frame(c(0,0), c(0,0)),
+                   '5' = data.frame(c(0,0), c(0,0)), '6' = data.frame(c(0,0), c(0,0)))
+auc<- rep(list(rep(0,8)),6)
+colours <- c("red", "yellow", "green", "blue", "purple", "pink")
+
+        
+for(i in 1:6){
+        
+        #set up train and test
+        set.seed = 100
+        subset = all9c %>% filter(Year> Year.lim[i])
+        sample<- sample(1:nrow(subset), .75*nrow(subset), replace=F)
+        train<- all9c[sample,]
+        test<- all9c[-sample,]
+        #set up 10 fold cv using caret function
+        folds <- createFolds(train$b.rpdol, k=8, list=T, returnTrain=F)
+        #now have folds[[1]] through folds[[5]] list of rows to exclude 
+
+        #see if ROC improves
+        
+        for (j in 1:8){
+                #make boosted tree
+                fit<-gbm(as.formula(formula), 
+                         data=train[-folds[[j]],], distribution="bernoulli", n.trees= 10000,
+                         shrinkage=0.001,interaction.depth=4,
+                         n.minobsinnode = 20)
+                
+                pred<- predict(fit, train[folds[[j]], ], n.tree=10000, type="response")
+                
+                        #pROC
+                        pred.p<- roc(train[folds[[j]],'b.rpdol'], pred)
+        
+                        if(i==1 & j==1){
+                                plot.roc(pred.p, col= colours[i], print.thres = F)
+                
+                        } else{
+                                plot.roc(pred.p, col= colours[i], add=TRUE , print.thres = F)
+                        }
+        
+                        auc[[i]][j]<- auc(pred.p)
+        
+                        #confusion matrix
+#                         conf.mat<- coords(pred.p, "best")
+#                         pred1<- ifelse(pred>= conf.mat[1], 1, 0)
+#                         temp2<- data.frame('pred' = pred1, 'ans' = test$b.rpdol)
+#                         conf.matrix[[i]] = as.data.frame.matrix(table(temp2$pred, temp2$ans))
+#                         cat(i," ")  
+                        cat(j, " ")
+        }
+        
+        
+        print(i)        
+}
+
+conf.matrix
+auc
+saveRDS(auc, 'C:/Users/n9232371/Documents/github/consult/finalwriteup/images/boosted tree/Year_vary_cv.rds')
+
+a<- ggplot(melt(auc), aes(x= factor(L1), y= value)) + geom_boxplot()
+
+# All years are required! Gives the best result
+```
+
     
