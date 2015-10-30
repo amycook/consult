@@ -1,0 +1,107 @@
+---
+title: "Financial_Analysis"
+author: "Amy Cook"
+date: "October 21, 2015"
+output: word_document
+---
+
+#Assess financial implications for a predictive model
+
+We typically get a confusion matrix built from probabilities
+
+
+```{r_loadpackages, echo=FALSE, include=FALSE}
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
+library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('ROCR',lib='C:/Progra~1/R/R-3.2.2/library')
+
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+```
+
+Load data
+
+```{r, echo=FALSE}
+test.pred <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/test_review.csv')
+all7d <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')
+test.pred<- merge(test.pred, all7d %>% select(mlsto, balance.mlsto), by = "mlsto")
+
+```
+
+
+Create vector of profit points
+
+```{r, echo=FALSE}
+
+threshold<- seq(0,1, by=.05)
+fin.prof<- rep(0, length(threshold))
+
+for(i in 1:length(threshold)){
+        prof<- data.frame("balance" = test.pred$balance.mlsto, 
+                  "pred" = test.pred$pred,
+                  "ans" = test.pred$b.rpdol)
+        #pred = probabilities
+        prof$conf <- rep(0, nrow(prof))
+        prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 1, 'TP', prof$conf)
+        prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 0, 'FP', prof$conf)
+        prof$profit<- rep(0, nrow(prof))
+        prof$profit<- ifelse(prof$conf %in% "TP", -prof$balance, prof$profit)
+        prof$profit<- ifelse(prof$conf %in% "FP", -prof$balance, prof$profit)
+
+        fin.prof[i] = sum(prof$profit)
+        
+}
+
+prof.plot<- data.frame("threshold" = threshold, "final.profit" = fin.prof)
+
+ggplot(prof.plot, aes(x=threshold, y=final.profit)) + geom_point() + geom_line()
+
+# if say no to all jobs with higher than prob of 0.5, save $500,000
+
+head(prof)
+
+####
+# SUMMARY STATS
+####
+
+# would dismiss 56 jobs
+prof %>% filter(pred>=0.5) %>% nrow
+
+# would dismiss 19 profitable jobs
+prof %>% filter(pred >= 0.5 & balance > 0) %>% nrow
+#out of 607
+prof %>% filter(balance > 0) %>% nrow
+
+# would dismiss 37 losing jobs
+prof %>% filter(pred >= 0.5 & balance < 0) %>% nrow
+#out of 135
+prof %>% filter(balance < 0) %>% nrow
+
+#without algorithm, balance would be $1,475,642
+sum(prof$balance)
+
+# without any losing jobs, balance would be $2,516,246
+prof %>% filter(balance > 0) %>% sum
+
+# without any profitable jobs, balance would be -$1,040,322
+prof %>% filter(balance < 0) %>% sum
+
+#how much real profit would you be dismissing? $82631
+prof.dismis<- prof %>% filter(pred >= 0.5 & balance > 0) %>% select(balance) %>% sum
+#how much real loss would you be avoiding? $566,481.6
+loss.dismis<- prof %>% filter(pred >= 0.5 & balance < 0) %>% select(balance) %>% sum
+# total benefit = $483,850
+algor.prof<- -(loss.dismis + prof.dismis)
+
+# total balance would be $1,959,492
+sum(prof$balance) + algor.prof
+
+# a 32.8% improvement
+algor.prof/sum(prof$balance)
+
+```
+
