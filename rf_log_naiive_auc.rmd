@@ -174,7 +174,7 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                 
                 #set up 10 fold cv using caret function
                 folds <- createFolds(df$f.rpdol, k = 10, list = T, returnTrain = F)
-                #now have folds[[1]] through folds[[5]] list of rows to exclude
+                #now have folds[[1]] through folds[[10]] list of rows to exclude
                 
                 if(mult > 1){
                         for(k in 2:mult){
