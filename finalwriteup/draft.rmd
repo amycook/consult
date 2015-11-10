@@ -167,23 +167,21 @@ Although this case study presents an opportunity to test the predictive power he
 
 ### 1.1.4 Research Motivation Summary
 
-Fixed price cost estimation for complex projects is a difficult task and when performed incorrectly, can have devastating affects on businesses and governments. Many theories have delved into human nature and our tendency to optimistically assess our capabilities with respect to a given task. In this case, the optimism often results in negative business consequences affecting employee morale and the capacity of a company to flourish and grow. Over the past few decades, significant research has been dedicated to creating predictive models that present the 'outside view' of a project, by statistically comparing a new project to numerous similar projects and their characteristics. It has been shown that these models improve the cost estimation, however industry uptake has not been successful. It has proven to be a challenging task to persuade managers to use this so called reference class models in practise and remove themselves from additions based on intricate details of the completed project. This may be due to a number of reasons including lack of understanding, time, and lack of collaboration with industry in development of these models.  
+Fixed price cost estimation for complex projects is a difficult task and when performed incorrectly, can have devastating affects on businesses and governments. Many theories have delved into human nature and our tendency to optimistically assess our capabilities with respect to a given task. In this case, the optimism often results in negative business consequences affecting employee morale and the capacity of a company to flourish and grow. Over the past few decades, significant research has been dedicated to creating predictive models that present the 'outside view' of a project, by statistically comparing a new project to numerous similar projects and their characteristics. It has been shown that these models improve the cost estimation, however industry uptake has not been successful. It has proven to be a challenging task to persuade managers to use this so called reference class models in practise and remove themselves from additions based on intricate details of the completed project. This may be due to a number of reasons including lack of understanding, time, and lack of collaboration with industry in development of these models. This research examines the potential for a company's internally generated CRM data to be used in creating a reference class forecasting model. This has the potential to influence the managers' decisions in the company more however its limitations must be understood in order to create a good model.
 
 
-## Thesis aims
+## 2.0 Thesis aims
 
 For the reasons explained above, the aim of this research is as follows:
 
-**General Aim** The aim of this project is to use statistical techniques to model decisions for consulting businesses. Research will focus on a case study Engineering consulting company that sells their expert advice (in the currency of time) to business clients. The business decisions include predicting project fees before project engagement and client analysis using existing invoicing and hourly employee-cost data. Several statistical and machine learning techniques will be tested, compared and refined.
+**General Aim** The aim of this project is to use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. The project outcomes are intended to assist the business in  predicting project costs before project engagement and other business analyses such as client analysis. Several statistical and machine learning techniques will be tested, compared and refined.
 
-**Hypothesis 1** 
-k-means clustering methods can identify groups of similar projects with significant differences in profitability.
 
-Unsupervised learning to identify clusters is a successful marketing technique used by retail companies to target groups of similar customers with similar habits and preferences. In this case of consulting companies, clusters may have multiple uses. New projects may have characteristics that slot into an 'unprofitable' cluster and the decision is clear to not engage in the project. Alternatively, if past projects and accompanying clients are found to fall into a very profitable cluster, consulting managers may focus services on these clients and reach out to these clients in particular for new projects.
-
+**Hypothesis 1**
+A statistical or machine learning model based on historical project data can predict the profitability of a new project.
 
 **Hypothesis 2**
-A statistical or machine learning model based on historical project data can predict the profitability of a new project with sufficient confidence to influence a project manager's fee proposal.
+The predictive model built from Hypothesis 1 can be proven to have a positive impact on the bottom line of the case study business.
 
 
 
@@ -213,28 +211,33 @@ summary of findings, implications for use within industry, limitations
 
 # Chapter 2 Literature Review - 25 pages for pHd
 
-This chapter provides an overview of the literature available about current business to business (B2B) decision strategy as well as methods in machine learning and statistical business prediction models. In particular, the literature on B2B decision strategy is centred around setting fixed consulting fees and methods of targeting new clients or projects. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project.
+This chapter provides an overview of the literature available about current business to business (B2B) cost estimation methods, use cases of CRM data, as well as machine learning algorithms and statistical business prediction models. In particular, the literature on B2B decision strategy is centred around setting fixed consulting fees and methods of managing effective consulting projects. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project.
 
-## 2.1 Business to Business Decision Strategy
+## 2.1 Fixed Cost Estimation Methods
 
-### 2.1.1 Client and project analysis
+### 2.1.1 Contract Structures
 
-* clustering
-* how do businesses currently review their projects or clients
+* research into contract structures to prevent loss
+* benefits of flexible type contracts
+* Gap: mobilising when to implement flexible contracts - takes away from client relationship but jobs that make losses are pointless and eventually deteoriate relationships
 
-### 2.1.2 Fixed fees
+### 2.1.2 Previous work on Regression and Neural Networks?
 
-* fixed fee problem in the IT consulting world - developed new techniques?
 * managers currently go by gut feeling or look up a couple of past examples
-* difficult to combine insights from similar jobs/clients
+* difficult to combine insights from similar jobs/clients, so complex
 
 ### 2.1.3 Gap
 * no mobilisation of CRM data into sophisticated models in B2B world
 
 
-## 2.2 Statistical and machine learning methods applied to business problems
+## 2.2 Use cases of CRM data
 
-### 2.2.1 Most simple and frequent models
+* no idea
+* gap - my project obviously
+
+## 2.3 Statistical and machine learning methods applied to business problems
+
+### 2.3.1 Most simple and frequent models
 
 * anova
 
@@ -244,25 +247,25 @@ This chapter provides an overview of the literature available about current busi
     * cons
         * do these acknowledge their data is not normally distributed?
 
-### 2.2.2 Complex models
+### 2.3.2 Complex models
 
 * SVM, Neural networks, random forest
 * data must not be normal
 * most successful?
 
-### 2.2.3 ensemble methods
+### 2.3.3 ensemble methods
 
 * papers
 * netflix?
 * multi step to deal with missing data
 
-### 2.2.4 similar applications
+### 2.3.4 similar applications
 
 * Employee churn - anything similar?
 * stepped method business application?
 * Gap
 
-## 2.3 Conclusion
+## 2.4 Conclusion
 
 summary of 
 * how are B2B decisions currently made
