@@ -367,17 +367,7 @@ client Business  | 0.524              | 5
 
 * try using the following variables:
 
-```{r, echo=FALSE, include=FALSE}
-library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
 
-all8c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
-
-
-
-vars<- names(all8c)
-vars<- vars[!vars %in% c("Business", "JD_Second", "code_client")]
-
-```
 
 * number of users
 * Discipline
