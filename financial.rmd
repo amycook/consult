@@ -113,7 +113,7 @@ Write function for making 10 boosted trees and checking the predictions/savings 
 
 all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
 
-profit.cv<- function(df.string = "all10mice", method = "log", seed = 300, k.folds = 8){
+profit.cv<- function(df.string = "all10mice", method = "boost", seed = 300, k.folds = 3){
         
         results = data.frame('orig.bal' = rep(0, k.folds), 'orig.prof' = rep(0, k.folds), 
                              'orig.loss' = rep(0, k.folds),
@@ -177,6 +177,7 @@ profit.cv<- function(df.string = "all10mice", method = "log", seed = 300, k.fold
                         
                         #pROC
                         pred.p <- roc(test$f.rpdol, pred)
+                        # plot.roc(pred.p, col= colours[i], print.thres=T)
                         
                         results$auc[j] <- auc(pred.p)
                         

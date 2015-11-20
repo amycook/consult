@@ -1,0 +1,123 @@
+---
+title: "result_review.rmd"
+author: "Amy Cook"
+date: "November 19, 2015"
+output: word_document
+---
+
+```{r_loadpackages, echo=FALSE, include=FALSE}
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
+library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('randomForest', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('pROC',lib='C:/Progra~1/R/R-3.2.2/library')
+
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+```
+
+Load data 
+
+```{r, echo=FALSE}
+
+all7d <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')
+
+
+```
+
+Assemble full data set with predictions
+
+Write function for making 10 boosted trees and checking the predictions/savings for each!
+
+```{r, echo=FALSE}
+
+all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
+
+predict.all<- function(df.string = "all10mice", method = "boost", seed = 300, k.folds = 3){
+        
+        #create dataset for final results to tag onto
+        all10full = NULL
+        
+        df = get(df.string)
+        set.seed(seed)
+        
+        # create f.rpdol
+        df$f.rpdol <- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <-"profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <-"loss"
+        
+        #set up 10 fold cv using caret function
+        folds <- createFolds(df$f.rpdol, k = k.folds, list = T, returnTrain = F)
+        #now have folds[[1]] through folds[[10]] list of rows to exclude
+        
+        
+        if(method %in% 'boost') {
+                        formula = "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+        } else {
+                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+        }
+        
+        
+        for (j in 1:length(folds)) {
+                        
+                        #turn predictors and response into 'ordered' variables for roc() to work
+                        test<- df[folds[[j]],]
+                        levels(test$f.rpdol) <- c('profit', 'loss')
+                        test$f.rpdol <- ordered(test$f.rpdol)
+                        
+                        
+                        if(method %in% 'rf'){
+                                fit <- randomForest(as.formula(formula), data = df[-folds[[j]],], 
+                                            mtry = 5, ntree = 2000)
+                                pred <- predict(fit, test, type = "prob")
+                                pred <- pred[,2]
+                                
+                        } else {
+                                if(method %in% 'log'){
+                                        fit<- glm(as.formula(formula), 
+                                                  data = df[-folds[[j]],], family = binomial())
+                                        pred <- predict(fit, test,
+                                                        type = "response")
+                                } else {
+                                        fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                                   distribution = "bernoulli", n.trees = 10000,
+                                                   shrinkage = 0.001, interaction.depth = 4,
+                                                   n.minobsinnode = 20)
+                                                
+                                                pred <-predict(fit, test, 
+                                                               n.tree = 10000, type = "response")
+                                                }
+                        }
+                        
+                        #pROC
+                        pred.p <- roc(test$f.rpdol, pred)
+                        # plot.roc(pred.p, col= colours[i], print.thres=T)
+                        
+                        auc(pred.p)
+                        
+                        ##
+                        #create full test df
+                        test$pred<- pred
+                        test.pred <- merge(test, all7d %>% select(mlsto, balance.mlsto), by = "mlsto")
+                        
+                        all10full <- rbind(all10full, test.pred)
+                        
+                        #print j value
+                        cat(j, " ")
+                        
+        }
+        
+        
+        return(all10full)
+
+
+}
+
+results.1 <- predict.all(df.string = "all10mice", method = "boost", seed = 400, k.folds = 8)
+
+
+
+```

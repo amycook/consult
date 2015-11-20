@@ -210,11 +210,12 @@ summary of findings, implications for use within industry, limitations
 
 # Chapter 2 Literature Review - 25 pages for pHd
 
-This chapter provides an overview of the literature available about current business to business (B2B) cost estimation methods, use cases of CRM data, as well as machine learning algorithms and statistical business prediction models. In particular, the literature on B2B decision strategy is centred around setting fixed consulting fees and methods of managing effective consulting projects. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project.
+This chapter provides an overview of the literature available about current business to business (B2B) cost estimation methods, use cases of CRM data, as well as machine learning algorithms and statistical business prediction models. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project. Gaps in past research will also be highlighted.
 
 ## 2.1 Fixed Cost Estimation Methods
 
 * Previous methods to address problem of cost estimation
+
     * 
 
 ### 2.1.2 Previous work on Regression and Neural Networks?
@@ -264,17 +265,6 @@ This chapter provides an overview of the literature available about current busi
 **
 
 
-### 2.1.1 Previous Research into improving Project performance via contract
-
-* literature suggesting value based fee structure
-    * fees contingent on results
-
-* has not been an assessment on when certain contract set ups work better than others across all industries. How to assessing clients/projects and when to build in flexibility into your contract 
-
-* we will progress with cost estimation given the client expects some kind of fixed fee
-
-
-* Gap: mobilising when to implement flexible contracts - takes away from client relationship but jobs that make losses are pointless and eventually deteoriate relationships
 
 ## 2.4 Conclusion
 
