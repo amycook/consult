@@ -212,11 +212,46 @@ summary of findings, implications for use within industry, limitations
 
 This chapter provides an overview of the literature available about current business to business (B2B) cost estimation methods, use cases of CRM data, as well as machine learning algorithms and statistical business prediction models. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project. Gaps in past research will also be highlighted.
 
-## 2.1 Fixed Cost Estimation Methods
+## 2.1 Project Cost Estimation Methods
 
-* Previous methods to address problem of cost estimation
+This project will tackle the problem of estimating fixed fees for complex consulting projects. It is therefore imperitive to understand what research has been performed to date and how this project contributes to the body of work. The task of estimating fixed fees can be likened to the terms 'cost estimation' or 'effort estimation' in the literature. The bulk of research to date has been performed with project data in either the construction industry or software development. There is also a body of research on predicting returns on movies in the film industry. The research into cost estimation in each of these three industries is reviewed below, detailing different methods and outcomes. Finally a gap in the literature will be highlighted which this research aims to fill. 
 
-    * 
+### 2.1.1 Cost Estimation in the Construction Industry
+
+Research into cost estimation in the construction industry chiefly focuses on predicting the final building cost of construction. Various studies have surveyed popular methods for cost estimation while others have  investigated new methods such as building information modelling (BIM) analyisis, case based reasoning, and predictive algorithms. The cost estimation methods of detailed analysis (inside view), case based reasoning, and predictive algorithms shall be reviewed.
+
+**Detailed Analysis** 
+
+Detailed analysis refers to the process of an engineer or builder in the construction team carefully reviewing construction drawings and sum the cost of materials, labour, machinery hire, overheads, profit etc. [@Akintoye2000].  @Akintoye2000's study based in the UK found that this is the most popular method for pricing amongst contractors. The second most popular method was to perform an additional manual comparison with similar projects and make judgments based on personal experience. Note that this does not involve a mathematical model. 
+
+@Elfaki2014 discusses how much detailed cost estimates for cosntruction projects can vary from estimator (engineer) to estimator, which contributes to the lack of accuracy in predciting final cost of a project. He argues that an engineer's expertise is not documented or measured in any way and therefore their expertise and therefore estimate is prone to subjectivity. @Shane2009 theorise that final cost can be subject to so many different unpredictable parameters, such as weather, unexpected ground conditions, duration or sub-contractor issues. It is therefore almost impossible to achieve an accurate cost prediction manually [@Elfaki2014].
+
+Groundbreaking methods into calculating construction costs by @Ma2014 mobilise the data from building information modelling, although this method is still technically a detailed analysis of the costs. The idea is to quantify the cost of building a structure directly from a three dimensional model created by the design consultants such as engineers and architects. @Ma2014's first trial was to automate the cost calculation of structure composed of reinforced concrete only. His chief development was to program his algorithm to intelligently establish construction techniques for each element as this is not provided by architectural or engineering models. From the construction technique and material, a cost can be determined for each element. This was successful and Ma aim's to further his work so that more construction information can be intelligently obtained from BIM models. A system like Ma's would definitely accelerate the cost estimation process and reduce human error, however it is still an 'inside view' and could be prone to innaccurate estimates in a similar way to a detailed analysis by a person. The detailed view does not 'step back' and take into account set backs in construction that may have affected similar projects in the past. There is potential for this to be built into the same system but this is still in early stages of development.
+
+
+Survey information on the latest techniques for cost estimation is limited, however what is available indicates that cost estimation through detailed analysis (inside view) remains the most prevalent method. This is despite construction having a long history of projects that have run over time and over budget using the same cost estimation technique [@Shane2009]. There is even current research on how to automate this way of cost estimation using BIM. The method of detailed sums shall be compared to the results of studies using parametric algorithms and case based reasoning ('outside view') in the following sections.
+
+
+**Statistical and Machine Learning Models**
+
+As the problem of cost estimation in construction projects is well recognised, dozens of studies have modelled the financial performance of these projects using machine learning and statistical models. The aim is to test whether a mathematical comparison of many similar projects, using meaningful descriptive variables, can predict the cost of construction. This section will first review the previous studies and most popular algorithms and finally summarise industry uptake of the methods.
+
+@Elfaki2014 completed a study on cost estimation techniques and research from 2004 to 2014. It was found that artificial neural networks and support vector machines were the most common machine learning techniques used. He highlighted that machine learning techniques deal well with uncertainty, however lack technical justification. In a way, this fulfils the purpose of the 'outside view', which is to step back from the detailed analysis and perform a comparison with similar projects.
+
+@Shin2015 was the first 
+
+parametric estimating is not popular with contractors. this could be because:
+The reasons include: (a) lack of familiarity with the techniques; (b) the degree of sophistication involved in the techniques is unwarranted for project performance; (c) time plus lack of information and knowledge; (d) doubts whether these techniques are applicable to the construction industry; (e) most construction projects are seldom large enough to warrant the use of these techniques or research into them; (f) they require availability of sound data to ensure con®dence;
+
+Recent developments in cost esti- mating methods and tools that consider risks and variability in cost estimates, such as the use of range estimating and parametric estimating techniques, have not been adopted by contractors.
+
+At the conclusion of the papers, few compare the performance against the original method????
+
+ 
+* case based reasoning
+
+
+
 
 ### 2.1.2 Previous work on Regression and Neural Networks?
 
