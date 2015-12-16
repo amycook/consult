@@ -590,7 +590,7 @@ fit.boost<- readRDS('C:/Users/n9232371/Documents/Consultbusiness/data/fit_boost.
 
 #partial dependence plots
 fit.boost$var.names
-plot.gbm(fit.boost, 9, type="response")
+plot.gbm(fit.boost, 3, type="response")
 biz<- plot.gbm(fit.boost, 7, type="response")
 
 
@@ -658,7 +658,7 @@ fit.boost <-  gbm(as.formula(formula), data = train,
         n.minobsinnode = 20)
         
 pred.boost <- predict(fit.boost, test, n.tree = 10000, type = "response")
-pred.p <- roc(test$f.rpdol, pred.boost)
+pred.p <- roc(test$b.rpdol, pred.boost)
 
 plot.roc(pred.p, col = 'red', print.thres = T)
 summary(fit.boost)
