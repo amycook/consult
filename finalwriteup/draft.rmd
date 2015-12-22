@@ -3,7 +3,7 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output: word_document
-bibliography: Library.bib
+bibliography: Library2.bib
 ---
 
 
@@ -311,44 +311,80 @@ Research into effort estimation in the software industry has followed a similar 
 
 ## 2.2 Statistical and machine learning methods
 
-### 2.2.3 Introduction
+### 2.2.1 Introduction
 
-### 2.2.4 Linear Regression/logistic regression
+The aim of this project is to use statistical techniques to model the profitability of projects. In order to optimise the model, several statistical and machine learning techniques will be tested, and compared and it is therefore prudent to review the range of statistical and machine learning techniques that have been successfully applied in the literature. These vary from simple methods such as Linear Regression to complex learning such as Neural Networks. The previous section highlighted the use of linear regression, neural networks, SVM and in one case boosted trees for prediction, however other business problems have utilised a wider range of methods. These include Naiive Bayes, Random Forests, and machine learned Bayesian Networks. The following section will present each method's advantages and disadvatanges and an example of a past successful application. 
 
-### 2.2.5 Naiive Bayes
+### 2.2.2 Linear Regression
 
-### 2.2.6 Ensemble Trees
+Linear regression is one of the simplest and most popular statistical prediction methods [@Hastie2009]. An equation for a line is learned, which is defined by a constant and a coefficient times the value of each variable. The coefficients are chosen to minimise the residual sum of squares (least squared) [@Hastie2009]. The reason this method is popular is that it is simple, provide stable predictions, and can be adapted for categorical variables [@Seng2010]. The integration of categorical variables is called Anova, and the algorithm compares group mean variances within the categorical variable. 
 
-### 2.2.7 Bayesian Networks
+There are several drawbacks to linear regression. For example assumptions must be made about the structure of the data. Predictor varialbes are assumed to be linearly related to the response variable and the varialbes are normally distributed. Many real world phenomena do not correspond to these assumptions which can make it difficult, sometimes impossible, to produce useful results [@Hastie2009][@Putler2012]. Furthermore, response variables must be continous numeric variables and if two or more predictor variables are correlated, the values of their coefficients are highly unstable. On the other hand, correlated variables do not impact the predictive accuracy of the model. A final drawback is that the variable coefficients cannot be used to compare variable importance unless the varialbes have all been standardised to one another [@Putler2012]. This limits the amount of insight that can be drawn from a linear regression model.
 
-### 2.2.7 SVM's and Neural Networks
+Despite the limitations of linear regression models, they have widespread business applications due to their simplicity and ease of application. Regression is used to predict risk in the finance and insurance industries, predict who to target in marketing exercises, and predict consumption spending in the field of economics [@Harrell2013]. Due to its simplicity and widespread application, linear regression is a good starting point for an analysis and benchmark for performance against complex models.
 
-### 2.2.8 Summary
+
+### 2.2.3 Logistic Regression
+
+The method behind linear regression can be adapted to predict a binary response variable (1 or 0). A predictive linear equation is computed so that the predictor variables are combined with coefficients to give an output between 0 and 1. This is then transformed into the log odds to mediate extreme variable input values. The result is a probability an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Similar pros and cons exist for logistic regression as linear regression, and it too can be used as a benchmark to compare other binary predictive models due to its speed and simplicity. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survive/death [@Moore1989]. 
+
+### 2.2.4 Naive Bayes
+
+[@Provost2013]
+
+Naive Bayes prediction method makes conditional independence assumptions about the predictor variables in order to greatly simplify probability calculations for the response variable (the response variable must be categorical). Specifically, it is assumed that each variable is conditionally independent given the respose class alone, without considering other predictor variables. Mathematically this means that each variable's probability contribution can be simply calculated by looking at the probability of a response class given a predictor value by itself. The predictor variables probability estimates are combined for each possible response class, and the response class with the highest probability is chosen [@Provost2013]. 
+
+The advantages of this method are that the conditional independence assumption enables very fast calculations and predictions. The method can perform very well for real world tasks because the assumption of independence does not damage predictions significantly. This is because if multiple varialbes are related, the variables independently still direct the prediction in the correct direction. The correlated variables will double or triple their emphasis on the predicted response variable, however this does not necessarily impact classification accuracy as the final step is to simply choose the class with the *highest* probability [@Provost2013]. This is fine for ranking. On the other hand, the output probabilities are not realisitic, and the values themselves should not be used [@Caruana2006]. Another disadvantage is that in order to calculate the class probability from a numeric variable, a distribution must be assumed (often gaussian) which the numeric data may not fit into neatly [@Caruana2006]. Finally, Naive Bayes classifers are known to not perform well in binary classification [@Caruana2006].
+
+A real world success story for Naive Bayes classifiers hinges on their ability to be refined incrementally with each piece of new data, as opposed to re-calibrating the entire model. Naive Bayes has been used in complex spam detection systems where new spam emails or toxic text themes can be quickly added to the filtering model. The Naive Bayes method provides a good benchmark to compare against more complex models that should outperform it [@Caruana2006].
+
+
+### 2.2.5 Decision Trees/ Ensemble Trees
+
+There are several brands of basic decision tree algorithms including ID3, C4.5, CART, and CHAID with CART and C4.5 being the most popular (Kabra & Bichkar, 2011). Ravi Kumar and Ravi (2007) recommends the CART algorithm as it is capable of solving classification and regression problems (regression trees predict an outcome that is within a range of real numbers) whereas the remaining decision trees solve classification problems only. Overall, simple decision trees have the risk of over-fitting the data but have favourable characteristics such as providing rules that can act as warning flags in real-life scenarios. In addition their results do not depend heavily on the skill of the data analyst (Kabra & Bichkar, 2011)(Putler & Krider, 2012).
+
+Three examples of these ensemble decision tree methods are bagging, boosting, and random forests. Bagging creates multiple trees by sampling the training data set in different ways and then combining tree results (Breiman, 1996). The boosted decision tree approach is a more advanced version of bagging which resamples the data in order to build multiple trees. The trees are then weighted, where trees with weaker predictive performance are weighted more heavily (boosted). This allows the algorithm to resample and strengthen weak areas (Kotsiantis, 2013). Finally, the random forests approach has many similarities to bagging in that multiple trees are sampled from the same training data. However, when creating the tree for each sample dataset, a random subset of attributes is used to determine each split. This prevents the trees from become too correlated (Breiman, 2001a). 
+Bayesian CART (BCART) models are another way of solving the over-fitting problem found in decision trees. These models use the prior (initial set of CART trees) to induce a posterior distribution that will guide the search for the correct CART model output. This includes a guide to the size and shape of the tree. The best CART models can be selected according to their posterior probabilities which indicate fit to the data (Chipman, George, McCulloch, Zhang & Al, 1998).
+
+### 2.2.5 Bayesian Networks
+
+### 2.2.6 SVM's and Neural Networks
+
+Neural networks were inspired by biological neural networks of the human nervous system and require a lot of training data. They are very flexible in the relationships they can mimic and are not greatly dependent on the skills of the analyst (Putler & Krider, 2012). A disadvantage is that although the results are accurate, the algorithm is a black box meaning the data is input and the results output without providing the user insight into the methodology. 
+. A notable disadvantage for neural networks is that they provide a black box prediction, meaning the data is input and the results output without providing the user insight into the methodology. 
+
+### 2.2.7 Summary
 
 
 ## 2.3 Statistical and machine learning methods applied to business problems
 
-### 2.3.1 Most simple and frequent models
+The aim of part two of this research project is to model strategic internal decisions within an Engineering consulting business using statistical and machine learning techniques. A large body of relevant research is available that addresses business profitability and prediction for the purpose of decision-making. The majority of the literature focuses on the development of prediction methods in the context of applied topics. Popular topics include predicting stock fluctuation, customer churn analysis, fraud prediction, customer classification, market segment analysis, product success prediction, and recommendation systems (Seng & Chen, 2010). This review will discuss the use and merits of statistical methods that were employed in the literature. First, simple statistical methods that were used for data exploration will be addressed, followed by advanced statistical and machine learning prediction techniques and why some methods were reported to perform better than others. Finally, a case study that applied customer-churn prediction techniques to internal employee churn will be discussed.
+
+### 2.3.1 Simple models
+
+* linear regression - example
+* clustering - example
+* naiive bayes - example
+* single decision trees?
 
 ### 2.3.2 Complex models
 
-* SVM, Neural networks, random forest
-* data must not be normal
-* most successful?
+Simple theoretical models such as linear regression are informative but often provide unsatisfactory accuracy for modelling real life data which is messy and does not necessarily align with the rules of statistical theory (Breiman, 2001b). Algorithmic machine-learning predictive models have developed rapidly in recent years because they adapt to the data and are not bound by theoretical models. These machine-learning models can consistently fit real-life data with more accuracy than theoretical models and have become popular (Breiman, 2001b). Ravi Kumar and Ravi (2007) performed a detailed review of statistical and machine learning techniques applied over 37 years in the context of bankruptcy prediction in banks. (financial business prediction). The most widely used model was neural networks, however logistic and linear regression, decision trees, support vector machines (SVM’s), discriminant analysis (DA), and statistical clustering techniques (such as K Nearest Neighbour) were also popular. Supporting Breiman’s (2001b) statements, it was found that DA and standard regression techniques were not preferred due to their low accuracy. The overall assessment was that SVM’s outperformed Neural networks (back propagation neural networks BPNNs were used most extensively), which sometimes outperformed decision trees, and the rest of the methods were generally inferior. Although SVM’s performed the best, they are often extremely complex and slow, requiring a high memory (Ravi Kumar & Ravi, 2007). The reason for this is that SVM’s create complicated curved 3D decision boundaries called kernels. However, statisticians experienced in predictive machine learning algorithms generally acknowledge that SVM’s yield the highest prediction accuracy compared to other machine learning algorithms (Davenport & Harris, 2006). 
 
-### 2.3.3 ensemble methods
+As SVM’s are often computationally too expensive and advanced for a smaller scale business application, it is useful to compare neural networks and decision trees which are simpler than SVM’s but are also capable of achieving very accurate predictive models. Ravi Kumar and Ravi (2007) found that neural networks and decision trees were both capable of out-performing the other, depending on the context – which is limited to bankruptcy prediction in Kumar’s study. Both have advantages and disadvantages to consider (refer section 2.2), however the most notable drawback for neural networks is the difficulty in interpreting the algorithms' explanation of human behaviour – a valuable feature in business problems (Tsai & Chiou, 2009).
 
-* papers
-* netflix?
-* multi step to deal with missing data
+Decision trees on the other hand output a flowchart-like tree where each split represents an attribute of the data (Kabra & Bichkar, 2011). Trees are known to be intuitive to understand and have been argued to function similarly to how the human mind thinks (Carrizosa, Martin-Barragan, & Morales, 2010). This makes the application popular for medicine as it assimilates with the thinking process of a doctor (Seng & Chen, 2010) and it is likely the same benefit can be applied to business managers. More complex ensemble decision trees can overcome over-fitting and achieve better predictive results by combining more than one decision tree (Breiman, 1996).
 
-### 2.3.4 similar applications
+Ensemble techniques also refer to combinations of two completely different algorithms and can often outperform individual techniques (Ravi Kumar & Ravi, 2007). For example, combining the contrasting advantages of neural networks and decision trees is a worthwhile ensemble technique. A paper studying financial earnings management prediction combined these two methods by running them one after another. The neural network was run first to create a high rate of prediction accuracy via its complex non-linear learning properties (Tsai, 2009).  Then, to resolve the lack of explanatory qualities that neural networks are notorious for, decision trees were employed. The 81% of cases that were correctly predicted by the neural network were used to generate decision trees, and in turn useful decision rules (Tsai & Chiou, 2009). This strategy is a promising way to benefit from the strengths of well performing complementary techniques.
+
+### 2.3.3 similar applications
 
 * Employee churn - anything similar?
-* stepped method business application?
-* Gap
+The literature is limited around predictive models that assist with internal business decisions dealing with employees, teams, and delivering projects – most of the studies focus on businesses that sell products or on the overall performance of large businesses. An exception to this is Saradhi and Vijaya’s (2011) study on employee churn, where ‘churn’ refers to the number of individuals moving out of a group within a certain time. Saradhi and Vijaya applied popular customer churn predictive models to employee churn - a novel application that focussed internally on employees rather than externally on customers. The project chose three machine learning classification algorithms that are normally used in customer churn. Saradhi and Vijaya (2011) proposed that the variables and model behaviour of employee churn could be related to customer churn. The associated costs of losing customers and finding new customers can also be correlated to the costs of losing staff and hiring new staff. Naive Bayes, Random forests (an advanced decision tree) and SVM’s were built and it was expected that random forests would perform best using knowledge from past literature (Coussement & Van den Poel, 2008). Naïve Bayes is an algorithm based of simple design that classifies based on the likelihood of each variable independently of the presence of other variables. A comparison study showed that Naïve Bayes is outperformed by random forests which match Saradhi and Vijaya’s (2011) prediction (Caruana & Niculescu-Mizil, 2006). The SVM model actually far out performed random forests and Naive Bayes by achieving 81% vs 51% and 55% correct predictions respectively. This was attributed to the ability to introduce class penalties in SVMs whereas the other two methods are limited by class imbalance (Saradhi & Vijaya, 2011). This means that SVM’s had a superior method of balancing the importance of the variables in the data set which was skewed by a heavy majority of employees who kept their job versus the minority who left (25% churn). Their study proved that predictive techniques used for businesses that sell products could be translated to predicting internal behaviour of employees. 
 
-**
+### 2.3.4 Gap/conclusion
+
+The limited literature on analysis similar to Sardhi and Vijaya’s Employee Churn study (2011) highlights a gap in the study of predicting internal performance in businesses. This is particularly relevant to consulting companies that tackle complicated discrete projects with set timelines. In some industries, for example engineering consulting, the business provides clients with a fixed fee to complete the assigned project. This initial fee creates an element of risk as the business attempts to predict the number of employee hours to be spent. Statistical and machine learning models to predict the correct fee for projects according to project type, client, and other characteristics could reduce risk for a range of consulting businesses in setting initial fees.
 
 
 
