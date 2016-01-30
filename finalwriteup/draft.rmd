@@ -397,42 +397,74 @@ The literature pertaining to the aim of this research project, cost prediction u
 An exhaustive list of machine learning and statistical methods were reviewed theoretically as well as practically in the broader scope of business problem prediction. It was determined that bayesian networks and ensemble tree methods have potential to perform estimation as well as complex algorithms such as neural networks while providing the additional benefit of insights into the reasoning behind model predictions.
 
 
-# Chapter 3 Introduction of Case study
+# Chapter 3 Methods - 2 to 8 pages
 
-## 3.1 Obtaining dat
+The aim of this project is to determine whether the profitability of projects for consulting businesses can be predicted using statistical and machine learning techniques. As stated in the literature review, a gap in research exists for testing whether internal CRM data from a company in the construction industry could predict project profitability. This section will explain the chosen methodology for testing this aim using a case study Engineering consulting company that charges for their time spent on project delivery. Once the predicition potential has been assessed, a secondary aim is to determine the positive impact the predictive model could have on the overall profitability of the company.
 
-### 3.1.1 How data was recorded
+**justify the process by which the research questions were answered**
+**argue and justify each decision that was taken to arrive at how to organise reserach**
 
-* years of employees entering hours each day
-* project managers or admin entering client details
+## 3.1 Obtaining data
 
-### 3.1.2 How data was extracted - CRM
+An assessment of the literature revealed that the predictive power of internal timesheet data has not yet been tested yet for project profitability for consulting companies in the construction industry. In addition, this is the sole source of project data available for these types of businesses besides interviewing project managers and reviewing the account records of invoicing versus employee costs. As the internal CRM for the case study company stores a detailed account of time spent on each project along and client information for twelve years, it was clear that this source of data could reveal the most and was most suitable to statistical analysis. The complete twelve years of project timesheets and invoices was extracted via the CRM software interface, describing 4169 projects. The projects varied from total invoiced amounts of $500 to over $1,000,000 across four internal disciplines in the company. At the time of data extraction, it was not clear whether the full twelve years were necessary and relevant to predicting current project profitability but this was to be determined later in the analysis.
 
-* queried direct from CRM
-* data de-identification
+Once the data was extracted from the CRM, an employee from the case study company performed the task of de-identification. This is an important step before research commences as the privacy of project employees, clients, and project names must be removed for ethical reasons. In the case of employee names, professional titles replaced the names, and for client codes replaced client names.
 
-## 3.2 Summary of variables
+## 3.2 Cleaning and variable engineering
 
-* categorical
-* numerical
-* significant cleaning
-    * cost sometimes entered in as hours. ie $24 entered as 24 hours
-* engineered variables
-    * grep through project names to create categories - categories developed with case study manager
-    * return per dollar = (invoiced - cost)/cost
-    * hours analysed to produce: employee position that performed majority of the hours
-        * % of hours completed by majority position
-    * timespan based on timesheet entries as well as number of days with hours recorded
-    * number of workers on project based on timesheet entries
-    * client characteristics such as mean total amount invoiced for a repeat client
-    
-* amount of missingness
+The obtained data contained a rich source of project information and a lengthy process of cleaning the data and engineering useful variables was required. The data was initially in three types of datasets extracted from the same CRM software:
+
+* invoicing data
+* timesheet data
+* project summary data
+
+These three sources needed to be compiled into a single dataset that detailed one project per row as this is the structure required for predictive analytic methods when predicting the overall profitability of a project. Before compilation could begin however, thorough cleaning is required where the data was plotted and statistically assessed so that outliers could be visually or statistically discovered. Outliers were then investigated for data entry errors. Many such errors were encountered. One type of error for example was a user entering a 123 kilometer drive in a car as 123 hours. Once these errors were detected, they were discussed with the company directors and appropriate corrective action was taken.
+
+### 3.2.1 Variable Engineering
+
+Although dozens of variables were available from the initial dataset, it was prudent to engineer further descriptive variables, particularly in the invoicing dataset and timesheet dataset where the information needed to be compiled into a single row per project. All variables would eventually be tested for variable importance and predictive power with respect to project profitability. Examples of these engineered variables include:
+
+Timesheet Data
+* percent of hours performed by each professional role for the entire project
+* timespan of the entered project hours
+* percent of hours performed by 'profesional' employees as opposed to 'technical'
+* total cost of employee hours per project
+* total cost of external subcontractors or disbursements per project
+* total number of users that entered hours on each project
+* mean hours per day entered on a project
+* number of disciplines active in a project
+
+Invoicing data
+* total amount invoiced and renumerated per project
+* mean invoice size per project
+* mean invoice per client
+* invoice frequency per project
+* client invoice frequency
+
+Project Data
+* text analysis of project descriptions detected a list of key words that could classify projects into 16 categories. This key word analysis was done in conjunction with a company employee and the resulting classifications were reviewed.
+* number of projects completed with each client and client contact
+
+Once the three data sources were combined, further variables were engineered:
+* project profit
+* return per dollar for each project (how much was spent on expnses for every dollar earned?)
+
+Additional variables included in the project summary dataset were client information such as industry, discipline, job description, and post code. Once numerous potentially important variables were engineered, the most important ones can be narrowed down to reduce noise in the predictive models.
+
 
 ## 3.3 Variable selection
 
 * combination of cforest, anova, random forest
 
+## 3.4 Model selection
 
+## 3.5 Model comparison, Model averaging
+
+- need for statistical measurements
+
+## 3.6 Bottom line translation
+
+## 3.7 Conclusion/Link to next chapter
 
 
 # Chapter ? Method
