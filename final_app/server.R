@@ -1,13 +1,13 @@
 setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.2/library')
-library('shiny',lib='C:/Progra~1/R/R-3.2.2/library')
-library('shinythemes',lib='C:/Progra~1/R/R-3.2.2/library')
-library('FNN',lib='C:/Progra~1/R/R-3.2.2/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.3/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.3/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.3/library')
+library('shiny',lib='C:/Progra~1/R/R-3.2.3/library')
+library('shinythemes',lib='C:/Progra~1/R/R-3.2.3/library')
+library('FNN',lib='C:/Progra~1/R/R-3.2.3/library')
 # library('ggplot2')
 # library("dplyr")
 # library("plyr")
@@ -28,15 +28,15 @@ df <- read.table(text = " id  min  max
     Sp1     150          151     ", header=TRUE)
 
 #make a new dataframe with information about crossbar sizes
-df2<- data.frame(id=c(rep("Sp1",3)), ymin= c(19000, 22000,24000),
-                 ymax=c(33000, 30000, 28000), probability=c('95%','75%','50%'))
+df2<- data.frame(id=c(rep("Sp1",1)), ymin= c(4), y.mean = c(13),
+                 ymax=c(22), confidence=c('90%'))
 df2 <- within(df2, 
-              probability <- factor(probability, 
-                                    levels=c('95%','75%','50%')))
+              confidence <- factor(confidence, 
+                                    levels=c('90%')))
 
 #### CREATE TABLE DATA FRAME FOR NEAREST NEIGHBOURS ####
 
-all7d<- read.csv('all7d.csv')[,-1]
+all7d<- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
 all7d$mlsto<- as.character(all7d$mlsto)
 
 # test.case<- all7d %>% select(Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type)
@@ -84,7 +84,7 @@ bin<- knn.binary %>% select(-mlsto)
 
 #knn function for categorical retrieving:
 
-cat.knn<- function(df= all7d, nn.by= 'inv.mlsto', predict='pc.pro', case= c(1000), k=3, result.df= all7d){
+cat.knn<- function(df= bin, nn.by= 'inv.mlsto', predict='pc.pro', case= c(1000), k=3, result.df= all7d){
         invo.knn = knn(df[,nn.by], df[case,nn.by],
                        df[,predict], k=k)
         indices= attr(invo.knn,  "nn.index")
@@ -124,7 +124,7 @@ shinyServer(
                 #produce table dataframe
                 b<- reactive({
                         cat.knn(df= bin, nn.by= colnames(bin)[!grepl('pc.pro', colnames(bin))], 
-                            predict = 'pc.pro', case= input$case, k=10, result.df= all7d)
+                            predict = 'pc.pro', case= round(input$pc.pro/100*2364,0), k=10, result.df= all7d)
                 })
                 
                 c<- reactive({
@@ -143,34 +143,83 @@ shinyServer(
                         else {
                                 f=b()
 #                                 g= f[,input$column,drop=FALSE] %in% f[,input$column,drop=FALSE][1]
-                                test= f[f[,input$column] %in% f[,input$column][1],,drop=FALSE]
+                                test= f[f[,input$column] %in% f[,input$column][1],drop=FALSE]
                                 test= inv.knn(df= test, predict= 'inv.mlsto', new.cases= 1, k= input$ks) %>% slice(-1)
-                        }    
+                        }
+                        test
                 })
                         
                                 
                 output$fee.plot<- renderPlot( {
+                        
+                        x.height = 0.2 
+                        ticks = data.frame(xs = rep(x.height,11), ys = seq(0,100, by = 10))
+                        minor.ticks = data.frame(xs = rep(x.height, length(seq(0,100, by = 2.5))), 
+                                                 ys = seq(0,100, by = 2.5))
 
                         
                         s= ggplot(df[1,]) +
-                                geom_crossbar(data=df2, aes(ymin = ymin, ymax = ymax, x = id, y=ymin, alpha=probability),
-                                              fill='blue', linetype='blank', width=0.25)+
-                                geom_errorbar(aes(ymax=26000, ymin=26000, x=id, y=min), width=0.25, colour='navyblue', size=1.5) +
-                                geom_errorbar(aes(ymax=20000, ymin=20000, x=id, y=min), width=0.25, colour='red', linetype = 2) +
-                                scale_y_continuous(breaks = seq(15000, 40000, by = 5000)) +
-                                ylim(15000,40000) +
-                                labs(y="Final Spend ($)", x="New Project", title= "Prediction of Final Spend") +
+                                geom_pointrange(data = df2, aes(y = y.mean, ymin = ymin, ymax = ymax), 
+                                                x = x.height, size= 2.5, alpha = .7,
+                                                shape = 16, colour = 'royalblue3') +
+                                geom_segment(x = x.height, xend = x.height, y = 0, yend = 100, alpha = 0.75, size = 0.3) +
+                                geom_point(data = ticks, aes(x= xs, y= ys), size = 2) + 
+                                geom_point(data = minor.ticks, aes(x= xs, y= ys), size = 0.1) + 
+                                scale_y_continuous(limit = seq(0,100, by = 100),breaks = seq(0, 100, by = 10)) +
+                                labs(y="Probability (%)", x="", title= "Probability of Project Making a Loss") +
+                                xlim(0,1) +
                                 theme(axis.text.y = element_blank(),
                                       plot.title = element_text(size=18, face='plain'),
                                       axis.title.y = element_text(size = 16),
                                       axis.title.x = element_text(size=16),
-                                      axis.text = element_text(size = 16)) +
-                                annotate("text", x = 1.3, y = 20000, label = "Final Spend = Initial Quote", colour='red', size=4)+
+                                      axis.text = element_text(size = 16),
+                                      legend.text = element_text(size = 12),
+                                      legend.title = element_text(size = 12),
+                                      panel.background = element_rect(fill = "white"),
+                                      axis.ticks.x=element_blank(),
+                                      axis.ticks.y=element_blank()) +
+                                # annotate("text", x = 1.3, y = 20000, label = "Final Spend = Initial Quote", colour='red', size=4)+
+                                scale_colour_brewer(palette = 'GnBu', direction = -1) +
                                 coord_flip()
+                        
+                        # s$layers = c(geom_segment(), s$layers)
                         
                         print(s)
 
-                })
+                },
+                height = 150, width = 700)
+                
+                # knn plot
+                        
+                output$knn.plot <- renderPlot( {
+                        if(input$colour %in% 'JD.Second'){
+                                colour.title = 'Job Type'
+                        } else {if( input$colour %in% 'code.client'){
+                                colour.title = "Client"
+                        } else {
+                                colour.title = "Majority Employee"
+                        }}
+                        
+                        k4 = ggplot(e(), aes(x = inv.mlsto, y = return.pdol)) + 
+                                geom_point(aes_string(colour = input$colour, size = input$size), 
+                                           alpha = 0.6, shape = 16) +
+                                labs(title = "Similar Past Projects", y = "Return per Dollar", x = "Invoiced Amount ($)",
+                                     colour = colour.title, size = input$size) +
+                                # geom_text(aes(label = mlsto), check_overlap = TRUE, nudge_x = 0.1,
+                                          # nudge_y = -0.1, colour = 'gray50') +
+                                scale_colour_brewer(palette = "Set1", na.value = 'azure4') +
+                                scale_size(range = seq(5,12, by = 7)) +
+                                geom_hline(yintercept = 0, alpha = 0.6, colour = 'gray70', size =1) + 
+                                theme(panel.background = element_rect(fill = "antiquewhite"),
+                                      text=element_text(size=16)) +
+                                scale_y_continuous(limits = seq(-1, 1.2, by = 2.2),
+                                                   breaks = seq(-1, 1.2, by = 0.25))
+                                
+                        plot(k4)
+                },
+                height = 550, width = 900
+                )
+                
                 #Job Details
                 output$knn.table<- renderTable({
                         k = e() %>% select(mlsto, Discipline, JD.Second, Num.disc, timespan, knn.dist

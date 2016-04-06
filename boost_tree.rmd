@@ -71,7 +71,7 @@ gbm.perf(boost.1, method="OOB", plot.it=TRUE)
 #error still rapidly reducing at 10000 trees
 
 #partial dependence plots:
-i=8
+i=1
 a<- plot.gbm(boost.1, i, type="response")
 a
 #Discipline, Business, inv.mlsto.log, client.totinv.log, Billing.Type dont matter?

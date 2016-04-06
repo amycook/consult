@@ -16,7 +16,7 @@ shinyUI(fluidPage(
         wellPanel(
         fluidRow(
                 column(3,
-                
+        
                 selectInput("disc", "Discipline:",
                             list("Civil" = "Civil", 
                                  "Structural" = "Structural", 
@@ -27,14 +27,23 @@ shinyUI(fluidPage(
                 selectInput("billing", "Billing Type:",
                             list('Hourly Rate' = 'Hourly Rate',
                                  "Fixed Fee"= 'Fixed Quote'
-                                 ))
+                                 )),
+                
+                selectizeInput(
+                        'JD.Second', 'Job Type:', 
+                        choices = levels(all7$JD.Second),
+                        options = list(
+                                placeholder = 'Please start typing',
+                                onInitialize = I('function() { this.setValue(""); }'),
+                                maxItems=1
+                        ))
+                
                 ),
                 
                 column(3,
                        
                        selectizeInput(
-                               'JD.Second', 'Job Type:', 
-                               choices = levels(all7$JD.Second),
+                               'code.client', 'Client:', choices = levels(all7$code.client),
                                options = list(
                                        placeholder = 'Please start typing',
                                        onInitialize = I('function() { this.setValue(""); }'),
@@ -77,14 +86,20 @@ shinyUI(fluidPage(
                                        placeholder = 'Please start typing',
                                        onInitialize = I('function() { this.setValue(""); }'),
                                        maxItems=1
-                               ))
+                               )),
                        
-                        
+                       selectInput("Biz.type", "Client sector:",
+                                   list("Government" = "gov", 
+                                        "Not for Profit" = "NFP", 
+                                        "Private" = "private",
+                                        "Public" = "public"
+                                   ))
+
                 ),
                 
                 column(3,
                        
-                       selectInput("majority.pos", "Bulk of Work by:",
+                       selectInput("majority.pos", "Main Contributor of Time:",
                                    list("Director" = "Director", 
                                         "Senior Professional" = "Senior Professional", 
                                         "Mid Professional" = "Mid Professional",
@@ -92,6 +107,9 @@ shinyUI(fluidPage(
                                         "Senior Technical" = "Senior Technical",
                                         "Mid Technical" = "Mid Technical")),
                        
+                       sliderInput(
+                               'pc.pro', '% Hours by Main Employee:', 
+                               min=0, max=100, value=50, step=.5, round=0),
 
                        sliderInput("no.user", "Team Size:",
                                    min=1, max=6, value=1, step=1, round=0
@@ -102,9 +120,9 @@ shinyUI(fluidPage(
                 
                 column(3,
                        
-                       sliderInput(
-                               'pc.pro', '% Hours by Professional:', 
-                               min=0, max=100, value=50, step=5, round=0),
+                       sliderInput("timespan", "Timespan (days):",
+                                   min=0, max=1000, value=60, step=20, round=0
+                       ),
                        
                        sliderInput("inv.mlsto", "Approximate Fee:",
                                    min=500, max=250000, value=20000, step=500, round=2
@@ -118,54 +136,55 @@ shinyUI(fluidPage(
                 
         
         fluidRow(
-                column(3,
-                       wellPanel(
-                       
-                       # I() indicates it is raw JavaScript code that should be evaluated, instead
-                       # of a normal character string
-                       selectizeInput(
-                               'code.client', 'Client:', choices = levels(all7$code.client),
-                               options = list(
-                                       placeholder = 'Please start typing',
-                                       onInitialize = I('function() { this.setValue(""); }'),
-                                       maxItems=1
-                               )),
-                       
-                       selectInput("Biz.size", "Client size:",
-                                   choices= levels(all7$Biz.size)),
-                       
-                       selectInput("Biz.type", "Client sector:",
-                                   list("Government" = "gov", 
-                                        "Not for Profit" = "NFP", 
-                                        "Private" = "private",
-                                        "Public" = "public"
-                                        )),
-                       
-                       sliderInput("timespan", "Timespan (days):",
-                                   min=0, max=365, value=60, step=20, round=0
-                       ),
-                       
-                       submitButton(text="Calculate")                 
-                       
-                )
-                ),
-                
-                column(9,
+
+                column(12,
                        #main panel. show plot of each position and percentage within selected variable
                        tabsetPanel(type='tabs',
-                                   tabPanel('Plot', plotOutput("fee.plot")),
+                                   tabPanel('Analysis',
+                                           
+                                            tags$div(
+                                                    HTML(paste(tags$span(style="color:white; font-size: 32px", "red"), sep = ""))
+                                            ), 
+                                             
+                                           fluidRow(
+                                                   
+                                           column(1,
+                                                  h1("")
+                                           ),
+                                           
+                                           column(11,
+                                           plotOutput("fee.plot")
+                                           )
+                                           ),
+                                           
+                                           tabsetPanel(type = 'tabs',
+                                                       
+                                                       tabPanel('Timespan',
+                                                                img(src = "timespan-1.png", height = "600px")
+                                                                ),
+                                                       
+                                                       tabPanel('Team Size',
+                                                                img(src = "no_users-1.png", height = "600px")
+                                                                ),
+                                                       
+                                                       tabPanel('Total Invoiced',
+                                                                img(src = "invoiced-1.png", height = "600px")
+                                                                ),
+                                                       
+                                                       tabPanel('% Professional Hours',
+                                                                img(src = "pc_pro-1.png", height = "600px")
+                                                                )
+                                                       )
+                                           
+                                           ),
+                                           
                                    tabPanel('Similar Jobs', 
                                             titlePanel(""),
                                             
                                             wellPanel(
                                             fluidRow(
                                                     column(6,
-                                                           numericInput('case', 'Demo job- range: 1-2321', 80, min=1, max=2321),
-                                                           numericInput('ks','Number of similar jobs:', 4, min=1, max=8)
-                                                                   
-                                                           ),
-                                                    
-                                                    column(6,
+                                                           numericInput('ks','Number of similar jobs:', 8, min=2, max=12),
                                                            selectInput("column", "Narrow search by:",
                                                                        list('none'='NA',
                                                                             "Client" = "code.client", 
@@ -174,21 +193,39 @@ shinyUI(fluidPage(
                                                                             "Discipline" = "Discipline",
                                                                             'Business' = 'Business',
                                                                             'Job Type'='JD.Second'
-                                                                       )),
-                                                           submitButton(text="Update")
+                                                                       ))
+                                                    ),
+                                                    
+                                                    column(6,
+                                                           selectInput("size", "Size points by:",
+                                                                       list('Timespan (days)' = 'timespan',
+                                                                            'highest % by employee' = 'pc.majpos')),
+                                                           
+                                                           selectInput("colour", "Colour points by:",
+                                                                       list('Client' = 'code.client',
+                                                                            'Majority Employee'='majority.pos',
+                                                                            'Job Type' = 'JD.Second'
+                                                                            )),
+                                                           submitButton()
                                                            )
                                                     
                                                     )),
                                             
                                             fluidRow(
-                                                    h4('Job Details'),
-                                                    tableOutput('knn.table'),
-                                                    h4('Finances'),
-                                                    tableOutput('knn.table1'),
-                                                    h4('Client Details'),
-                                                    tableOutput('knn.table2'),
-                                                    h4('Staff Details'),
-                                                    tableOutput('knn.table3')
+                                                    column(1,
+                                                           h1("")
+                                                    ),
+                                                    
+                                                    column(11,
+                                                           plotOutput('knn.plot', height = "100%", inline = TRUE),
+                                                           h4('Job Details'),
+                                                           tableOutput('knn.table'),
+                                                           h4('Finances'),
+                                                           tableOutput('knn.table1'),
+                                                           h4('Client Details'),
+                                                           tableOutput('knn.table2'),
+                                                           h4('Staff Details'),
+                                                           tableOutput('knn.table3'))
                                                     
                                                     )
                                    )

@@ -6,15 +6,15 @@ output: word_document
 ---
 
 ```{r_loadpackages, echo=FALSE, include=FALSE}
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('randomForest', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('pROC',lib='C:/Progra~1/R/R-3.2.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.3/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.3/library')
+library('ggplot2',lib='C:/Progra~1/R/R-3.2.3/library')
+library('gbm', lib = 'C:/Progra~1/R/R-3.2.3/library')
+library('randomForest', lib = 'C:/Progra~1/R/R-3.2.3/library')
+library('caret', lib = 'C:/Progra~1/R/R-3.2.3/library')
+library('pROC',lib='C:/Progra~1/R/R-3.2.3/library')
 
 # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 ```
@@ -49,6 +49,16 @@ predict.all<- function(df.string = "all10mice", method = "boost", seed = 300, k.
         levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <-"profit"
         levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <-"loss"
         
+        #order levels
+        df <- within(df, b.timespan.cbrt <- factor(b.timespan.cbrt, 
+                                               levels=c('1d-3wk', '3wk-2.5m','2.5m-9m','9m-1.5y','1.5y-3y','>3y')))
+        df <- within(df, majority.pos <- factor(majority.pos, 
+                                               levels=c('contracttech', 'midtech','seniortech','gradpro',
+                                                        'midpro','seniorpro','director')))
+        
+        levels(df$b.timespan.cbrt) <- c('1d-3wk', '3wk-2.5m','2.5m-9m','9m-1.5y','1.5y-3y','>3y')
+        df$b.timespan.cbrt <- ordered(df$b.timespan.cbrt)
+        
         #set up 10 fold cv using caret function
         folds <- createFolds(df$f.rpdol, k = k.folds, list = T, returnTrain = F)
         #now have folds[[1]] through folds[[10]] list of rows to exclude
@@ -82,7 +92,7 @@ predict.all<- function(df.string = "all10mice", method = "boost", seed = 300, k.
                                         pred <- predict(fit, test,
                                                         type = "response")
                                 } else {
-                                        fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                        fit <- gbm(as.formula(formula), data = df, #[-folds[[j]],],
                                                    distribution = "bernoulli", n.trees = 10000,
                                                    shrinkage = 0.001, interaction.depth = 4,
                                                    n.minobsinnode = 20)
@@ -118,6 +128,11 @@ predict.all<- function(df.string = "all10mice", method = "boost", seed = 300, k.
 
 results.1 <- predict.all(df.string = "all10mice", method = "boost", seed = 400, k.folds = 8)
 
+#partial dependence plot for boosted only
+fit$var.names
+i=5
+a<- plot.gbm(fit, i, type="response")
+a
 
 
 ```
