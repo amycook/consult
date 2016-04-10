@@ -603,6 +603,65 @@ can we improve this by bringing huge variables back in a smarter way?
 
 
 
+# Results - over 5 pages, up to 20 pages
+
+Guidelines:
+* Outlines what you found out in relation to your research questions or hypotheses, presented in figures and in written text.
+* Results contain the facts of your research. Often you will include a brief comment on the significance of key results, with the expectation that more generalised comments about results will be made in the Discussion section.
+
+Which results to discuss
+* restate research questions and hypotheses. can we predict profitability? ofocurse you can make a prediction, 
+real question might be is it worthwhile for the business to engage in this activity? we will look at this as a bottom line analysis. acknowledge that it may be worthwhile for other reasons such as confidence and transparency in historic projects.
+* important variables: cforest diagram vs anova vs random forest
+    * which variables were chosen for machine learning analysis
+* first tried random forest predicting return per dollar
+    * fail, why - for discussion
+* moved on to predicting yes or no profitability.
+    * tried: random forest, logistic regression, gradient boosted trees, naiive bayes (baseline), bayesian networks
+    * boosted trees could handle the missing data, whereas for all? other methods I had to narrow down data to complete data
+    * used MICE package - explain what this is in method.
+    * comparison of predictive accuracy of all methods. non are significantly better than the other.
+
+* tried model averaging - comparison to other methods.
+
+* bottom line analysis - run 1000 times to get confidence interval around the line.
+    * should the business adopt the model?
+    
+* to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the case based reasoning approach
+
+
+
+# Discussion - 10 to 20 pages
+
+The Discussion section:
+
+comments on your results;
+explains what your results mean;
+interprets your results in a wider context; indicates which results were expected or unexpected;
+provides explanations for unexpected results.
+The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
+
+* cannot predict return per dollar. may be that this is much to specific for the volume of data available, may be that the project variation is not captured by the type of data available
+* simpler task of predicting profitability or not does provide predictive accuracy well above random chance and also above our base measure - naiive bayes, but maybe not significantly? question of whether the 0.05 significance is appropriate
+* how many trials do I need to do to make it significant?!
+* best models are gradient boosted trees and logistic regression. why? can hypothesis but not really
+    * this shows the profitability can be predicted with some success, but real question is, is it financially viable?
+* depending what the bottom line plot shows - yes or no. 
+* compare to past research. problems with past research and does this solve any of those?
+    * poor user uptake - future work?
+    * lack of trust - nearest neighbour must be presented with results - case bsaed reasoning
+        * results from boosted tree shows partial dependence plots - insight.
+    * never been applied to a consultant within construction industry. has been applied lots to software
+        * still has the potential to help with the way the industry is structured - hinges on user uptake.
+        
+
+
+
+# Conclusion
+
+Future work
+* user testing on trust levels of prediction with nearest neighbour
+
 
 
 
