@@ -447,18 +447,54 @@ Project Data
 
 Once the three data sources were combined, further variables were engineered:
 * project profit
-* return per dollar for each project (how much was spent on expnses for every dollar earned?)
+* return per dollar for each project (how much was spent on expenses for every dollar earned?)
 
-Additional variables included in the project summary dataset were client information such as industry, discipline, job description, and post code. Once numerous potentially important variables were engineered, the most important ones can be narrowed down to reduce noise in the predictive models.
+Besides the engineered variables, additional variables included in the project summary dataset were client industry, discipline, job description, and post code. Once numerous potentially important variables were engineered, the most important ones could be narrowed down. This improves the accuracy of a model because unnecessary or irrelevant variables add noise to the prediction of target values. Variable selection also increases computational efficiency by reducing the number of calculations and improves understanding of the prediction structure [@Weisberg2005].
 
 
 ## 3.3 Variable selection
 
-* combination of cforest, anova, random forest
+### 3.3.1 Outlier deletion
+
+Before determining which variables contribute most to the target value, return per dollar, outliers were deleted. Specifically, cases with extreme return per dollar values were investigated as special scenarios may have contributed to these values and the model is not intended to predict special scenarios. Outliers were initially defined as return per dollar values sitting outside 1.5x the interquartile range (IQR) from the upper and lower quartiles as intially practised by Tukey, the inventor of the box plot [@Tukey1977]. The outlier projects determined by this method were then reviewed with an employee from the case study company. Based on their domain knowledge and assessment of the outlier cases, cut-off values for the range of return per dollar values were determined. Outliers were projects with return per dollar values greater than 3 or below -2.
+
+### 3.3.2 Variable selection Methods
+
+Three methods of variable selection were trialled and compared to test whether the different methods highlighted different variables as important. These were Analysis of Variance (ANOVA), conditional inferece forests (cforests), and random forests. It was expected that random forests would highlight variables that had more categories as more important which is a well known bias; it is also a bias that cforests have overcome [@Strobl2007]. ANOVA is based on linear theory which contrasts conditional forest and random forests more free-form structure. Therefore, it is important to compare the contrasting methods' assessment of variable importance.
+
+#### 3.3.2.1 ANOVA
+
+ANOVA is closely related to linear fit models but incorporates the analysis of differences in group means (i.e. categorical variables) [@Lunney1970]. The method is simple and fast but assumes variables are normally distributed and linearlly related. The variables must therefore be normalised before analysis, however it cannot be assumed that each variable can be perfectly normalised. A disadvantage of this method is that linear relationships and normal variables do not necessarily represent real world data in the best way [@Breiman2001b].
+
+In order to compare variable importance, the output of the model is assessed which includes the linear coefficients for each variable and the p-values for the coefficients [@Markham2016]. The magnitude of the coefficient does not indicate importance relative to the other variables because the magintude is directly dependent on the values within the variable. This leaves the p-values which are the result of a test for whether there is a significant relationship between the variable and the target variable. This is a good indication of whether the variable has a relationship with the target variable, however doesnt necessarily rank importance. If a variable is measured more precisely, it will have a smaller p value, whereas a variable measured roughly will have a higher p value. This does not necessarily make the more precisely measure variable more important than the other. The p test does however distinguish between variables that have a statistical relationship to the target variable and ones that do not. With regards to p-values it is also important to keep in mind that, with a dozen variables, chance alone can produce a variable with a pvalue < 0.001 7% of the time [@Rice1989].
+
+The p-value output from ANOVA models give a good indication of which variables have a statistically significant relationship with the target variable. However, the values should not be used to rank the variables against one another, and significant p-values can occur by chance.
+     
+#### 3.3.2.2 Random Forest
+
+The random forest algorithm can produce a permutation variable importance for each variable as part of its output. Variable importance is represented as a score, and to do this a permutation and calcuations are performed on each variable. More specifically, consider a single covariate. The values of this variable in the out of bag sample are randomly permuted (reordered) for each tree - a technique that mimics the absence of that variable. The trees in the random forest are then run again. Variable importance can now be derived by comparing the results of the forest where the covariate has been permuted to the original random forest. If the accuracy of the premuted forest is much less than the original forest, then that variable is important. Importance scores are calculated as the mean decrease in accuracy over all trees for that permuted variable in the random forest [@Breiman2005].
+
+The random forest variable importance provides valuable insight because it addresses the impact of each predictor variable individually as well as in multivariate interactions with other predictor variables. It handles uncorrelated variables well if the samples for the trees are subsampled without replacement [@Strobl2007]. However, a severe disadvantage of random forest variable importance is that it is not reliable for variable selection where potential predictor variables vary in their scale of measurement or their number of categories. The importance of correlated predictors is overestimated and the algorithm tends to select variables that have many possible splits or many missing values [@Strobl2007]. Overall, the random forest permutation importance is useful as it is able to compare variables in a machine learning environment and can include multivariate interactions, but the current random forest importance measure overestimates the importance of variables with many categories and some numeric variables.
+    
+#### 3.3.2.3 Cforests
+
+Cforests are an alterantive ensemble tree method to random forests that overcome the aforementioned shortfalls of random forests such as overestimating the importance of variables with many categories and numeric variables. It is built from ctrees that are based on a conditional inference framework. The key difference between ctrees and standard decision trees are that a significance test procedure for splitting instead of an purity meausre such as the Gini coefficient, which is centered around information gain. 
+
+The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning varialbe importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
+
+#### 3.3.3 Variable Selection Summary
+
+Limiting the predictive model to a concise set of meaningful variables reduces noise and improves predictions. Less variables means that a simpler model is being used for prediction which is easier to understand for stakeholders [@Weisberg2005]. For these reasons, a subset of the most important variables were chosen before modelling began. This entailed first eliminating outliers, then comparing important variables from ANOVA as well as random forests and cforests. The literature implies that cforests would suit the data for this project as it is unbiased and not limited to linear theory [@Strobl2007]. 
 
 ## 3.4 Model selection
 
+* 
+
+
 ## 3.5 Model comparison, Model averaging
+
+
+
 
 - need for statistical measurements
 
@@ -467,7 +503,6 @@ Additional variables included in the project summary dataset were client informa
 ## 3.7 Conclusion/Link to next chapter
 
 
-# Chapter ? Method
 
 ## Regression
     * tried predicting return per dollar as a numeric outcome.

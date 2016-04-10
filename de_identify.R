@@ -315,3 +315,5 @@ all6a<- all6a %>% select(-Role.JD)
 all6a$JD.Second<- as.factor(all6a$JD.Second)
 
 write.csv(all6a,'all6b.csv')
+
+#go to 1st_stats.R
