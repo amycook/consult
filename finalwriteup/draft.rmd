@@ -3,7 +3,7 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output: word_document
-bibliography: Library2.bib
+bibliography: Library.bib
 ---
 
 
@@ -425,6 +425,7 @@ These three sources needed to be compiled into a single dataset that detailed on
 Although dozens of variables were available from the initial dataset, it was prudent to engineer further descriptive variables, particularly in the invoicing dataset and timesheet dataset where the information needed to be compiled into a single row per project. All variables would eventually be tested for variable importance and predictive power with respect to project profitability. Examples of these engineered variables include:
 
 Timesheet Data
+
 * percent of hours performed by each professional role for the entire project
 * timespan of the entered project hours
 * percent of hours performed by 'profesional' employees as opposed to 'technical'
@@ -435,6 +436,7 @@ Timesheet Data
 * number of disciplines active in a project
 
 Invoicing data
+
 * total amount invoiced and renumerated per project
 * mean invoice size per project
 * mean invoice per client
@@ -442,10 +444,12 @@ Invoicing data
 * client invoice frequency
 
 Project Data
+
 * text analysis of project descriptions detected a list of key words that could classify projects into 16 categories. This key word analysis was done in conjunction with a company employee and the resulting classifications were reviewed.
 * number of projects completed with each client and client contact
 
 Once the three data sources were combined, further variables were engineered:
+
 * project profit
 * return per dollar for each project (how much was spent on expenses for every dollar earned?)
 
