@@ -484,7 +484,7 @@ The random forest variable importance provides valuable insight because it addre
 
 Cforests are an alterantive ensemble tree method to random forests that overcome the aforementioned shortfalls of random forests such as overestimating the importance of variables with many categories and numeric variables. It is built from ctrees that are based on a conditional inference framework. The key difference between ctrees and standard decision trees are that a significance test procedure for splitting instead of an purity meausre such as the Gini coefficient, which is centered around information gain. 
 
-The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning varialbe importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
+The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning variable importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
 
 #### 3.3.3 Variable Selection Summary
 
@@ -492,20 +492,49 @@ Limiting the predictive model to a concise set of meaningful variables reduces n
 
 ## 3.4 Model selection
 
-* 
+* as stated in lit review, there is a need for testing more sophisticated ML algorithms such as boosted trees, random forest and bayesian networks on effort estimation. ML algorithms MUST have a way of explaining results. this excludes SVm and neural networks.
+
+* naiive bayes - good baseline
+* bayesian network - bad
+* random forest 
+* logistic regression - baseline
+* boosted tree
+
 
 
 ## 3.5 Model comparison, Model averaging
 
-
-
-
-- need for statistical measurements
+* used AUC for comparison statistic bc... 
+* run each method 10 times? statistically significant difference. 10 fold cross validation
+* if no statistical difference, run more times -20, 50 75, 100.
+* select best wto or three methods and trial model averaging
+* improve AUC by model averaging
+* choose best method: either a single method or combined
 
 ## 3.6 Bottom line translation
 
+* although predictive power is important, for the method to be integrated into the real world, the affect on a business' bottom line must be tested.
+* This can be done using a lift chart - a chart that plots the amount of profit the company earns on the y axis vs the probability cut off point on the x axis. For this project, the x-axis represents the point where directors would say 'no' to  a job with a probability for loss greater than that point. There will be an optimal point where saying no to a job above a certain probability level will mean the company earns more profits, becasue they are saying 'no' to jobs that are likely to make a loss. Using the figure of anticipated increase in profit, it will be easier to judge howe much the company would benefit from integrating the algorithm into decision making. 
+* the performance of the lift chart will vary depending on the training and test set, so this will be done with 20 fold cross validation, so teh resulting line can be plotted with a confdience interval. A lift chart will be explained in more detail in the results section.
+
+
 ## 3.7 Conclusion/Link to next chapter
 
+* obtained data: 4169 jobs from a single case study company over 12 years. Data was de-dentified by an employee of the company
+* the data was all from the company CRM. There were three chief sources:
+    * invoicing data
+    * timesheet data
+    * project summary data
+* the data was cleaned from mistakes which were generally discovered as outliers 
+* many new variables were engineered from the data, often by summarising time series data into a value that is relevant to a final data set of a single job per row
+* variable selection: dozens of variables available which were condensed to the most important 10-12. variable importance methods were ANOVA, random forest, and cforests. the overlapping important variables were chosen first as well as some others
+* 5 models were tested: baseiline: log reg, naiive bayes.
+* sophisticated ML: boosted reg, random frest, bayesian networks
+* best were comapred to a model averaged version
+* Analysis of impact on bottom line for business if model is integrated into decision making
+* link: results
+
+# Chapter 4: Results
 
 
 ## Regression
