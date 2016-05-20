@@ -1,6 +1,6 @@
 # impute missing values
 
-library('mice', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('mice')
 library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
 library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
@@ -90,7 +90,7 @@ auc
 
 
 
-#experiment with MICE package
+#experiment with MICE package - should not include return per dollar during imputation!
 
 new <- mice(all9c[,c(1:4,6:10,12:14,16)], meth = 'rf')
 

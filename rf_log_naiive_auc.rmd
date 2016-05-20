@@ -650,7 +650,7 @@ summary(fit.log)
 
 
 #boosted tree
-formula<- formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
 
 fit.boost <-  gbm(as.formula(formula), data = train,
         distribution = "bernoulli", n.trees = 10000,
