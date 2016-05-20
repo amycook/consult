@@ -726,7 +726,7 @@ final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
         }
         
         if('inv.mlsto.log' %in% variables &
-           'inv.mlsto.log' %in% variables){
+           'pc.pro' %in% variables){
                 formula = paste(formula, 'inv.mlsto.log*pc.pro', sep= " + ")
         }
         

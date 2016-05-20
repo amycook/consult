@@ -697,25 +697,15 @@ Once the independent variables were narrowed down to a succinct list, the predic
 
 #### ANOVA
 
-In ANOVA, linear relationships are tested and normal distributions are assumed for numeric variables. Therefore, where appropriate, numeric variables were norma  
+In ANOVA, linear relationships are tested and normal distributions are assumed for numeric variables. Therefore, where appropriate, numeric variables were normalised via log or cube root transformations. Trials of various variable interactions revealed that interactions between:
 
+* total amount invoiced * percent of job by professional level employee
+* total amount invoiced * client id
+* project category * number of employees on the job
 
-* normalised variables for linear model:
-    * log of amount invoiced, total invoiced for client in past projects, % of work done by majority position
-    * cube root of timespan
-    
-* trials with different variable interactions resulted in three interactions that lowered RMSE
+were statistically significant. Two types of ANOVA trials were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms. The second method was developed to get around the problem that when all variables are combined, only 15% of the projects have complete data. Therefore the ANOVA test would eliminate 85% of the data and imputing the data was not desirable at an early stage due to the amount of missing categorical data. The second method would choose a project (row in the dataset) randomly, and this case would have certain columns complete. The data was then filtered for all jobs that had at least the same columns complete, and the ANOVA test was run on this reduced set. This method allowed variables with a larger proportion of missing data to be analysed while not attempting to analyse all variables at once. 
 
-* Baseline check: check RMSE from predictions against RMSE if use mean
-
-* ran ANOVA 50 times with core important and largley complete variables
-        * amount invoiced
-        * Discipline
-        * timespan
-        * team size
-        * pc by professional
-        * Business category
-* subtract RMSE from model predictions from RMSE using mean return per dollar. If model effective, RMSE is lower for model predictions, and difference is greater than 0. Histogram of difference:
+To assess the results of the ANOVA models, the root mean squared error (RMSE) of the return per dollar predictions were compared against the RMSE if all predictions were simply the mean of return per dollar for all projects. Then, the RMSE's from model predictions were subtracted from RMSE's using mean return per dollar. If the models were effective, RMSE should be lower for model predictions, and the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only:
 
 ```{r, echo = FALSE}
 
