@@ -14,6 +14,7 @@ library("dplyr")
 library('magrittr')
 library('reshape2')
 library('caret')
+library('pwr')
 # library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
 library('car')
 # library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
@@ -782,6 +783,11 @@ final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
 
 
 
+#how many tests required? power calculation
+d.calc = mean(results.core$diff)/sd(results.core$diff)
+pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c("one.sample"), alternative = 'greater')
+# 3 tests required for results.core
+
 
 results = final.output(df=all8a, no.tests = 100, core = FALSE)
 results = results %>% mutate(diff = random.RMSE - final.RMSE)
@@ -798,7 +804,7 @@ results %>% ggplot(., aes(x = test.nrow, y = final.RMSE)) + geom_point()
 results %>% ggplot(., aes(x =diff)) + geom_histogram()
 
 # t- test
-t_test = t.test(diff, alternative = "greater", mu = 0)
+t_test = t.test(results$diff, alternative = "greater", mu = 0)
 str(t_test)
 t_test$p.value
 

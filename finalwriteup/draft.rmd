@@ -3,9 +3,9 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output:
-  html_document: default
   word_document:
     reference_docx: mystyles.docx
+  html_document: default
 bibliography: Library.bib
 ---
 
@@ -23,14 +23,19 @@ library('e1071')
 library('party')
 library('randomForest')
 library('RColorBrewer')
-library('pixiedust')
+library('pwr')
 
 
-# 
-# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
-opts_chunk$set(fig.width=8, dpi = 300)
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
+}
+
+opts_chunk$set(fig.width=8, fig.depth = 5, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
 Originality Statement
@@ -113,7 +118,7 @@ In the following section, an overview of the historical attempts to integrate re
 
 #### 1.1.1.1 Existing Models
 
-A substantial amount of research on project cost prediction has been dedicated to the fields of software development and construction projects in particular. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects from around the world, and each project a different client and project team. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks [@Love2005][@Kim2004]. Most studies report neural networks are more accurate than regression, and generally the studies report positive predictive powers of their developed models.
+A substantial amount of research on project cost prediction has been dedicated to the fields of software development and construction projects in particular. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects from around the world, and each project a different client and project team. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks [@Love2005][@Kim2004]. Most studies report neural networks are more accurate than linear regression, and generally the studies report positive predictive powers of their developed models.
 
 A McKinsey study outlined a case in the film industry where a motion picture company used reference class forecasting of movie project success (cases were weighted by similarity) to decide which movies should be heavily promoted. This model improved forecasts on financial return by 135% relative to single project analogies [@Flyvbjerg2014]. 
 
@@ -266,9 +271,9 @@ As the problem of cost estimation in construction projects is well recognised, d
 
 @Shin2015 pioneered the application of boosted trees to cost estimation in construction projects. This is surprising given the rapid uptake of boosted trees over the past decade. In the study, data from 234 school building construction projects in Korea was used. Boosted trees were compared to neural networks, which are one of the most popular algorithms to apply to the problem. Boosted trees were found to predict costs more slightly accurately than neural networks, but not significantly (p value < 0.5). Even though the two algorithms performed similarly, the output from boosted tree models provide insight into the structure of the model such as variable importance and variable partial dependence plots. This additional insight may mean boosted trees are preferable over neural networks because of their potential to engage decision makers.
 
-A notable amount of literature has studied the predictive power of multiple linear regression in the construction cost estimation problem. Often, regression is the only model assessed, without comparison to other methods such as neural networks, which first started appearing in literature in the 1990's [@Kim2004]. However, even post-1990, many studies focused on regression only. This may be because the technique is straightforward, easy to use and widely available in statistical packages [@Chan2005]. Out of those that have compared regression to neural networks, the studies have shown that neural networks outperform regression, however other studies show they are approximately equal [@Kim2004][@Attalla2003]. @Dissanayaka1999 found that neural networks outperformed multiple linear regression models, however regression models could be performed first to determine variable importance and condense the number of variables. It can be argued that boosted trees could perform as well as neural networks while providing additional insights (even more so than regression models) such as variable importance and partial dependence of variables against cost. 
+A notable amount of literature has studied the predictive power of multiple linear regression in the construction cost estimation problem. Often, linear regression is the only model assessed, without comparison to other methods such as neural networks, which first started appearing in literature in the 1990's [@Kim2004]. However, even post-1990, many studies focused on linear regression only. This may be because the technique is straightforward, easy to use and widely available in statistical packages [@Chan2005]. Out of those that have compared regression to neural networks, the studies have shown that neural networks outperform regression, however other studies show they are approximately equal [@Kim2004][@Attalla2003]. @Dissanayaka1999 found that neural networks outperformed multiple linear regression models, however regression models could be performed first to determine variable importance and condense the number of variables. It can be argued that boosted trees could perform as well as neural networks while providing additional insights (even more so than regression models) such as variable importance and partial dependence of variables against cost. 
 
-Despite neural networks typically outperforming regression models, it is intersting to note some of the outcomes of regression studies in cost estimation. Different studies tend to produce a wide range of variables that contribute to different degrees in the models. This is likey due to the nature of construction projects which are multidisciplinary and involve a range of different parties such as the clients, consultants, contractors and suppliers, each of which can have a range of characteristics and degrees of input [@Chan2005]. @Chan2005's study on 87 building projects in Singapore included special, complex projects. Therefore, variables such as contractor's specialised skills, who the client was (public vs private), the client level of experience, and the contractor's financial management highly influenced final cost of the project. Other studies found variables such as project complexity, duration, team experience, information availablility, site requirements, and labour climate to contribute most [@Akintoye2000][@Trost2003][@Pinto1988]. As these studies obtained information from questionaires, the available variables also largely depended on the questions in the questionaires, and therefore each study produces a range of different important variables. Despite the differences in qualitative outcomes, the studies all generally report their mean absolute error or a similar metric from the tested models. This is encouraging, however there is a gap in the literature in how to translate the improved errors from the model into an argument for industry to uptake the model as an improvement on their bottom line. 
+Despite neural networks typically outperforming linear regression models, it is intersting to note some of the outcomes of regression studies in cost estimation. Different studies tend to produce a wide range of variables that contribute to different degrees in the models. This is likey due to the nature of construction projects which are multidisciplinary and involve a range of different parties such as the clients, consultants, contractors and suppliers, each of which can have a range of characteristics and degrees of input [@Chan2005]. @Chan2005's study on 87 building projects in Singapore included special, complex projects. Therefore, variables such as contractor's specialised skills, who the client was (public vs private), the client level of experience, and the contractor's financial management highly influenced final cost of the project. Other studies found variables such as project complexity, duration, team experience, information availablility, site requirements, and labour climate to contribute most [@Akintoye2000][@Trost2003][@Pinto1988]. As these studies obtained information from questionaires, the available variables also largely depended on the questions in the questionaires, and therefore each study produces a range of different important variables. Despite the differences in qualitative outcomes, the studies all generally report their mean absolute error or a similar metric from the tested models. This is encouraging, however there is a gap in the literature in how to translate the improved errors from the model into an argument for industry to uptake the model as an improvement on their bottom line. 
 
 Surveys into construction industry uptake of these algorithmic models are sparse, however a survey by @Akintoye2000 showed that parametric estimating methods have not been adopted by contractors, despite the research into this area over 20 years prior. The majority of contractors use experience based methods. @Akintoye2000 hypothesises that this could be due to a lack of familiarity and knowledge about the techniques, doubts whether these techniques are applicable to the construction industry, and the availability of sound data to ensure confidence. This presents a clear gap in the literature on how to analyse the models in terms of the goals and limitations that a contractor may experience.
 
@@ -282,7 +287,7 @@ Case based reasoning (CBR) is a method of estimating by using the results of sim
 2. Once a new project or case arrives, similar cases are retrieved. This can be achieved either algorithmically with a distance function applied to the variables, or manually by users reviewing past cases. The nearest neighbour algorithm has been used to find the distance between cases in previous studies. It is programmed to calculate the euclidean distance in n-dimensional space between cases, where each variable is a dimension [@Kumar2007].
 3. The cost of the new project is estimated by extrapolating characteristics of the similar cases to the new case. This can also be done either algorithmically or manually by an experienced decision maker.
 
-A study by @Kim2004 compared CBR to neural networks and regression in the construction cost estimation problem. For CBR, the ESTEEM software package was used which algorithmically calculated the similarity of variables, weighted the variables using gradient descent, and deduced the cost using the most similar cases (the specific method for this last step was not explained). The discussion compared mean absolute error rates of the three methods and showed that CBR was more accurate than regression, but less accurate than neural networks in cost estimation. Despite neural networks outperforming CBR, CBR maintained significant advantages over neural networks which have been referenced in other studies as well.
+A study by @Kim2004 compared CBR to neural networks and linear regression in the construction cost estimation problem. For CBR, the ESTEEM software package was used which algorithmically calculated the similarity of variables, weighted the variables using gradient descent, and deduced the cost using the most similar cases (the specific method for this last step was not explained). The discussion compared mean absolute error rates of the three methods and showed that CBR was more accurate than regression, but less accurate than neural networks in cost estimation. Despite neural networks outperforming CBR, CBR maintained significant advantages over neural networks which have been referenced in other studies as well.
 
 Advantages of CBR include algorithmic efficiency as well as user engagement. In @Kim2004's study, it was noted that CBR models were simple to update with new data in comparison to neural networks, which must be slowly re-trained and re-tuned. New cases also did not need to have every variable complete which can occur often in real, messy data. Neural networks on the other hand require complete data. Another significant advantage of CBR is the ability for users to review chosen similar cases and make sense of the predicted cost, as opposed to neural networks which are a black box [@Kim2004][@Elfaki2014][@Kumar2007]. A disadvantage of CBR is the accuracy can be highly dependent on the number of selected cases [@Elfaki2014]. Overall, CBR may provide prediction accuracies between regression and neural networks but its results can be justified by the user - a valuable asset.
 
@@ -652,7 +657,7 @@ Cforests were also run with a core of 13 complete variables, and incomplete vari
 
 ```{r, echo = FALSE}
 
-cfor.varimp = readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/cfor_varimp.rds")
+cfor.varimp = readRDS("cfor_varimp.rds")
 
 ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
         theme(axis.text.x=element_text(angle=45,hjust=1)) +
@@ -699,43 +704,124 @@ Once the independent variables were narrowed down to a succinct list, the predic
 
 In ANOVA, linear relationships are tested and normal distributions are assumed for numeric variables. Therefore, where appropriate, numeric variables were normalised via log or cube root transformations. Trials of various variable interactions revealed that interactions between:
 
-* total amount invoiced * percent of job by professional level employee
-* total amount invoiced * client id
-* project category * number of employees on the job
+* total amount invoiced 
+* percent of job by professional level employee
+* total amount invoiced 
+* client id
+* project category 
+* number of employees on the job
 
 were statistically significant. Two types of ANOVA trials were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms. The second method was developed to get around the problem that when all variables are combined, only 15% of the projects have complete data. Therefore the ANOVA test would eliminate 85% of the data and imputing the data was not desirable at an early stage due to the amount of missing categorical data. The second method would choose a project (row in the dataset) randomly, and this case would have certain columns complete. The data was then filtered for all jobs that had at least the same columns complete, and the ANOVA test was run on this reduced set. This method allowed variables with a larger proportion of missing data to be analysed while not attempting to analyse all variables at once. 
 
-To assess the results of the ANOVA models, the root mean squared error (RMSE) of the return per dollar predictions were compared against the RMSE if all predictions were simply the mean of return per dollar for all projects. Then, the RMSE's from model predictions were subtracted from RMSE's using mean return per dollar. If the models were effective, RMSE should be lower for model predictions, and the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only:
+```{r insert_data}
+# load function for determining number of required samples for 0.8 power
+n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
+        d.calc = abs(mean(data))/sd(data)
+        pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
+        return(ceiling(pow_pow$n))
+}
 
-```{r, echo = FALSE}
+results.core = readRDS("reg_lm_core.rds")
+# n.samples(data = results.core$diff)
 
-results.core = readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reg_lm_core.rds")
+results.A2 = readRDS("reg_lm.rds")
+results.A2 <- dplyr::filter(results.A2, diff>-15)
+# n.samples(data = results.A2$diff)
+
 
 ```
 
-Student t test to test whether mean difference is significantly above 0 gave p-value of ___. Reject null hypothesis that difference is lses than or equal to zero. Difference is ___. 
+
+To assess the results of the ANOVA models, the root mean squared error (RMSE) of the return per dollar predictions were compared against the RMSE if all predictions were simply the mean of return per dollar for all projects. Then, the RMSE's from model predictions were subtracted from RMSE's using mean return per dollar. If the models were effective, RMSE should be lower for model predictions, and the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only. Note, only `r n.samples(data = results.A2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+
+```{r, echo = FALSE}
+
+#plot histogram to show differences
+results.core %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 ANOVA models- core variables only")
 
 
-#you are here 
+```
 
-* continue with the bagging method for ANOVA
-* then randomForest results
+A student t test indicates the difference is significantly above 0 with a p-value of `r t.test(results.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of return per dollar over using the mean return per dollar to a statistically significant degree. However, the mean difference is only $`r mean(results.core$diff) %>% format(digits = 1)`. Furthermore, the mean error in return per dollar is $`r mean(results.core$final.RMSE) %>% format(digits = 2)` which is unacceptably high. 
+
+Results from 100 models using method 2, which captures incomplete variables, are shown below.
+
+```{r, echo = FALSE}
+
+#plot histogram to show differences
+results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 ANOVA models - all variables sampled")
 
 
+```
+
+A student t test indicates the difference is not significantly above 0 which is clear from the plot (p-value = `r t.test(results.A2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 3)`). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the dataset was `r results.core$test.nrow[1]*4` for the core variables but averaged only `r (mean(results.A2$test.nrow)*4) %>% round(0)` for the sampled set of all variables. Regression results from ANOVA models were poor - randomForest was trialled next.
+
+#### randomForest
+
+```{r load_rf_results}
+results.rf.core = readRDS("reg_rf_core.rds")
+# n.samples(data = results.rf.core$diff)
+
+results.rf2 = readRDS("reg_rf.rds")
+# n.samples(data = results.rf2$diff)
+
+```
 
 
-#### Linear Regression and Random Forest
-    * tried predicting return per dollar as a numeric outcome.
-        * proved very difficult. Find error rate compared to just guessing the mean. Not far off.
-    * table of results for random forest and linear regression - MSE
-        
+Numeric predictions of return per dollar were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run. The randomForest parameters were first tuned using the caret package and found optimal values mtry = 5 and ntree = 500 [@caret]. A density plot of 50 models of the core variables using different train/test sets is shown below. The x-axis measures the decrease in RMSE obtained by using the randomForest model over simply the mean of all project return per dollar values. Note, only `r n.samples(data = results.rf2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+
+```{r, echo = FALSE}
+
+#plot histogram to show differences
+results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 randomForest models- core variables only")
+
+
+```
+
+This plot shows a mean return per dollar RMSE improvement of $`r mean(results.core$diff) %>% format(digits = 1)` which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is `r t.test(results.rf.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)` and is rejected. Results from 100 randomForest models using method 2 are shown below:
+
+```{r, echo = FALSE}
+
+#plot histogram to show differences
+results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models - all variables sampled")
+
+
+```
+
+The p-value for these models and the afore-mentioned null hypothesis is `r t.test(results.rf2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. The null hypothesis is rejected which contrasts the parallel ANOVA test. On the right hand side, of the graph above, the RMSE is improved by almost $0.20 but also worsens by over $0.10 per dollar. A density plot of the RMSE for the models is shown below:
+
+```{r, echo = FALSE}
+
+#plot histogram of RMSE's
+results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+ geom_histogram() + geom_density() +
+        labs(x = "RMSE", title = "Density Plot of RMSE for 50 randomForest models - all variables sampled")
+
+```
+
+Although the randomForest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for return per dollar was wide and the mean was high ($`r mean(results.rf2$final.RMSE) %>% round(2)`).
+
+The two regression models predicting return per dollar resulted in high mean RMSE's ranging from $`r mean(results.rf.core$final.RMSE) %>% round(2)` to $`r mean(results.A2$final.RMSE) %>% round(2)`. Because of the poor results, further development of regression models was postponed in favour of investiation of binary classification models. The classification is a simpler task than regression because it requires less precision.
 
 ### Classification Models
 
-* text on required imputing
+Structure:
 
-* chart showing AUC's for all methods on one plot : )
-* table showing significance p value numbers
+* boosted trees - auc with a few iterations - cross val
+
+* AUC for random forest, everything else without imputing?? thats what i did
+    * boxplot showing AUC for all methods. how many runs, 20?
+* only take best performing models and try with imputed data
+
+* imputing - boosted trees still fine
+    * apply to other methods
+    
+* boxplot chart showing AUC's for all methods on one plot : )
+
+* table showing significance p value numbers - in comparison to what? the best performing one?
 
 
 * other results from methods?? 
@@ -782,9 +868,14 @@ client Business  | 0.524              | 5
 * try using the following variables:
 
 ```{r, echo=FALSE, include=FALSE}
-library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
+library('magrittr')
 
-all8c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
+if(.Platform$OS.type == 'windows'){
+        all8c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
+} else{
+        all8c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all8c.csv')
+}
+
 
 
 
@@ -897,9 +988,32 @@ For construction projects and IT software projects, the literature indicated siz
 
 ## Regression
 
-* cannot predict return per dollar. may be that this is much too specific for the volume of data available, may be that the project variation is not captured by the type of data available
-* simpler task of predicting profitability or not does provide predictive accuracy well above random chance and also above our base measure - naiive bayes, but maybe not significantly? question of whether the 0.05 significance is appropriate
-* how many trials do I need to do to make it significant?!
+Both ANOVA and randomForest models predicted at best within an average of $0.48 for the dependent variable, return per dollar using either core variables or a sample of core and less complete variables. RandomForest predicts much better than ANOVA with a mix of core (almost complete) and incomplete variables while randomForest and ANOVA perform similarly with the core variables only. There is much less data available for training the models that include less complete variables so it is interesting that randomForest performed much better (RMSE of $0.50 for randomForest vs. $2 for ANOVA). The main difference between ensemble tree methods and ANOVA is that ANOVA assumes linear relationships between variables (some of which are normalised) whereas trees are capable of capturing non-linear relationships. It could be the case that the less complete variables had non-linear relationships with the dependent variable. RandomForest is also an ensemble method while ANOVA is not. Each randomForest is the average of 500 single trees, whereas each ANOVA model is simply a single model. 50 randomForest models produces 500 times more models than 50 ANOVA models so this averaging effect may be effectively eliminating outliers for better overall performance.
+
+The RMSE can be evaluated in terms of the end-user's perspective (business manager who is proposing fees for new projects). There is a record of how previous projects have performed in terms of return per dollar. Refer below:
+
+```{r}
+if(.Platform$OS.type == 'windows'){
+        all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv' )
+} else{
+        all8a<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all8a.csv')
+}
+ggplot(all8a, aes(x = return.pdol, y = ..density..)) + geom_histogram() + geom_density() +
+        labs(x = "Return per Dollar ($)", title = "Density Plot of Return per Dollar - All Projects")
+
+```
+
+The 95% confidence interval for this data is $`r (mean(all8a$return.pdol) - qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)` to $`r (mean(all8a$return.pdol) + qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)`. If a project returns $0 for every dollar spent (return per dollar = $0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the return per dollar is -$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the return per dollar is $1, the project has earned double what it cost to perform. If predictions have an average return per dollar error of $0.50, this represents an error in revenue of half what the project cost to complete. Clearly, this is not informative enough to bring into business decision making processes. 
+
+Further regression methods could have been persued, however randomForest is a high-performing algorithm and was far from providing usable results. It is likely the case that either not enough data was available or that the given variables do not capably explain the level of return per dollar. Each row of data is a project, and takes the company months, sometimes years, to create a single row of data. Therefore, more data cannot be accessed or easily created. It was decided categorical predictions should be pursued next as predicting whether a job will be profitable or not is a simpler task and could more effectively leverage the limited data.
+
+Case studies in the literature tend to predict total cost/effort which is a regression problem (on a numeric scale) [@Kim2004][@Chan2005][@Akintoye2000]. This is likely because the literature dealt with large projects which impact governments and large companies, and a simple profit or loss prediction is not useful. A regression prediction is not feasible for the data in this project, but a profit/loss binary prediction may be useful for this company because they complete hundreds of small projects a year. If binary classification is successful, the method the prediction contributes to company decisions must then be explored. 
+
+
+## Binary Classification
+
+
+
 * best models are gradient boosted trees and logistic regression. why? can hypothesis but not really
     * this shows the profitability can be predicted with some success, but real question is, is it financially viable?
 * depending what the bottom line plot shows - yes or no. 
