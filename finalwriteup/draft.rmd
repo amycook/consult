@@ -2,10 +2,36 @@
 title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
-output: word_document
-bibliography: Library2.bib
+output:
+  html_document: default
+  word_document:
+    reference_docx: mystyles.docx
+bibliography: Library.bib
 ---
 
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('party')
+library('randomForest')
+library('RColorBrewer')
+library('pixiedust')
+
+
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+opts_chunk$set(fig.width=8, dpi = 300)
+```
 
 Originality Statement
 
@@ -174,7 +200,7 @@ Fixed price cost estimation for complex projects is a difficult task and when pe
 
 For the reasons explained above, the aim of this research is as follows:
 
-**General Aim** The aim of this project is to use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. The project outcomes are intended to assist the business in  predicting project costs before project engagement and other business analyses such as client analysis. Several statistical and machine learning techniques will be tested, compared and refined.
+**General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. The project outcomes are intended to assist the business in  predicting project costs before project engagement and other business analyses such as client analysis. Several statistical and machine learning techniques will be tested, compared and refined.
 
 
 **Hypothesis 1**
@@ -425,6 +451,7 @@ These three sources needed to be compiled into a single dataset that detailed on
 Although dozens of variables were available from the initial dataset, it was prudent to engineer further descriptive variables, particularly in the invoicing dataset and timesheet dataset where the information needed to be compiled into a single row per project. All variables would eventually be tested for variable importance and predictive power with respect to project profitability. Examples of these engineered variables include:
 
 Timesheet Data
+
 * percent of hours performed by each professional role for the entire project
 * timespan of the entered project hours
 * percent of hours performed by 'profesional' employees as opposed to 'technical'
@@ -435,6 +462,7 @@ Timesheet Data
 * number of disciplines active in a project
 
 Invoicing data
+
 * total amount invoiced and renumerated per project
 * mean invoice size per project
 * mean invoice per client
@@ -442,10 +470,12 @@ Invoicing data
 * client invoice frequency
 
 Project Data
+
 * text analysis of project descriptions detected a list of key words that could classify projects into 16 categories. This key word analysis was done in conjunction with a company employee and the resulting classifications were reviewed.
 * number of projects completed with each client and client contact
 
 Once the three data sources were combined, further variables were engineered:
+
 * project profit
 * return per dollar for each project (how much was spent on expenses for every dollar earned?)
 
@@ -461,6 +491,8 @@ Before determining which variables contribute most to the target value, return p
 ### 3.3.2 Variable selection Methods
 
 Three methods of variable selection were trialled and compared to test whether the different methods highlighted different variables as important. These were Analysis of Variance (ANOVA), conditional inferece forests (cforests), and random forests. It was expected that random forests would highlight variables that had more categories as more important which is a well known bias; it is also a bias that cforests have overcome [@Strobl2007]. ANOVA is based on linear theory which contrasts conditional forest and random forests more free-form structure. Therefore, it is important to compare the contrasting methods' assessment of variable importance.
+
+When running variable importance tests, the dependent variable must be clearly defined. For this problem, the dependent variable can be numeric or categorical: whether a project was profitable (binary classification) or *how* profitable a project was (regression). The regression model was chosen as a variable important for predicting the degree of profitability would also predict profitable vs not profitable.
 
 #### 3.3.2.1 ANOVA
 
@@ -480,7 +512,7 @@ The random forest variable importance provides valuable insight because it addre
 
 Cforests are an alterantive ensemble tree method to random forests that overcome the aforementioned shortfalls of random forests such as overestimating the importance of variables with many categories and numeric variables. It is built from ctrees that are based on a conditional inference framework. The key difference between ctrees and standard decision trees are that a significance test procedure for splitting instead of an purity meausre such as the Gini coefficient, which is centered around information gain. 
 
-The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning varialbe importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
+The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning variable importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
 
 #### 3.3.3 Variable Selection Summary
 
@@ -488,27 +520,232 @@ Limiting the predictive model to a concise set of meaningful variables reduces n
 
 ## 3.4 Model selection
 
-* 
+Previous studies predicting project profitability in software and construction projects were largely limited to case-based reasoning, regression and neural networks. There is a need to test more sophisticated machine learning algorithms that are as powerful as neural networks but provide insight into the reasoning behind predictions. Ensemble trees (boosted trees and random forests) and bayesian networks fit these criteria. Regression and naiive bayes models were also included as simple baseline models. Complex models should be measured against simple models that can be computed at a fraction of the cost. The complete list of models for this study are:
+
+* Bayesian network
+* Random forest
+* Gradient boosted trees
+* Regression - baseline model
+* Naiive bayes - baseline model
+
+Some models have limitations and required additional data processing steps such as normalising numeric variables (Bayesian Networks and Regression) and discretising continuous variables (Bayesian Networks). Discretising numeric variables was performed by generating a hierarchical dendrogram of each variable to visualise the clusters. Between four and six clusters were chosen and summarised to find the maximum and minimum values within each cluster. Then, each job was assigned a cluster label to replace a numeric variable. It was decided that for timespans, the discretised variable should be applied to all models because it is easier for a manager to predict a time category than the number of days. For example, a small job could be confidently assigned to less than three weeks and a large job could be assigned to 1.5 - 3 years.
+
+All methods except Gradient Boosted trees could not handle missing values. Preliminary runs of each method used subsets of the data without missing values. Then, imputing methods were trialled with gradient boosted trees since boosted trees can handle missing values. The MICE random forest method has been proven to work well with complex data sets [@Shah2014]. It works by first performing a standard random forest imputation of missing values which are treated as 'place holders'. Then, the imputations for one variable are deleted and the remaining full variables are used to impute the single variable using random forest imputation. This is repeated for each variable and their 'place-holder' imputations are replaced by an imputation targeted at the single variable. This cycle is repeated five times by default [@Azur2011]. If the imputed dataset gave similar predictive results using boosted trees as unimputed data using boosted trees, the imputed data must be reasonable. It is then trialled on the remaining methods and compared to un-imputed trials.
 
 
 ## 3.5 Model comparison, Model averaging
 
+To compare the models, mean squared error statistic was used for regression models and the area under the receiver operating characteristic (ROC) curve (AUC) statistic was used for binary classification. AUC is a better statistic than classification accuracy in comparing algorithms when the probability of the outcome is relevant to the problem. This is true for problems where the decision can depend on whether the probability is above a certain threshold [@Huang2005].
+
+An ROC graph plots the false positive rate on the x-axis and true positive rate on the y-axis where:
+
+$$TPR = \frac{Count of TP}{Count of Positives}$$
+
+$$FPR = \frac{Count of FP}{Count of Negatives}$$
+
+After a model has been created using a training set, the test set is run through the model, but in order to classify the test set, a probability threshold must be chosen. That is, the model outputs a probability to classify a case as 0 or 1. The probability is not a true statistical probability, but instead a measure of the  certainty of the model. If a probability threshold is chosen to be 0.6, each case in the test set can then be classified as 0 or 1 depending on whether the probability calculated by the model is greater or less than 0.6. Once the classifications have been made, the true positive rate and false positive rate can be calculated for that model and threshold. This is plotted as a single point on the ROC curve, say point C. Refer below:
+
+![](images/method/ROC1.JPG) 
+
+[@Provost2013]
+
+A model that is perfectly classified would have all positives correctly classified (1.0 True Postiive Rate) and no incorrectly classified positives (0.0 False Positive Rate). If a model has a 1.0 TPR and 1.0 FPR (top right corner) this means it is correctly classifying all positives at the expense of incorrectly classifying all negatives as positive. It is 'dumbly' classifying all cases as positive. if a model classifies 0.8 of its positives as TP but also 0.8 of its negative cases as positive it is 'dumb' in a similar way to the previosu example. There is an 80% chance any case will classified positive. Therefore, models that lie on the diagonal line classify cases as well as random chance. 
+
+To plot the curve in an ROC, points are plotted for results on the training set using numerous threshold probability values between 0 and 1. Once enough points are plotted, a curve can be drawn. The closer the curve reaches the top left hand corner, the closer the algorithm is to perfectly predicting positive and negative cases. This would give an area under the curve (AUC) of 1. AUC of between 0.5 and 1 means the model is performing better than random chance for all possible probability thresholds.
+
+![](images/method/ROC2.JPG) 
+
+[@Provost2013]
+
+In order to compare whether models perform significantly better than one another, the AUC or mean squared error results from multiple-fold cross validations were used as the data points. Once the best two or three models were determined, these were combined using model averaging. Finally, the best model is determined between the single models and model averaged model.
+
+
+## 3.6 Bottom Line Translation
+
+Although predictive power of the final model is important, for the method to be integrated into a company's decisions, the affect on a business' bottom line should be tested. This was done using a profit curve - a chart that plots the amount of profit the company earns on the y axis vs the probability threshold on the x axis. 
+
+A simple approach was taken for this analysis, where projects with a probability to be a loss-making job greater than the threshold were rejected entirely. Therefore all profits and losses from jobs above threshold were discounted. If the threshold is zero, all jobs are rejected and the profit is $0. If the threshold is 1.0, all jobs are accepted and the profit is the same as the profit the company actually experienced since the data is a sample of historic projects. The aim was to find the optimal threshold point where saying no to a job above that level will mean result in higher profits, becasue jobs that are likely to make a loss are being rejected. This chart will clarify what percentage of profit increase the company can expect by integrating the algorithm into decision making. 
+
+A profit curve is made from a single train/test instance of the data. In order to understand the uncertainty around the profit curve, hundred-fold train/test splits were run and results calculated for each model and threshold point. This resulted in a statistical confidence interval around each threshold point which can be represented graphically. The final profit curve and surrounding confidence interval will indicate whether the algorithm makes a compelling case for integration into the company's decision making process.
+
+
+## 3.7 Method Conclusion
+
+In summary, to determine whether a 
+* obtained data: 4169 jobs from a single case study company over 12 years. Data was de-dentified by an employee of the company
+* the data was all from the company CRM. There were three chief sources:
+    * invoicing data
+    * timesheet data
+    * project summary data
+* the data was cleaned from mistakes which were generally discovered as outliers 
+* many new variables were engineered from the data, often by summarising time series data into a value that is relevant to a final data set of a single job per row
+* variable selection: dozens of variables available which were condensed to the most important 10-12. variable importance methods were ANOVA, random forest, and cforests. the overlapping important variables were chosen first as well as some others
+* 5 models were tested: baseiline: log reg, naiive bayes.
+* sophisticated ML: boosted reg, random frest, bayesian networks
+* best were comapred to a model averaged version
+* Analysis of impact on bottom line for business if model is integrated into decision making
+* link: results
 
 
 
-- need for statistical measurements
-
-## 3.6 Bottom line translation
-
-## 3.7 Conclusion/Link to next chapter
 
 
+# Chapter 4: Results
 
-## Regression
+This section presents key charts and tables of results that progressively answer the research question: can a statistical or machine learning model based on historical project data predict the profitability of a new project and have a positive impact on the bottom line of the business? 
+
+## Variable Selection
+
+To create the best possible model, only important variables were selected to reduce the affects of noisy independent variables. There are currently 46 independent variables for the single dependent variable, return per dollar which is the measure of profitability for a project.
+
+### Regression
+
+Regression requires complete datasets. Therefore, analysis was done with a core set of 13 complete variables and a single additional incomplete variable. That means a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F statistic of each variable is plotted in the boxplot below.
+
+```{r, echo=FALSE, fig.height=5}
+
+plot.pvals = readRDS("AOV_varimp_plot.rds")
+
+ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+        geom_hline(yintercept = 0.05, colour = 'red', linetype = 2) +
+        scale_y_continuous(breaks = c(0, 0.05, .25, .5, .75, 1)) +
+        labs(y = "P value of F statistic", x = "Independent Variables",
+             title = "Summary of P-values from Anova tests")
+
+
+```
+
+The ANOVA model indicates the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the null hypothesis - the variables do not correlate linearly with the dependent variable, return per dollar.
+
+* number of employees that contributed to the project (no.users)
+* Percent of hours completed by a professional as opposed to technical employee (pc.pro)
+* Business category of Client (Business) 
+* Discipline
+* Number of internal disciplines involved in the project (Num.disc)
+* Timespan of the project (timespan)
+* Total amount invoiced for the project (inv.mlsto)
+
+Four of the added incomplete variables (categorised as add.variable) were significant in their ANOVA models:
+
+* Client id (code.client)
+* Project category (JD.Second)
+* Position of the main professional working on the project, ie mid-level, senior (ProjEng.Pos)
+* id of main professional working on the project (code.ProjEng)
+
+
+
+### Random Forest
+
+The random forest algorithm imputes missing values, however this was not desirable for the early stage of variable selection - before modelling had commenced. Instead, a subset of complete data was used made up of variables with at least 2300 complete cases. Additionally, random forests cannot handle categorical variables with more than 53 categories which eliminated more variables. The resulting 'core' dataset contained 16 variables and 2364 cases. Because each run of the algoritm is slightly different, 10 algorithms were run, which each output the ranking of variables by importance. The mean ranking of each variable is summarised below: 
+
+```{r, echo = FALSE}
+
+rf.rank = readRDS("RF_var_rank_subbed.rds")
+kable(rf.rank, format = 'markdown')
+
+```
+
+### cForest
+
+Cforests were also run with a core of 13 complete variables, and incomplete variables were given added to the core variables individually in separate runs. Variables with an unlimited number of c ategories can be included in cforests which is an advantage over randomForests. Cforests compute a variable importance ranking which is a number relating to the reduction in error the variable provides. The variable importance rankings for the core 13 variables are as follows:
+
+```{r, echo = FALSE}
+
+cfor.varimp = readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/cfor_varimp.rds")
+
+ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_bar(stat='identity') +
+        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance rankings of Complete Variables")
+
+
+```
+
+
+Some incomplete variables that were added one at a time ranked in the top 6 most important variables in their model:
+
+* Percent of Hours completed by the main employee on the project (pc.majpos)
+* Client id (code.client)
+* Client contact id (code.contact)
+* Project category (JD.Second)
+
+### Variable selection summary
+
+Based on the results of the three methods for variable importance, 11 independent variables were selected for the prediction modelling:
+
+* Percent of hours completed by a professional level employee (pc.pro) -all models
+* Project timespan (timespan) - all models
+* Number of employees on Project (no.users) - all models
+* Amount Invoiced for Project (inv.mlsto) - all models
+* Business category of Client (Business) - moderately for all models
+* Project category (JD.Second) - ANOVA and cForest
+* Total Amount Invoiced from Past Client Jobs (clint.totinv) - randomForest
+* Discipline - ANOVA
+* position of main employee on the project (majority.pos) - newly created to cater for findings in ANOVA
+* Percent of Hours completed by the main employee on the project (pc.majpos) - cForest
+* Billing Type (hourly vs. fixed fee) - advice of Case Study partner
+
+
+
+
+## Model Results
+
+Once the independent variables were narrowed down to a succinct list, the prediction models were tested. First prediction return per dollar as a regression problem was trialled followed by prediction profit or loss as a binary classification problem.
+
+### Regression Model
+
+#### ANOVA
+
+In ANOVA, linear relationships are tested and normal distributions are assumed for numeric variables. Therefore, where appropriate, numeric variables were normalised via log or cube root transformations. Trials of various variable interactions revealed that interactions between:
+
+* total amount invoiced * percent of job by professional level employee
+* total amount invoiced * client id
+* project category * number of employees on the job
+
+were statistically significant. Two types of ANOVA trials were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms. The second method was developed to get around the problem that when all variables are combined, only 15% of the projects have complete data. Therefore the ANOVA test would eliminate 85% of the data and imputing the data was not desirable at an early stage due to the amount of missing categorical data. The second method would choose a project (row in the dataset) randomly, and this case would have certain columns complete. The data was then filtered for all jobs that had at least the same columns complete, and the ANOVA test was run on this reduced set. This method allowed variables with a larger proportion of missing data to be analysed while not attempting to analyse all variables at once. 
+
+To assess the results of the ANOVA models, the root mean squared error (RMSE) of the return per dollar predictions were compared against the RMSE if all predictions were simply the mean of return per dollar for all projects. Then, the RMSE's from model predictions were subtracted from RMSE's using mean return per dollar. If the models were effective, RMSE should be lower for model predictions, and the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only:
+
+```{r, echo = FALSE}
+
+results.core = readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reg_lm_core.rds")
+
+```
+
+Student t test to test whether mean difference is significantly above 0 gave p-value of ___. Reject null hypothesis that difference is lses than or equal to zero. Difference is ___. 
+
+
+#you are here 
+
+* continue with the bagging method for ANOVA
+* then randomForest results
+
+
+
+
+#### Linear Regression and Random Forest
     * tried predicting return per dollar as a numeric outcome.
         * proved very difficult. Find error rate compared to just guessing the mean. Not far off.
+    * table of results for random forest and linear regression - MSE
+        
 
-##Bayesian Network
+### Classification Models
+
+* text on required imputing
+
+* chart showing AUC's for all methods on one plot : )
+* table showing significance p value numbers
+
+
+* other results from methods?? 
+* Bayesian network
+* Random forest
+* Gradient boosted trees
+* Regression - baseline model
+* Naiive bayes - baseline model
+
+### Bayesian Network
 
 * could not handle _any_ numeric variables, had to discretise all numeric vars
     * used normalised numeric variables
@@ -641,7 +878,26 @@ interprets your results in a wider context; indicates which results were expecte
 provides explanations for unexpected results.
 The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
 
-* cannot predict return per dollar. may be that this is much to specific for the volume of data available, may be that the project variation is not captured by the type of data available
+## Variable Importance
+
+The variable importance results from the three types of models: ANOVA regression, randomForest, and cForest were largely similar. All three models ranked five variables highly:
+
+* percent of hours by professional
+* project timespan
+* number of employees in project team
+* total amount invoiced
+* business category of client which was positive
+
+This was not necessarily expected particularly between ANOVA and the ensemble tree methods as ANOVA measures linear relationships as opposed to non-linear ensemble trees. Random forests favour variables that are numeric or have many categories and this held true for the analysis. The 6 highest ranked variables were numeric and one categorical variable, Business category of client, with 28 categories. The two lowest ranking variables had only 4 categories. It would be expected that cForests would rank the categorical variables with only 4 categories more fairly which was the case with Discipline. It was ranked mid way. Business category of the client and Broad business type however, were ranked similarly in randomforests. 
+
+The nature of the higher ranked variables were not surprising, and were generally centered around who did how much of the work internally, general client characteristics and id, project timespan, and project category. It was 
+expected that Billing Type would play a more important role in predicting project profitability as it describes the nature fees are charged. For this reason, and with advice from the case study business, the Billing Type was temporarily kept in the model.
+
+For construction projects and IT software projects, the literature indicated size was the most important variable predicting effort. Size could mean size of a building or function point (level of functionality of the software) [@Shepperd1996][@Finnie1997][@Pai2013]. In this case study, profitability is the dependent variable, not total effort and the size variable plays a different role. Instead of contributing to predicting the total effort, it is describing whether the size of a project correlates with how profitable the project is. The closest estimate of size in this case study is the invoiced amount which does show up as very important. The exact invoiced amount cannot be known before a project begins, as this would solve the problem of profitability. Therefore, the invoiced amount was binned into categories that a manager could choose as an estimate. The other important variables (including number of employees on a project, client business type and percent of hours by certain types of employees) have not been strongly represented in the literature to date.
+
+## Regression
+
+* cannot predict return per dollar. may be that this is much too specific for the volume of data available, may be that the project variation is not captured by the type of data available
 * simpler task of predicting profitability or not does provide predictive accuracy well above random chance and also above our base measure - naiive bayes, but maybe not significantly? question of whether the 0.05 significance is appropriate
 * how many trials do I need to do to make it significant?!
 * best models are gradient boosted trees and logistic regression. why? can hypothesis but not really
