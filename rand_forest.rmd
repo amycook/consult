@@ -607,7 +607,150 @@ final.output(df=all7d, samp = 500)
 ```
 
 
+New analysis for thesis write up 
 
+```{r, echo=FALSE}
+
+sample<- all7d[1000,]
+sample<- sample[,!is.na(sample)]
+vars<- names(sample) 
+vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc','Biz.type','Post.Code',
+               'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
+vars
+
+#make new dataframe for future use with normalised variables and variables that you want to use only
+all8a<- all7d %>% select(no.users, Discipline, pc.pro, Business, code.client, JD.Second, timespan.cbrt,
+                         inv.mlsto.log,client.totinv.log, pc.majpos.log, code.contact, Billing.Type,
+                         majority.pos, return.pdol, mlsto, Year)
+write.csv(all8a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')
+all8a <- read.csv("~/OneDrive/shared files/Bligh Tanner/masters/data/all8a.csv")
+
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        return(root.error)
+}
+
+
+final.rf.output<- function(df=all8a, no.tests = 50, core = TRUE) {
+        
+        summary.tests = matrix(NA, nrow = no.tests, ncol = 3)
+        
+        for(i in 1:no.tests){
+        
+        if(core == FALSE){
+        samp = sample.int(nrow(df), 1)                        
+        #create sample df - use all variables that are complete from a sample row of data
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol')]
+        variables = vars
+        } else{
+                variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
+                              'no.users', 'pc.pro', 'Business')
+        }
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        if('code.client' %in% variables){
+        sample = factor(sample(unique(reduced$code.client),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.client %in% sample,]
+
+        reduced$code.client= factor(reduced$code.client)
+        }
+        
+        if('code.contact' %in% variables){
+        sample1 = factor(sample(unique(reduced$code.contact),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.contact %in% sample1,]
+
+        reduced$code.contact= factor(reduced$code.contact)
+        }
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(j in 1:length(variables)){
+                formula = paste(formula, variables[j], sep= " + ")
+        }
+        
+        
+        samp_size = floor(0.75*nrow(reduced))
+        create.train = base::sample.int(nrow(reduced), samp_size)
+        train.df = reduced[create.train,]
+        test.df = reduced[-create.train,]
+
+        cats = c('code.client', 'code.contact', 'JD.Second', 'Business', 'majority.pos')
+        for(k in seq_along(cats)){
+                if(cats[k] %in% variables){
+                test.df = test.df[test.df[,cats[k]] %in% unique(train.df[,cats[k]]),]
+        }
+        }
+
+        final = randomForest(as.formula(formula), data= train.df, mtry=5,ntree=500, importance=FALSE)
+        
+        ans = data.frame(answer= test.df$return.pdol, final.lm = predict(final, test.df))
+        
+        #print RMSE for cases that match certain categories only
+        #first subset predictions to cases that match the category
+        
+        test.df$predict= ans$final.lm
+
+        
+        #random RMSE
+        r= mean(reduced$return.pdol)
+        random.RMSE= RMSE(reduced$return.pdol, r) %>% round(3)
+        
+        #final RMSE for all rows in reduced in a regression
+        final.RMSE= RMSE(ans$answer, ans$final.lm) %>% round(3)
+        
+        summary.tests[i,1]= random.RMSE
+        summary.tests[i,2]= final.RMSE
+        summary.tests[i,3]= nrow(test.df)
+        
+        #track progress
+        cat(i," ")
+        }
+        summary.tests = as.data.frame(summary.tests)
+        names(summary.tests) = c('random.RMSE', 'final.RMSE', 'test.nrow')
+        return(summary.tests)
+}
+
+#how many tests required? power calculation
+n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
+        d.calc = abs(mean(data))/sd(data)
+        pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
+        return(ceiling(pow_pow$n))
+}
+
+n.samples(data = results.core$diff)
+n.samples(data = results$diff)
+
+# 3 tests required for results.core
+
+
+results = final.rf.output(df=all8a, no.tests = 100, core = FALSE)
+results = results %>% mutate(diff = random.RMSE - final.RMSE)
+results = results %>% filter(diff>-25)
+results.core = final.rf.output(df=all8a, no.tests = 50, core = TRUE)
+results.core = results.core %>% mutate(diff = random.RMSE - final.RMSE)
+saveRDS(results, "~/Documents/github/consult/finalwriteup/report_data/reg_rf.rds")
+saveRDS(results.core, "~/Documents/github/consult/finalwriteup/report_data/reg_rf_core.rds")
+
+
+results.core %>% ggplot(., aes(x = test.nrow, y = final.RMSE)) + geom_point()
+
+#histogram of difference
+results %>% ggplot(., aes(x =diff, y = ..density..)) + geom_histogram() + geom_density()
+
+# t- test
+t_test = t.test(results$diff, alternative = "greater", mu = 0)
+str(t_test)
+t_test$p.value
+```
 
 
 
