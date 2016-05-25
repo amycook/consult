@@ -961,4 +961,170 @@ a<- ggplot(melt(auc), aes(x= factor(L1), y= value)) + geom_boxplot()
 # All years are required! Gives the best result
 ```
 
+
+Try discretising total amount invoiced for the job.
+
+Try tuning with caret package including Business and all years
+
+```{r, echo=FALSE}
+
+#decide how many clusters
+x<- dist(all9c$inv.mlsto.log, method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+
+# optimise number of clusters
+clusts = c(4, 5,7,9)
+for(j in seq_along(clusts)){
+        
+all9c$b.inv.log<- as.factor(cutree(fit, k= clusts[j]))
+
+# set seeds
+set.seed(123)
+seeds <- vector(mode = "list", length = 51)
+for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
+## For the last model:
+seeds[[51]] <- sample.int(1000, 1)
+
+#create test train
+sample<- sample(1:nrow(all9c), 2/3*nrow(all9c), replace=F)
+train<- all9c[sample,]
+test<- all9c[-sample,]
+
+# first tune shrinkage and number of trees
+train2<- train
+train2$b.rpdol<- as.factor(train2$b.rpdol)
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="0"] <- "profit"
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="1"] <- "loss"
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log +
+client.totinv.log + pc.majpos.log + Billing.Type + majority.pos + Business"
+
+cv.Control <- trainControl(method = "cv",
+                           number = 5,
+                           seeds= seeds
+                           , summaryFunction=twoClassSummary,
+                           classProbs=TRUE
+                           )
+gbmGrid <- expand.grid(shrinkage = c(0.001),
+                       n.trees = c(10000), interaction.depth = c(5),
+                       n.minobsinnode = c(20))
+set.seed(2)
+gbmFit <- train(as.formula(formula), data= train2,
+                 method = "gbm", trControl = cv.Control, verbose = FALSE,
+                 bag.fraction = 0.5, tuneGrid = gbmGrid,
+                metric = 'ROC',
+                na.action = na.pass)
+
+assign(paste("gbmFit",j,sep = ""), gbmFit, envir = .GlobalEnv)
+}
+
+AUCs = c(gbmFit4$results$ROC, gbmFit1$results$ROC, gbmFit2$results$ROC, gbmFit3$results$ROC)
+plot = data.frame(no.clusts = clusts, AUC = AUCs)
+ggplot(plot, aes(x = no.clusts %>% as.numeric, y = AUC)) + geom_line()
+
+# therefore:
+# shrinkage = 0.001
+# no trees = 10000
+# min terminal node size = 20
+# max tree depth = 5
+
+# AUC approx 0.748 for 5 clusters of invoiced amount for job = best
+# 
+
+```
+
+Tune boosted tree for 5 clusters of job invoice size 
+
+```{r, echo=FALSE}
+
+#decide how many clusters
+x<- dist(all9c$inv.mlsto.log, method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+rect.hclust(fit, k = 5)
+
+#assign a cluster number to all rows in data frame
+all9c$b.inv.log<- as.factor(cutree(fit, k=5))
+head(all9c$b.inv.log)
+
+key = all9c %>% group_by(b.inv.log) %>% summarise(min = min(inv.mlsto.log) %>% exp() %>% round(0), max = max(inv.mlsto.log) %>% exp() %>% round(0))
+
+arrange(key, min)
+key$min %>% round(-2)
+breaks = c(100,600,2500,8000,60000, 1800000)
+breaks = sort(breaks)
+log(breaks)
+
+#create clusters based on summary:
+man.clust<- function(first.vec=all9c$timespan.cbrt, breaks.man=c(0,4.16,6.558,15),
+                     labs = c("t0_70", "t70_280", "t280_")){
+        final = cut(first.vec, breaks=breaks.man, include.lowest=TRUE, labels= labs)
+        return(final)
+}
+
+#inv.mlsto.log
+        
+all9c$b.inv.log <- man.clust(first.vec=all9c$inv.mlsto.log, 
+                            breaks.man= log(breaks),
+                            labs = c("100-600","600-2.5k","2.5k-8k","8k-60k","60k-1.8m"
+                            ))
+
+# set seeds
+set.seed(123)
+seeds <- vector(mode = "list", length = 51)
+for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
+## For the last model:
+seeds[[51]] <- sample.int(1000, 1)
+
+#create test train
+sample<- sample(1:nrow(all9c), 2/3*nrow(all9c), replace=F)
+train<- all9c[sample,]
+test<- all9c[-sample,]
+
+# first tune shrinkage and number of trees
+train2<- train
+train2$b.rpdol<- as.factor(train2$b.rpdol)
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="0"] <- "profit"
+levels(train2$b.rpdol)[levels(train2$b.rpdol)=="1"] <- "loss"
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log +
+client.totinv.log + pc.majpos.log + Billing.Type + majority.pos + Business"
+
+cv.Control <- trainControl(method = "cv",
+                           number = 5,
+                           seeds= seeds
+                           , summaryFunction=twoClassSummary,
+                           classProbs=TRUE
+                           )
+gbmGrid <- expand.grid(shrinkage = c(0.001),
+                       n.trees = c(10000), interaction.depth = c(3,4,5,6),
+                       n.minobsinnode = c(20))
+set.seed(2)
+gbmFit <- train(as.formula(formula), data= train2,
+                 method = "gbm", trControl = cv.Control, verbose = FALSE,
+                 bag.fraction = 0.5, tuneGrid = gbmGrid,
+                metric = 'ROC',
+                na.action = na.pass)
+
+plot(gbmFit)
+
+# interaction depth = 5 is best
+
+write.csv(all9c, 'C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')
+write.csv(all9c, 'C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all9c.csv')
+
+```
+
+
+
+
+    
+    
+    
+    
+    
+    
+    
+    
     
