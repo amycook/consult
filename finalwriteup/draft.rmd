@@ -36,6 +36,7 @@ if(.Platform$OS.type == 'windows'){
 }
 
 opts_chunk$set(fig.width=8, fig.depth = 5, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+getwd()
 ```
 
 Originality Statement
@@ -716,9 +717,18 @@ were statistically significant. Two types of ANOVA trials were run. The first us
 ```{r insert_data}
 # load function for determining number of required samples for 0.8 power
 n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
-        d.calc = abs(mean(data))/sd(data)
-        pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
-        return(ceiling(pow_pow$n))
+        if(type.calc == 'one.sample'){
+                d.calc = abs(mean(data))/sd(data)
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
+                return(ceiling(pow_pow$n))
+        }
+        
+        if(type.calc == 'two.sample'){
+                d.calc = abs(mean(data[[1]]) - mean(data[[2]]))/sqrt(mean(c(var(data[[1]]), var(data[[2]]))))
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = 'two.sided')
+                return(ceiling(pow_pow$n))
+        }
+        
 }
 
 results.core = readRDS("reg_lm_core.rds")
@@ -808,9 +818,47 @@ The two regression models predicting return per dollar resulted in high mean RMS
 
 ### Classification Models
 
-Structure:
+#### Initial Trial of five Methods
 
-* boosted trees - auc with a few iterations - cross val
+To begin analysis, all prediction methods were trialled using as much data as possible for each method. Boosted trees and Naiive bayes algorithm are able to process data with missing values, so all data could be used. Logistic regression, randomForest and Bayesian Networks require complete datasets so a subset of complete data was used for these. It was expected that Boosted trees would perform best as they are powerful and can use incomplete data. For this reason, 4 x 5 fold runs of each method were performed (20 models total for each method) and statistically compared against boosted trees. A power calculation was used to calculate the number of runs required for a statistical power of 0.8.
+
+The models were compared using the Area under the curve (AUC) test statistic calculated from the Reciever Operating Curve (ROC) as this gives a good indication of model performance under binary classification [@pROC][@Putler2012]. An example plot of five ROC's resulting from five fold cross validation models using the boosted tree algorithm is shown below:
+
+```{r}
+# image below generated from file rf_log_naiive_auc.rmd
+# lines 683 to 689
+
+```
+
+![](images/boosted tree/5_fold_ROC.png) 
+
+[@pROC]
+
+
+The boosted tre model was first tuned using the caret package to optimise the following parameters [@caret]:
+
+* shrinkage = 0.001
+* no trees = 10000
+* min terminal node size = 20
+* max tree depth = 5
+
+In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance but not perfectly. 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. It was decided that randomForest and boosted trees would likely not be distinguishable, and 100 models of each method were created via performing 10 fold cross validation 10 times. The violin plot below summarises the AUC values from each method.
+
+```{r reduced_violin}
+
+reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+
+ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
+        geom_jitter(alpha = 0.2, shape = 16) +
+        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
+        scale_fill_manual(values = topo.colors(4)) +
+        scale_colour_manual(values = topo.colors(4)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of each Method")
+        
+        
+```
+
 
 * AUC for random forest, everything else without imputing?? thats what i did
     * boxplot showing AUC for all methods. how many runs, 20?
@@ -824,14 +872,13 @@ Structure:
 * table showing significance p value numbers - in comparison to what? the best performing one?
 
 
-* other results from methods?? 
 * Bayesian network
 * Random forest
 * Gradient boosted trees
 * Regression - baseline model
 * Naiive bayes - baseline model
 
-### Bayesian Network
+#### Bayesian Network
 
 * could not handle _any_ numeric variables, had to discretise all numeric vars
     * used normalised numeric variables

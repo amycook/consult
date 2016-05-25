@@ -38,7 +38,7 @@ setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
 all10rf<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10rf.csv')[,-1]
 all9c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
-all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
+all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,-1]
 
 #VARS::::
 # no.users, Discipline, pc.pro, Business, code.client,JD.Second, majority.pos, b.timespan.cbrt,
@@ -48,19 +48,19 @@ all10a<- all9c %>% select(no.users, Discipline, pc.pro, Business,
                          b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
                          mlsto, Year, b.rpdol)
 all10a<- all10a[complete.cases(all10a),]
-# 2280 cases
+# 2280 cases - 10 vars
 
 all10b<- all9c %>% select(no.users, Discipline, pc.pro, Business,
                          b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
                          mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
 all10b<- all10b[complete.cases(all10b),]
-# 1987 cases
+# 1987 cases - 12 vars
 
 all10c<- all9c %>% select(no.users, Discipline, pc.pro, Business, JD.Second,
                          b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
                          mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
 all10c<- all10c[complete.cases(all10c),]
-# 1106 cases
+# 1106 cases - 13 vars
 
 #make 3 new data sets from all9a instead of all9c. Ie long winded Business and JD.Second levels
 all10d<- all9a %>% select(no.users, Discipline, pc.pro, Business,
@@ -150,14 +150,15 @@ caret.all(df = all10b) # mtry = 4, AUC = 0.771
 caret.all(df = all10c) # mtry =4, AUC = 0.7735
 
 
+
 # all10c is performing best! let's make a function that runs each df through the test set?
 df.list <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
         
-test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "log",
+test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "log", x.folds = 5,
                      extra.var = NULL, mult = 1){
         
         auc<- rep(list(rep(0, length(dfs))), length(dfs))
-        colours <- c("red", "yellow", "green", "blue", "purple")
+        colours <- topo.colors(x.folds*mult)
 
 
         for(i in 1:length(dfs)){
@@ -173,13 +174,13 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                 levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <- "loss"
                 
                 #set up 10 fold cv using caret function
-                folds <- createFolds(df$f.rpdol, k = 10, list = T, returnTrain = F)
+                folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
                 #now have folds[[1]] through folds[[10]] list of rows to exclude
                 
                 if(mult > 1){
                         for(k in 2:mult){
                                 set.seed(sample(1:1000,1))
-                                folds.temp = createFolds(df$f.rpdol, k = 10, list = T, returnTrain = F)
+                                folds.temp = createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
                                 folds = append(folds, folds.temp)
                         }
                 }
@@ -196,20 +197,22 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                 
                 if(nrow(df) == 2364){
                         if(is.null(extra.var)){
-                                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+                                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
                                 
                         } else {
-                                formula<- paste("f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second", "+", extra.var, sep = " ")
+                                formula<- paste("f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second", "+", extra.var, sep = " ")
                         }
                 
                 } else{
                 if(nrow(df) <= 2300){
-                        formula<- "f.rpdol ~ . -Year -b.rpdol"
+                        # include code.client, code.contact, Billing.Type
+                        formula<- "f.rpdol ~ . -Year -b.rpdol -inv.mlsto.log - return.pdol - timespan.cbrt - mlsto"
                 }
                 }
                 
                 if(method %in% 'boost') {
-                        formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+                        #no JD.Second
+                        formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
 
                 }
                 
@@ -238,7 +241,7 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                                 } else {
                                         fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
                                                    distribution = "bernoulli", n.trees = 10000,
-                                                   shrinkage = 0.001, interaction.depth = 4,
+                                                   shrinkage = 0.001, interaction.depth = 5,
                                                    n.minobsinnode = 20)
                                                 
                                                 pred <-predict(fit, test, 
@@ -248,14 +251,14 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
 
                         
                         #pROC
-                        pred.p <- roc(test$f.rpdol, pred)
+                        pred.p <- pROC::roc(test$f.rpdol, pred)
                         
                         if (i == 1 & j== 1) {
                         plot.roc(pred.p, col = colours[i], print.thres = F)
                         
                         } else{
                         plot.roc(
-                        pred.p, col = colours[i], add = TRUE , print.thres = F)
+                        pred.p, col = colours[j], add = TRUE , print.thres = F)
                         }
                         
                         auc[[i]][j]<- auc(pred.p)
@@ -482,7 +485,7 @@ test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "rf",
          extra.var = 'reduc.client')
 ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
         stat_summary(fun.y="mean", geom="point", colour = "red")
-
+ 
 test.roc(dfs = df.list, seed = 100, mtrys = rep(5,5), method = "log",
          extra.var = 'reduc.client')
 ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
@@ -673,6 +676,19 @@ test.review<- arrange(test.review, -pred)
 write.csv(test.review, 'C:/Users/n9232371/Documents/Consultbusiness/data/test_review.csv')
 ```
 
+Create plot for final report
+Boosted tree
+
+```{r}
+df.list<- c('all9c')
+test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+```
 
 
 
