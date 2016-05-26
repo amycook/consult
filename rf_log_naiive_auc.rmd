@@ -20,17 +20,17 @@ Out of the best from above, can experiment with adding in client and contact.
 Load 3 datasets:
 
 ```{r, echo=FALSE}
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('ggplot2',lib='C:/Progra~1/R/R-3.2.1/library')
-library('gbm', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('caret', lib = 'C:/Progra~1/R/R-3.2.2/library')
-library('pROC',lib='C:/Progra~1/R/R-3.2.2/library')
-library('e1071',lib='C:/Progra~1/R/R-3.2.2/library')
-library('randomForest',lib='C:/Progra~1/R/R-3.2.2/library')
-library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('caret')
+library('pROC')
+library('e1071')
+library('randomForest')
+library('party')
 
 setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 
@@ -689,6 +689,20 @@ ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_poi
         stat_summary(fun.y="mean", geom="point", colour = "red")
 
 ```
+
+
+Checking p value for BN
+
+```{r}
+reduc.totAUC <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reduc_df_auc.rds")
+BN = read.csv("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/BN_AUCs.csv")
+
+n.samples(data = list(reduc.totAUC[[2]][1:20], BN$AUC), type.calc = 'two.sample', alt = 'two.sided')
+
+# only 5 samples required according to power calculation
+
+```
+
 
 
 

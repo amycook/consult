@@ -846,7 +846,7 @@ In this example, the average area under the curve (AUC) was 0.763 indicating tha
 
 ```{r reduced_violin}
 
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
 
 ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
         geom_jitter(alpha = 0.2, shape = 16) +
