@@ -33,11 +33,13 @@ library('randomForest')
 library('party')
 
 setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
 
 
 all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
 all10rf<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10rf.csv')[,-1]
 all9c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
+all9c<- read.csv('all9c.csv')[,-1]
 all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,-1]
 
 #VARS::::
@@ -45,19 +47,19 @@ all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,
 # inv.mlsto.log, client.totinv.log, pc.majpos.log, code.contact, Billing.Type, mlsto, Year, b.rpdol
 
 all10a<- all9c %>% select(no.users, Discipline, pc.pro, Business,
-                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
                          mlsto, Year, b.rpdol)
 all10a<- all10a[complete.cases(all10a),]
 # 2280 cases - 10 vars
 
 all10b<- all9c %>% select(no.users, Discipline, pc.pro, Business,
-                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
                          mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
 all10b<- all10b[complete.cases(all10b),]
 # 1987 cases - 12 vars
 
 all10c<- all9c %>% select(no.users, Discipline, pc.pro, Business, JD.Second,
-                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
                          mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
 all10c<- all10c[complete.cases(all10c),]
 # 1106 cases - 13 vars
@@ -162,7 +164,7 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
 
 
         for(i in 1:length(dfs)){
-                df = get(df.list[i])
+                df = get(dfs[i])
                 
                 # mlsto is spinning errors, get rid of
                 df = df[, !(names(df) %in% 'mlsto')]
@@ -206,13 +208,18 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                 } else{
                 if(nrow(df) <= 2300){
                         # include code.client, code.contact, Billing.Type
-                        formula<- "f.rpdol ~ . -Year -b.rpdol -inv.mlsto.log - return.pdol - timespan.cbrt - mlsto"
+                        formula<- "f.rpdol ~ . -Year -b.rpdol "
                 }
                 }
                 
                 if(method %in% 'boost') {
                         #no JD.Second
                         formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+
+                }
+                
+                if(method %in% 'naiive') {
+                        formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type + JD.Second"
 
                 }
                 
@@ -232,21 +239,27 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                                 pred <- predict(fit, test, type = "prob")
                                 pred <- pred[,2]
                                 
-                        } else {
-                                if(method %in% 'log'){
-                                        fit<- glm(as.formula(formula), 
-                                                  data = df[-folds[[j]],], family = binomial())
-                                        pred <- predict(fit, test,
-                                                        type = "response")
-                                } else {
-                                        fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
-                                                   distribution = "bernoulli", n.trees = 10000,
-                                                   shrinkage = 0.001, interaction.depth = 5,
-                                                   n.minobsinnode = 20)
-                                                
-                                                pred <-predict(fit, test, 
-                                                               n.tree = 10000, type = "response")
-                                                }
+                        }
+                        
+                        if(method %in% 'log'){
+                                fit<- glm(as.formula(formula), 
+                                          data = df[-folds[[j]],], family = binomial())
+                                pred <- predict(fit, test,
+                                                type = "response")
+                        } 
+                        if(method %in% 'boost'){
+                                fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                           distribution = "bernoulli", n.trees = 10000,
+                                           shrinkage = 0.001, interaction.depth = 5,
+                                           n.minobsinnode = 20)
+                                
+                                pred <- predict(fit, test, n.tree = 10000, type = "response")
+                        }
+                        
+                        if(method %in% 'naiive'){
+                                fit<- naiveBayes( as.formula(formula), df[-folds[[j]],])
+                                pred <- predict(fit, test, type = 'raw')
+                                pred<- pred[,2]
                         }
 
                         
@@ -262,6 +275,7 @@ test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "
                         }
                         
                         auc[[i]][j]<- auc(pred.p)
+                        names(auc)[[i]] = method
                         
                         #print j value
                         cat(j, " ")
@@ -298,7 +312,9 @@ Now run logistic regression
 ```{r, echo= FALSE}
 
 df.list <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
-test.roc(dfs = df.list, seed = 400, mtrys = c(4,5,3,4,4), method = "log")
+test.roc(dfs = df.list, seed = 400, mtrys = c(4), method = "log",
+         x.folds = 5, extra.var = NULL, mult = 1)
+names(auc.func) = df.list
 ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
         stat_summary(fun.y="mean", geom="point", colour = "red")
 
@@ -313,11 +329,12 @@ t.test(auc$value[1:10], auc$value[11:20])
 
 Try naiive bayes - try full NA dataset, all9c
 
-```{r, echo=FALSE}
+```{r naiive bayes, echo=FALSE}
 
 formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type + JD.Second"
 
 df = all10mice
+df = all9c
 
 set.seed(sample(1:1000,1))
 sample<- sample(1:nrow(df), 2/3*nrow(df), replace=F)
@@ -689,6 +706,86 @@ ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_poi
         stat_summary(fun.y="mean", geom="point", colour = "red")
 
 ```
+
+Create loop through each method - 20 models - compile AUC results
+
+```{r}
+test.roc(dfs = c('all10a'), seed = 100, mtrys = c(5), method = "log",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = auc.func
+
+test.roc(dfs = c('all9c'), seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+test.roc(dfs = c('all10c'), seed = 100, mtrys = c(4), method = "rf",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+test.roc(dfs = c('all9c'), seed = 100, mtrys = c(4), method = "naiive",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+saveRDS(tot.auc,"~/Documents/github/consult/finalwriteup/report_data/reduc_df_auc.rds")
+
+
+ggplot(melt(tot.auc), aes(x= factor(L1), y= value)) + geom_violin() + geom_jitter() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+# n.samples function is defined in 'draft.rmd'
+index = c(1,3,4)
+ns = NULL
+for(i in seq_along(index)){
+        temp = n.samples(data = tot.auc[c(2, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i] = temp
+}
+ns
+
+```
+
+Re-run with MICE imputed data
+
+```{r}
+
+all10mice_f = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "log",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = auc.func
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(4), method = "rf",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(4), method = "naiive",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+saveRDS(tot.auc.m,"~/Documents/github/consult/finalwriteup/report_data/mice_df_auc.rds")
+
+
+ggplot(melt(tot.auc.m), aes(x= factor(L1), y= value)) + geom_violin() + geom_jitter() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+# n.samples function is defined in 'draft.rmd'
+index = c(1,3,4)
+ns = NULL
+for(i in seq_along(index)){
+        temp = n.samples(data = tot.auc.m[c(2, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i] = temp
+}
+ns
+
+```
+
+
+
+
+
 
 
 Checking p value for BN
