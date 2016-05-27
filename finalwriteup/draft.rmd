@@ -831,6 +831,22 @@ The models were compared using the Area under the curve (AUC) test statistic cal
 * min terminal node size = 20
 * max tree depth = 5
 
+In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance but not perfectly. 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. It was decided that randomForest and boosted trees would likely not be distinguishable, and 100 models of each method were created via performing 10 fold cross validation 10 times. The violin plot below summarises the AUC values from each method.
+
+```{r reduced_violin}
+
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
+
+ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
+        geom_jitter(alpha = 0.2, shape = 16) +
+        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
+        scale_fill_manual(values = topo.colors(4)) +
+        scale_colour_manual(values = topo.colors(4)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of each Method")
+        
+        
+```
 
 * boosted trees - auc with a few iterations - cross val
 
