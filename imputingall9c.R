@@ -92,18 +92,17 @@ auc
 
 #experiment with MICE package - should not include return per dollar during imputation!
 
-new <- mice(all9c[,c(1:4,6,8:10,12:14,16,18,19)], meth = 'rf')
+new <- mice(all9c[,c(1:4,6:10,12:14,16)], meth = 'rf')
 
 all10mice <- complete(new)
 all10mice<- cbind(all10mice, all9c[,names(all9c) %in% c('code.client', 'code.contact', 'mlsto',
-                                                        'b.rpdol')])
+                                                        'b.timespan.cbrt', 'b.rpdol')])
 
 ## -------------------------------------------------------------------------------------------------
 
 # now have two imputed datasets all10rf and all10mice
 
 write.csv(all10mice, 'C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')
-write.csv(all10mice, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
 summary(all10rf)
 summary(all10mice)
 
