@@ -716,9 +716,23 @@ were statistically significant. Two types of ANOVA trials were run. The first us
 ```{r insert_data}
 # load function for determining number of required samples for 0.8 power
 n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
-        d.calc = abs(mean(data))/sd(data)
-        pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
-        return(ceiling(pow_pow$n))
+        if(type.calc == "one.sample"){
+              d.calc = abs(mean(data))/sd(data)
+              pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                   power =.8, type = c(type.calc), 
+                                   alternative = alt)
+              return(ceiling(pow_pow$n))  
+        }
+        
+        if(type.calc == 'two.sample'){
+                d.calc = abs(mean(data[[1]])-mean(data[[2]]))/
+                        (sqrt((sd(data[[1]])^2+sd(data[[2]])^2)/2))
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                   power =.8, type = c(type.calc), 
+                                   alternative = 'two.sided')
+                return(ceiling(pow_pow$n)) 
+        }
+        
 }
 
 results.core = readRDS("reg_lm_core.rds")
@@ -831,172 +845,111 @@ The models were compared using the Area under the curve (AUC) test statistic cal
 * min terminal node size = 20
 * max tree depth = 5
 
-<<<<<<< HEAD
-In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance but not perfectly. 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. It was decided that randomForest and boosted trees would likely not be distinguishable, and 100 models of each method were created via performing 10 fold cross validation 10 times. The violin plot below summarises the AUC values from each method.
+In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance (AUC = 0.5) but not perfectly (AUC = 1). 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. Bayesian Networks and Naiive Bayes did not perform as well and the power calculation revealed only 5 and 8  models were required to achieve a power of 0.8 respectively. Bayesian Networks were then dropped as Naiive Bayes perfomed slightly better and was fast and simple enough to work well as a baseline comparison to the higher performing methods.
+
+It was finally decided that randomForest and boosted trees would likely not be distinguishable since the power calculations indicate 700 models are required. hence 100 models of each method were created as required for logistic regression.  10 fold cross validation was performed 10 times. The violin plot below summarises the AUC values from each method. The 'violins' are coloured according to whether the distributions significantly vary to boosted trees using a critical value of 0.05.
 
 ```{r reduced_violin}
 
 reduc.totAUC <- readRDS("reduc_df_auc.rds")
 
-ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
-        geom_jitter(alpha = 0.2, shape = 16) +
-        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
-        scale_fill_manual(values = topo.colors(4)) +
-        scale_colour_manual(values = topo.colors(4)) +
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(reduc.totAUC[[2]], reduc.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+reduc.totAUC = melt(reduc.totAUC)
+reduc.totAUC$sigdiff = ifelse(reduc.totAUC$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method")
+             title = "AUC Distribution from 100 models of each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
+        
         
         
 ```
 
-In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance but not perfectly. 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. It was decided that randomForest and boosted trees would likely not be distinguishable, and 100 models of each method were created via performing 10 fold cross validation 10 times. The violin plot below summarises the AUC values from each method. The 'violins' are coloured according whether the distributions significantly vary to boosted trees using a critical value of 0.05.
 
-```{r reduced_violin}
-
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
-
-ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
-        geom_jitter(alpha = 0.2, shape = 16) +
-        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
-        scale_fill_manual(values = topo.colors(4)) +
-        scale_colour_manual(values = topo.colors(4)) +
-        labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method")
-        
-        
-```
-
-The performance of logistic regression and random forest algorithms cannot be statistically differntiated from boosted trees. The same process was repeated using an imputed dataset. Imputation was done using the MICE package and allowed all algorithms to be trialled with a full dataset. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for random forest unless over 450000 models were made.
+The performance of logistic regression and random forest algorithms cannot be statistically differntiated from boosted trees. The same process was repeated using an imputed dataset. Imputation was done using the MICE package and allowed all algorithms to be trialled with a full dataset. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for random forest unless over 450,000 models were made.
 
 ```{r mice_violin}
 
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+mice.totAUC <- readRDS("mice_df_auc.rds")
 
-ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
-        geom_jitter(alpha = 0.2, shape = 16) +
-        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
-        scale_fill_manual(values = topo.colors(4)) +
-        scale_colour_manual(values = topo.colors(4)) +
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(mice.totAUC[[2]], mice.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+mice.totAUC = melt(mice.totAUC)
+mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method")
+             title = "AUC Distribution from 100 models of each Method - Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
         
         
 ```
+
+
 
 ```{r all_violin}
 
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+reduc.totAUC$Data_Source = "Original"
+mice.totAUC$Data_Source = "Imputed"
+combine.micer <- rbind(reduc.totAUC, mice.totAUC)
 
-ggplot(melt(reduc.totAUC), aes(x= factor(L1), y= value)) + geom_violin(aes(fill = L1, colour = L1)) + 
-        geom_jitter(alpha = 0.2, shape = 16) +
-        stat_summary(fun.y="mean", geom="point", colour = "darkblue", shape =3) +
-        scale_fill_manual(values = topo.colors(4)) +
-        scale_colour_manual(values = topo.colors(4)) +
+combine.micer$Data_Source <- factor(combine.micer$Data_Source, 
+                                    levels=c("Original", "Imputed"))
+
+
+ggplot(combine.micer, aes(x= factor(L1), y= value)) +
+        geom_violin(aes(fill = Data_Source, colour = Data_Source)) +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Data Source") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Data Source") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method")
+             title = "Comparison of Original Data vs. Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
         
         
 ```
 
-Imputed data tightens the distribution of randomForest substantially but slightly spreads the distriution of Boosted trees and logistic regression.
-
-
-
-#### Bayesian Network
-
-* could not handle _any_ numeric variables, had to discretise all numeric vars
-    * used normalised numeric variables
-    * I did this by making a hierarchical dendrogram to visualise the clusters
-    * then I chose the number of clusters, drew the red rectangle
-    * summarised the clusters to find max and min values for the variable within each cluster. Rounded this value up
-    * manually discretised variable using rounded values
-
-* first trialled complete cases of number of users, Discipline, percent pro, Business, client code, job detail, majority position, timespan, invoiced amount, percent hours by majority position, and return per dollar. This gave 907 complete cases to work with.
-
-*using Genie Smile.
-   * turned return per dollar into profit/loss. This gave 182 loss cases and 725 profit cases. A good distribution for working with bayesian networks. Ie not too biased
-   * a good, simple problem to start with
-   
-* establish a baseline. Using ROC, area under the curve method
-    * to test our classifiers we need to beat random chance. Ie AUC = 0.5
-    * will also establish the AUC for using one variable only! See table below:
-       *Note all using 10 fold cross validation
-
-Single Variable  | AUC from ROC chart | Num losses correct
----------------- | ------------------ | ------------------
-Random chance    | 0.5                | ?                 
-percent pro      | 0.618              | 0
-percent maj pos  | 0.616              | 0
-number of users  | 0.661              | 0
-timespan         | 0.600              | 0
-amount invoiced  | 0.535              | 0
-Discipline       | 0.514              | 0
-Majority pos     | 0.605              | 3
-Job detail       | 0.605              | 1
-client code      | 0.567              | 25
-client Business  | 0.524              | 5
-
-* try using the following variables:
-
-```{r, echo=FALSE, include=FALSE}
-library('magrittr')
-
-if(.Platform$OS.type == 'windows'){
-        all8c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8c.csv' )
-} else{
-        all8c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all8c.csv')
-}
-
-
-
-
-vars<- names(all8c)
-vars<- vars[!vars %in% c("Business", "JD_Second", "code_client")]
-
-```
-
-* number of users
-* Discipline
-* percent hours by a professional
-* position that completed the majority of hours
-* timespan
-* amount invoiced
-* percent of hours completed by majority position
-
-The results are as follows:
-
-AUC = 0.705
-Number of losses predicted correctly: 124
-
-This is our 'base' model. Now try adding one complex variable at a time:
-
-Added Variable   | AUC from ROC chart | Num losses correct (tp) | Num losses wrong (fp)
----------------- | ------------------ | ----------------------- | --------------------
-none/base        | 0.710              | 122                     | 272
-client code      | 0.624              | 171                     | 528
-Busines          | 0.667              | 144                     | 381
-job detail       | 0.653              | 150                     | 438 
-
-
-
-## Boosted Trees
-
-### Advantages
-    
-    * Wonderful in that NA's don't interfere with prediciton process
-        * explain..
-        * can comfortably include the entire dataset without having to worry about imputing
-        
-tuned which variables to include:
-    * exclude JD.Second, Business, code.client, code.contact
-    * tuned parameters:
-        * shrinkage = 0.001
-        * n.trees = 4000
-        * interaction.depth = 3
-        * min.nobs = 10
-    * manage to get AUC up to 0.785!!
-   
-can we improve this by bringing huge variables back in a smarter way?
+Imputed data tightens the distribution of randomForest substantially but slightly spreads the distribution of Boosted trees and logistic regression. Since the methods using imputed data have a similar performance, slightly tighter distributions of results and use more data, models using imputed data was used when developing blended models of all methods.
 
 
 
@@ -1011,15 +964,6 @@ Guidelines:
 Which results to discuss
 * restate research questions and hypotheses. can we predict profitability? ofocurse you can make a prediction, 
 real question might be is it worthwhile for the business to engage in this activity? we will look at this as a bottom line analysis. acknowledge that it may be worthwhile for other reasons such as confidence and transparency in historic projects.
-* important variables: cforest diagram vs anova vs random forest
-    * which variables were chosen for machine learning analysis
-* first tried random forest predicting return per dollar
-    * fail, why - for discussion
-* moved on to predicting yes or no profitability.
-    * tried: random forest, logistic regression, gradient boosted trees, naiive bayes (baseline), bayesian networks
-    * boosted trees could handle the missing data, whereas for all? other methods I had to narrow down data to complete data
-    * used MICE package - explain what this is in method.
-    * comparison of predictive accuracy of all methods. non are significantly better than the other.
 
 * tried model averaging - comparison to other methods.
 
@@ -1083,10 +1027,28 @@ Case studies in the literature tend to predict total cost/effort which is a regr
 
 ## Binary Classification
 
+comments on your results;
+explains what your results mean;
+interprets your results in a wider context; indicates which results were expected or unexpected;
+provides explanations for unexpected results.
+The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
 
 
-* best models are gradient boosted trees and logistic regression. why? can hypothesis but not really
-    * this shows the profitability can be predicted with some success, but real question is, is it financially viable?
+* best models are gradient boosted trees and logistic regression and random forest. why? can hypothesis but not really
+* envouraging results - mean sits around 0.775. real question is bottom line analysis
+* was this expected? didnt expect logistic regression to perform that well
+* imputed data worked almost the same, slightly better for randomforests?
+    * wasn't sure what to expect so .. i dunno
+* previous research on logistic regression working as well?
+* limitations: didn't try all possible variable combinations
+* try and improve by blending the three top performing models
+    * this will eliminate some of the benefits ofhaving a single model such as 
+        * partial dependency plots from boosted tree
+            * these will be investigated later
+
+
+
+* this shows the profitability can be predicted with some success, but real question is, is it financially viable?
 * depending what the bottom line plot shows - yes or no. 
 * compare to past research. problems with past research and does this solve any of those?
     * poor user uptake - future work?
