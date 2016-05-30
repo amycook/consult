@@ -13,6 +13,7 @@ library('randomForest',lib='C:/Progra~1/R/R-3.2.2/library')
 library('CALIBERrfimpute', lib = 'C:/Progra~1/R/R-3.2.2/library')
 
 all9c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
+all9c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all9c.csv')[,-1]
 all9c$b.rpdol<- as.factor(all9c$b.rpdol)
 
 all10rf<- rfImpute(b.rpdol ~ Discipline + pc.pro + timespan.cbrt + no.users + inv.mlsto.log +

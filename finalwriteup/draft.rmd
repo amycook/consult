@@ -1027,25 +1027,29 @@ Case studies in the literature tend to predict total cost/effort which is a regr
 
 ## Binary Classification
 
+Testing gradient boosted trees, random forests, naiive bayes, logistic regression and bayesian networks in binary classification showed that boosted trees, logistic regression and random forests performed best (according to AUC). Bayesian Networks are not particularly popular and require discretised variables so it was expected that this algorithm may not perform as well as highly regarded methods such as boosted trees and random forests. Naiive bayes and logistic regression were included as baseline models and it was expected that the more complex models would outperform these. Therefore it was surprising that results from 100 logistic regression models was not statistically lower than boosted trees. Literature??
+
+logistic regression:
+- one decision boundary - does not have to be parallel to variable axes
+- less prone to overfitting
+    - handles many variables better
+- weaker predictive power than ensemble trees (An Empirical Comparison of Supervised Learning Algorithms)
+
+ensemble trees:
+- can be hundreds of decision boundaries but they have to be parallel to variable axes
+- may not be enough data to learn complex decision rules better than a simple model
+
+Boosted trees, random forests and logistic regression all have AUC means around 0.775. The tests were repeated using imputed data and again the means sat around 0.775. The variables were not particularly well suited for imputing so this result is logical and could have even reduced the AUC. Many of the imputed variables were categorical and difficult to impute (such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job). The benefit of having an imputed dataset that performs well enough is that each model produces predictions for the full set of data. Beforehand, each model was limited to a complete set of data which implies a reduced data size. With complete model predictions, the high performing models can be blended to test whether better predictions are possible. Blending models brings about limitations which is discussed in the next section.
+
+This individual models perform well above random chance (AUC = 0.5) and it can be expected that implementing a model would improve a manager's ability to predict whether a potential job will be profitable or loss-making. Whether the model is worth implementing in the work place is dependent on how the model affects decisions and the degree the algorithm will improve the 'bottom line' profits for the business. This will be reviewed in the following section.
+
+## Blended Model
+
 comments on your results;
 explains what your results mean;
 interprets your results in a wider context; indicates which results were expected or unexpected;
 provides explanations for unexpected results.
 The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
-
-
-* best models are gradient boosted trees and logistic regression and random forest. why? can hypothesis but not really
-* envouraging results - mean sits around 0.775. real question is bottom line analysis
-* was this expected? didnt expect logistic regression to perform that well
-* imputed data worked almost the same, slightly better for randomforests?
-    * wasn't sure what to expect so .. i dunno
-* previous research on logistic regression working as well?
-* limitations: didn't try all possible variable combinations
-* try and improve by blending the three top performing models
-    * this will eliminate some of the benefits ofhaving a single model such as 
-        * partial dependency plots from boosted tree
-            * these will be investigated later
-
 
 
 * this shows the profitability can be predicted with some success, but real question is, is it financially viable?
