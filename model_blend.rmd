@@ -1,0 +1,187 @@
+---
+title: "Model Averaging"
+author: "Amy Cook"
+date: "May 26, 2016"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('caret')
+library('pROC')
+library('e1071')
+library('randomForest')
+library('party')
+
+setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+
+if(.Platform$OS.type == 'windows'){
+        all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+} else{
+        all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+}
+
+
+```
+
+Model averaging how to do it>?
+Best models are ..
+
+* boosted tree
+* logisitic regression
+* random forest
+
+# For each method, create a complete dataset of predictions created from ten fold cross validation
+```{r}
+
+#create test and train set: 0.75/0.25
+set.seed = 100
+train = sample_frac(all10mice, 0.75, replace = FALSE)
+test = setdiff(all10mice, train)
+
+#perform 10-fold cross validation on train set to create complete train set of predictions for each method
+full.predict <- function(df = train, method = "log", x.folds = 5, manual.seed = 100){
+
+        # create f.rpdol
+        df$f.rpdol <- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <- "profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <- "loss"
+        
+        #set up 10 fold cv using caret function
+        set.seed(manual.seed)
+        folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+        #now have folds[[1]] through folds[[10]] list of rows to exclude
+        
+        #create NULL dataframe with row names from folds
+        method.pred <- data.frame('rownames' = unlist(folds))
+        temp.pred = NULL
+        
+        
+        #define formula
+        if(method %in% c('log','rf')){
+                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+        } 
+        
+        if(method == 'boost') {
+                #no JD.Second
+                formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+        }
+        
+        #loop over each fold, and compile predictions
+        for (j in 1:length(folds)) {
+                
+                #turn predictors and response into 'ordered' variables for roc() to work
+                test<- df[folds[[j]],]
+                levels(test$f.rpdol) <- c('profit', 'loss')
+                test$f.rpdol <- ordered(test$f.rpdol)
+                        
+                if(method %in% 'rf'){
+                        fit <- randomForest(as.formula(formula), data = df[-folds[[j]],], 
+                                    mtry = 4, ntree = 1000)
+                        pred <- predict(fit, test, type = "prob")
+                        pred <- pred[,2]
+                        
+                }
+                
+                if(method %in% 'log'){
+                        fit<- glm(as.formula(formula), 
+                                  data = df[-folds[[j]],], family = binomial())
+                        pred <- predict(fit, test,
+                                        type = "response")
+                } 
+                if(method %in% 'boost'){
+                        fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                   distribution = "bernoulli", n.trees = 10000,
+                                   shrinkage = 0.001, interaction.depth = 5,
+                                   n.minobsinnode = 20)
+                        
+                        pred <- predict(fit, test, n.tree = 10000, type = "response")
+                }
+                
+                        
+                temp.pred <- c(temp.pred, pred)
+                        
+                #print j value
+                cat(j, " ")
+                
+        }
+        
+        method.pred[, method] = temp.pred
+        return(method.pred)
+        
+}
+
+
+pred.log = full.predict(df = train, method = 'log', x.folds = 5, manual.seed = 100)
+pred.rf = full.predict(df = train, method = 'rf', x.folds = 5, manual.seed = 100)
+pred.boost = full.predict(df = train, method = 'boost', x.folds = 5, manual.seed = 100)
+
+#merge all by rownames
+pred.full = Reduce(full_join, list(pred.log, pred.rf, pred.boost))
+gather.pred = gather(pred.full, key = method, value = pred.val,
+                     -rownames)
+order.rows = gather.pred %>% group_by(rownames) %>% 
+        summarise(mean = mean(pred.val)) %>%
+        arrange(mean) %>% ungroup
+gather.pred$rownames <- factor(gather.pred$rownames,
+                               levels= order.rows$rownames)
+
+
+#plot spread of predictions
+
+ggplot(gather.pred, aes(x = rownames, y = pred.val)) + geom_point(aes(colour = method))
+
+ggplot(gather.pred, aes(x = method, y = pred.val)) + geom_boxplot(aes(fill = method), colour = "darkgray")
+
+#randomForest seems to predict a bit higher than the other two methods. should I standardise it a bit??
+
+```
+
+Now create complete train set
+
+```{r}
+train.blend = full_join(train %>% mutate(rown = 1:nrow(train)), pred.full, 
+                        by = c('rown'='rownames'))
+train.blend <- train.blend %>% select(-rown)
+
+```
+
+
+# Try Feature weighted linear stacking
+
+```{r cars}
+#first write formula
+# create f.rpdol
+train.blend$f.rpdol <- as.factor(train.blend$b.rpdol)
+levels(train.blend$f.rpdol)[levels(train.blend$f.rpdol) == "0"] <- "profit"
+levels(train.blend$f.rpdol)[levels(train.blend$f.rpdol) == "1"] <- "loss"
+
+formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type + log + rf + boost"
+
+#need to add interaction terms
+
+
+
+
+```
+
+
+# Try random forest
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+# Try boosted trees
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+

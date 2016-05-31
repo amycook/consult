@@ -1027,17 +1027,9 @@ Case studies in the literature tend to predict total cost/effort which is a regr
 
 ## Binary Classification
 
-Testing gradient boosted trees, random forests, naiive bayes, logistic regression and bayesian networks in binary classification showed that boosted trees, logistic regression and random forests performed best (according to AUC). Bayesian Networks are not particularly popular and require discretised variables so it was expected that this algorithm may not perform as well as highly regarded methods such as boosted trees and random forests. Naiive bayes and logistic regression were included as baseline models and it was expected that the more complex models would outperform these. Therefore it was surprising that results from 100 logistic regression models was not statistically lower than boosted trees. Literature??
+Testing gradient boosted trees, random forests, naiive bayes, logistic regression and bayesian networks in binary classification showed that boosted trees, logistic regression and random forests performed best (according to AUC). Bayesian Networks are not particularly popular and require discretised variables so it was expected that this algorithm would not perform as well as highly regarded methods such as boosted trees and random forests. Naiive bayes and logistic regression were included as baseline models and it was expected that the more complex models would outperform these. Therefore it was surprising that results from 100 logistic regression models were not statistically lower than boosted trees. 
 
-logistic regression:
-- one decision boundary - does not have to be parallel to variable axes
-- less prone to overfitting
-    - handles many variables better
-- weaker predictive power than ensemble trees (An Empirical Comparison of Supervised Learning Algorithms)
-
-ensemble trees:
-- can be hundreds of decision boundaries but they have to be parallel to variable axes
-- may not be enough data to learn complex decision rules better than a simple model
+A possible explanation for this according to the literature is that there was not enough data for the ensemble trees to learn the complex decision rules at which they excel. Trees tend to overfit the patterns in a smaller training set. Logistic regression on the other hand is capable of only one decision boundary (which does not have to be parallel to the variable axes) and is not prone to overfitting [@Perlich2003]. This may explain why logistic regression is performing as well as enseble trees with the case study's smaller dataset with many variables.
 
 Boosted trees, random forests and logistic regression all have AUC means around 0.775. The tests were repeated using imputed data and again the means sat around 0.775. The variables were not particularly well suited for imputing so this result is logical and could have even reduced the AUC. Many of the imputed variables were categorical and difficult to impute (such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job). The benefit of having an imputed dataset that performs well enough is that each model produces predictions for the full set of data. Beforehand, each model was limited to a complete set of data which implies a reduced data size. With complete model predictions, the high performing models can be blended to test whether better predictions are possible. Blending models brings about limitations which is discussed in the next section.
 
