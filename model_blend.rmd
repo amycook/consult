@@ -24,6 +24,7 @@ setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
 
 if(.Platform$OS.type == 'windows'){
         all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+        source("C:/Users/n9232371/Documents/github/consult/functions.R")
 } else{
         all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
 }
@@ -41,18 +42,14 @@ Best models are ..
 # For each method, create a complete dataset of predictions created from ten fold cross validation
 ```{r}
 
-#create test and train set: 0.75/0.25
-set.seed = 100
-train = sample_frac(all10mice, 0.75, replace = FALSE)
-test = setdiff(all10mice, train)
+## new variables for FWLS and methods
+# create f.rpdol
+all10mice$f.rpdol <- as.factor(all10mice$b.rpdol)
+levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "0"] <- "profit"
+levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "1"] <- "loss"
 
 #perform 10-fold cross validation on train set to create complete train set of predictions for each method
-full.predict <- function(df = train, method = "log", x.folds = 5, manual.seed = 100){
-
-        # create f.rpdol
-        df$f.rpdol <- as.factor(df$b.rpdol)
-        levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <- "profit"
-        levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <- "loss"
+full.predict <- function(df = all10mice, method = "log", x.folds = 5, manual.seed = 100){
         
         #set up 10 fold cv using caret function
         set.seed(manual.seed)
@@ -119,9 +116,9 @@ full.predict <- function(df = train, method = "log", x.folds = 5, manual.seed = 
 }
 
 
-pred.log = full.predict(df = train, method = 'log', x.folds = 5, manual.seed = 100)
-pred.rf = full.predict(df = train, method = 'rf', x.folds = 5, manual.seed = 100)
-pred.boost = full.predict(df = train, method = 'boost', x.folds = 5, manual.seed = 100)
+pred.log = full.predict(df = all10mice, method = 'log', x.folds = 5, manual.seed = 100)
+pred.rf = full.predict(df = all10mice, method = 'rf', x.folds = 5, manual.seed = 100)
+pred.boost = full.predict(df = all10mice, method = 'boost', x.folds = 5, manual.seed = 100)
 
 #merge all by rownames
 pred.full = Reduce(full_join, list(pred.log, pred.rf, pred.boost))
@@ -136,7 +133,8 @@ gather.pred$rownames <- factor(gather.pred$rownames,
 
 #plot spread of predictions
 
-ggplot(gather.pred, aes(x = rownames, y = pred.val)) + geom_point(aes(colour = method))
+ggplot(gather.pred, aes(x = rownames, y = pred.val, group = method)) + geom_point(aes(colour = method)) +
+        geom_line(aes(colour = method))
 
 ggplot(gather.pred, aes(x = method, y = pred.val)) + geom_boxplot(aes(fill = method), colour = "darkgray")
 
@@ -147,9 +145,27 @@ ggplot(gather.pred, aes(x = method, y = pred.val)) + geom_boxplot(aes(fill = met
 Now create complete train set
 
 ```{r}
-train.blend = full_join(train %>% mutate(rown = 1:nrow(train)), pred.full, 
+
+all10.blend = full_join(all10mice %>% mutate(rown = 1:nrow(all10mice)), pred.full, 
                         by = c('rown'='rownames'))
-train.blend <- train.blend %>% select(-rown)
+all10.blend <- all10.blend %>% select(-rown)
+
+# need to normalise method responses
+ggplot(all10.blend, aes(x= sign(log) * abs(log)^(1/3))) + geom_histogram()
+ggplot(all10.blend, aes(x= rf^0.5)) + geom_histogram()
+ggplot(all10.blend, aes(x= log(boost))) + geom_histogram()
+
+#cube root of log
+all10.blend = mutate(all10.blend, norm.log = sign(log) * abs(log)^(1/3))
+all10.blend = mutate(all10.blend, norm.rf = rf^0.5)
+all10.blend = mutate(all10.blend, norm.boost = log(boost))
+
+ggplot(all10.blend, aes(x= norm.log)) + geom_histogram()
+
+#create test and train set: 0.75/0.25
+set.seed(100)
+train = sample_frac(all10.blend, 0.75, replace = FALSE)
+test = setdiff(all10.blend, train)
 
 ```
 
@@ -158,17 +174,106 @@ train.blend <- train.blend %>% select(-rown)
 
 ```{r cars}
 #first write formula
-# create f.rpdol
-train.blend$f.rpdol <- as.factor(train.blend$b.rpdol)
-levels(train.blend$f.rpdol)[levels(train.blend$f.rpdol) == "0"] <- "profit"
-levels(train.blend$f.rpdol)[levels(train.blend$f.rpdol) == "1"] <- "loss"
 
-formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type + log + rf + boost"
+formula.log <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type + norm.log + norm.rf + norm.boost"
 
-#need to add interaction terms
+formula.rf <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type + norm.log + norm.rf + norm.boost"
 
+formula.boost <- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + Billing.Type + norm.log + norm.rf + norm.boost"
 
+#formula to add interaction terms for logistic regression
+metafeatures = strsplit(formula.log, split = c("\\s\\~\\s|\\s\\+\\s"))[[1]]
+methods = metafeatures[13:15]
+metafeatures = metafeatures[2:12]
 
+for(j in seq_along(methods)){
+        
+        for(m in seq_along(metafeatures)){
+                
+                formula.log <- paste(formula.log, " + ", metafeatures[m], "*", methods[j], sep = "")
+                
+        }
+}
+
+#add terms to allow for constants [@Sill2009] - already done as everything is included as a single variable without interaction
+
+#run linear regression
+find.auc <- function(method = "log") {
+        
+        if (method == "log") {
+                fit <- glm(as.formula(formula.log),
+                               data = train,
+                               family = binomial())
+                
+                pred <- predict(fit, test, type = "response")
+                
+                formula.check = "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+                
+                check.fit <- glm(as.formula(formula.check),
+                               data = train,
+                               family = binomial())
+                
+                pred.c <- predict(check.fit, test, type = "response")
+        }
+        
+        if (method == "rf") {
+        fit <- randomForest( as.formula(formula.rf), data = train,
+                mtry = 4, ntree = 1000, importance = TRUE
+                )
+        pred <- predict(fit, test, type = "prob")
+        pred <- pred[, 2]
+        
+        formula.check = "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+        
+        check.fit <- randomForest( as.formula(formula.check), data = train,
+                mtry = 4, ntree = 1000
+                )
+        pred.c <- predict(check.fit, test, type = "prob")
+        pred.c <- pred.c[, 2]
+        }
+        
+        if (method == "boost") {
+                fit <- gbm(as.formula(formula.boost), data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 3,
+                                   n.minobsinnode = 40)
+                                
+                pred <- predict(fit, test, n.tree = 6000, type = "response")
+        
+                formula.check = "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + Billing.Type"
+        
+                check.fit <- gbm(as.formula(formula.check), data = train,
+                        distribution = "bernoulli", n.trees = 10000,
+                        shrinkage = 0.001, interaction.depth = 5,
+                        n.minobsinnode = 20)
+                pred.c <- predict(check.fit, test, n.tree = 6000, type = "response")
+        }
+        
+        #assign fit to global
+        assign("fit", fit, envir = .GlobalEnv)
+        
+        #pROC
+        pred.p <- pROC::roc(test$f.rpdol, pred)
+        
+        pROC::plot.roc(pred.p, col = "red", print.thres = F)
+        
+        print(pROC::auc(pred.p))
+        
+        #print check
+        pred.pc <- pROC::roc(test$f.rpdol, pred.c)
+        pROC::plot.roc(pred.pc, col = "blue", add = TRUE , print.thres = F)
+        
+        #print AUC's
+        print(
+                c("blend" = pROC::auc(pred.p), "check" = pROC::auc(pred.pc))
+        )
+        
+}
+
+find.auc(method = "log")
+#function saves model as 'fit'
+summary(fit)
+#not many of the interactions had significant relationships
 
 ```
 
@@ -176,12 +281,55 @@ formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.l
 # Try random forest
 
 ```{r pressure, echo=FALSE}
-plot(pressure)
+
+#use caret to tune 
+caret.all(df = train, formula = formula.rf, sample.frac = 0.75, seed = 100)
+
+
+find.auc(method = "rf")
+importance(fit, type = 1) #permutation importance
+#indicates norm.log is more important
+
 ```
 
 # Try boosted trees
 ```{r pressure, echo=FALSE}
-plot(pressure)
+#tune parameters
+
+# shrinkage = 0.0005
+# n.trees = 6000
+# interaction.depth = 3
+# n.minobsinnode = 40
+
+find.auc(method = "boost")
+summary(fit)
+# norm.log was by far the most important.
+
 ```
+
+Hm none of the blends are doing better than models alone.
+Try comparing how similar the predictions are
+
+```{r}
+
+#plain model averaging
+
+#how to normalise the prediction variables
+all10.blend = mutate(all10.blend, model.av = (log + rf +boost)/3) 
+
+pred.p <- pROC::roc(all10.blend$f.rpdol, all10.blend$model.av)
+        
+pROC::plot.roc(pred.p, col = "red", print.thres = F)
+pROC::plot.roc(pred.p, col = "blue", print.thres = F, add = T)
+
+#hmm model averaging actually makes a bit of an improvement, weird.
+
+# what about boosted tree with only 3 variables?
+# or log regression wiht only 3 variables?
+
+```
+
+
+Try majority vote
 
 

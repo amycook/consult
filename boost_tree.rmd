@@ -1069,6 +1069,8 @@ all9c$b.inv.log <- man.clust(first.vec=all9c$inv.mlsto.log,
                             breaks.man= log(breaks),
                             labs = c("100-600","600-2.5k","2.5k-8k","8k-60k","60k-1.8m"
                             ))
+# all9c <- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all9c.csv')[,-1]
+
 
 # set seeds
 set.seed(123)
@@ -1078,7 +1080,7 @@ for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
 seeds[[51]] <- sample.int(1000, 1)
 
 #create test train
-sample<- sample(1:nrow(all9c), 2/3*nrow(all9c), replace=F)
+sample<- sample(1:nrow(all9c), 3/4*nrow(all9c), replace=F)
 train<- all9c[sample,]
 test<- all9c[-sample,]
 
@@ -1098,7 +1100,7 @@ cv.Control <- trainControl(method = "cv",
                            classProbs=TRUE
                            )
 gbmGrid <- expand.grid(shrinkage = c(0.001),
-                       n.trees = c(10000), interaction.depth = c(3,4,5,6),
+                       n.trees = c(10000), interaction.depth = c(4),
                        n.minobsinnode = c(20))
 set.seed(2)
 gbmFit <- train(as.formula(formula), data= train2,
