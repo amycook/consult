@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = FALSE)
 
 library("plyr")
 library("dplyr")
+library('tidyr')
 library('magrittr')
 library('reshape2')
 library('ggplot2')
@@ -27,6 +28,8 @@ if(.Platform$OS.type == 'windows'){
         source("C:/Users/n9232371/Documents/github/consult/functions.R")
 } else{
         all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+        source("/Users/yam/Documents/github/consult/functions.R")
+
 }
 
 
@@ -160,6 +163,8 @@ all10.blend = mutate(all10.blend, norm.log = sign(log) * abs(log)^(1/3))
 all10.blend = mutate(all10.blend, norm.rf = rf^0.5)
 all10.blend = mutate(all10.blend, norm.boost = log(boost))
 
+write.csv(all10.blend, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10blend.csv')
+
 ggplot(all10.blend, aes(x= norm.log)) + geom_histogram()
 
 #create test and train set: 0.75/0.25
@@ -179,7 +184,7 @@ formula.log <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.i
 
 formula.rf <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type + norm.log + norm.rf + norm.boost"
 
-formula.boost <- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + Billing.Type + norm.log + norm.rf + norm.boost"
+formula.boost <- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + Billing.Type + norm.log + norm.rf + norm.boost + JD.Second"
 
 #formula to add interaction terms for logistic regression
 metafeatures = strsplit(formula.log, split = c("\\s\\~\\s|\\s\\+\\s"))[[1]]
@@ -187,14 +192,10 @@ methods = metafeatures[13:15]
 metafeatures = metafeatures[2:12]
 
 for(j in seq_along(methods)){
-        
         for(m in seq_along(metafeatures)){
-                
                 formula.log <- paste(formula.log, " + ", metafeatures[m], "*", methods[j], sep = "")
-                
         }
 }
-
 #add terms to allow for constants [@Sill2009] - already done as everything is included as a single variable without interaction
 
 #run linear regression
@@ -251,6 +252,8 @@ find.auc <- function(method = "log") {
         
         #assign fit to global
         assign("fit", fit, envir = .GlobalEnv)
+        saveRDS(fit, paste("/Users/yam/Documents/github/consult/finalwriteup/report_data/",
+                           method,"blend.rds", sep = ""))
         
         #pROC
         pred.p <- pROC::roc(test$f.rpdol, pred)
@@ -283,7 +286,7 @@ summary(fit)
 ```{r pressure, echo=FALSE}
 
 #use caret to tune 
-caret.all(df = train, formula = formula.rf, sample.frac = 0.75, seed = 100)
+caret.all(method = "rf", df = train, formula = formula.rf, sample.frac = 0.75, seed = 100)
 
 
 find.auc(method = "rf")
@@ -303,6 +306,8 @@ importance(fit, type = 1) #permutation importance
 
 find.auc(method = "boost")
 summary(fit)
+saveRDS(summary(fit), paste("/Users/yam/Documents/github/consult/finalwriteup/report_data/",
+                           method,"blend.rds", sep = ""))
 # norm.log was by far the most important.
 
 ```
@@ -329,7 +334,172 @@ pROC::plot.roc(pred.p, col = "blue", print.thres = F, add = T)
 
 ```
 
+Variable importance from cforest
+```{r}
 
-Try majority vote
+cfor.plotsave(df= all10.blend, name= 'cfor_blend', formular = formula.rf)
+
+```
+
+
+20 runs of each method. compare against logistic regression
+8 variables have been selected via variable importance analysis
+
+
+```{r}
+
+formula.log <- "f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
+
+formula.rf <- "f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
+
+formula.boost <- "b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
+
+formula.sboost <- "b.rpdol ~ norm.log + norm.rf + norm.boost"
+
+#formula to add interaction terms for logistic regression
+metafeatures = strsplit(formula.log, split = c("\\s\\~\\s|\\s\\+\\s"))[[1]]
+methods = metafeatures[7:9]
+metafeatures = metafeatures[2:6]
+
+for(j in seq_along(methods)){
+        for(m in seq_along(metafeatures)){
+                formula.log <- paste(formula.log, " + ", metafeatures[m], "*", methods[j], sep = "")
+        }
+}
+
+# tune boosted trees and rf
+caret.all(df = train, formula = formula.rf, sample.frac = 0.75, seed = 100)
+#mtry = 3
+caret.all(df = train, formula = formula.sboost, sample.frac = 0.75, seed = 100)
+# interaction.depth = 6, nminobs = 10, shrink = 0.0005, trees = 6000
+caret.all(df = train, formula = formula.boost, sample.frac = 0.75, seed = 100)
+# interaction.depth = , nminobs = , shrink = 0.0005, trees = 6000
+
+
+iter.auc <- function(mult = 4, x.folds = 5, 
+                     methods = c("orig.log","log","rf","boost","average",
+                                 "simp.log","simp.boost"),
+                     seedy = 100, df = all10.blend) {
+        
+        #create test and train set: 0.75/0.25
+        set.seed(seedy)
+        auc <- rep(list(rep(0, mult*x.folds)), length(methods))
+        names(auc) = methods
+        
+        #create model averaged column
+        df = mutate(df, model.av = (log + rf +boost)/3) 
+        
+        #set up 10 fold cv using caret function
+        folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+        #now have folds[[1]] through folds[[10]] list of rows to exclude
+        if(mult > 1){
+                for(k in 2:mult){                                
+                    set.seed(sample(1:1000,1))
+                    folds.temp = createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain=F)
+                    folds = append(folds, folds.temp)
+                }
+        }
+        
+        for(i in seq_along(folds)){
+                
+        train = df[-folds[[i]],]
+        test = df[folds[[i]],]
+
+        if ("log" %in% methods) {
+                print("log")
+                fit <- glm(as.formula(formula.log),
+                               data = train,
+                               family = binomial())
+                
+                pred <- predict(fit, test, type = "response")
+                auc[["log"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+        }
+        
+        if ("simp.log" %in% methods) {
+                print("simp.log")
+                fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost,
+                               data = train,
+                               family = binomial())
+                
+                pred <- predict(fit, test, type = "response")
+                auc[["simp.log"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+        }
+        
+        if ("rf" %in% methods) {
+                print("rf")
+        fit <- randomForest( as.formula(formula.rf), data = train,
+                mtry = 3, ntree = 1000, importance = TRUE
+                )
+        pred <- predict(fit, test, type = "prob")
+        pred <- pred[, 2]
+        
+        auc[["rf"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+
+        }
+        
+        if ("simp.boost" %in% methods) {
+                print("simp.boost")
+                fit <- gbm(b.rpdol ~ norm.log + norm.rf + norm.boost, data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 6,
+                                   n.minobsinnode = 10)
+                pred <- predict(fit, test, n.tree = 6000, type = "response")
+                auc[["simp.boost"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+
+        }
+        
+        if ("boost" %in% methods) {
+                print("boost")
+                fit <- gbm(as.formula(formula.boost), data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 3,
+                                   n.minobsinnode = 10)
+                pred <- predict(fit, test, n.tree = 6000, type = "response")
+                auc[["boost"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+
+        }
+        
+        if ("orig.log" %in% methods) {
+                print("orig.log")
+                pred <- test$log
+                auc[["orig.log"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+
+        }
+        
+        if ("average" %in% methods) {
+                print("average")
+                pred <- test$model.av
+                auc[["average"]][i] <- pROC::roc(test$f.rpdol, pred) %>% auc() %>% round(3)
+        }
+        
+        
+        #print AUC's
+        cat(i, " ")
+        
+        }
+        #assign fit to global
+        assign("auc.list", auc, envir = .GlobalEnv)
+        # saveRDS(auc, paste("/Users/yam/Documents/github/consult/finalwriteup/report_data/",
+        #                    "auc_blend_20.rds", sep = ""))
+        
+}
+
+iter.auc(mult = 10, x.folds = 10, seedy = 100, df = all10.blend,
+         methods = c("orig.log","log","average", "boost","rf", "simp.log","simp.boost"))
+
+auc.list
+saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+
+ggplot(melt(auc.list), aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = L1, colour = L1)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 20 models of each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression", "average" = "Simple Average",
+                         "orig.log" = "Orignal LogReg", "rf" = "Random Forest"))
+```
+
 
 

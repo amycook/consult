@@ -32,6 +32,7 @@ if(.Platform$OS.type == 'windows'){
         opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
 } else{
         # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
         opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
 }
 
@@ -950,6 +951,124 @@ ggplot(combine.micer, aes(x= factor(L1), y= value)) +
 ```
 
 Imputed data tightens the distribution of randomForest substantially but slightly spreads the distribution of Boosted trees and logistic regression. Since the methods using imputed data have a similar performance, slightly tighter distributions of results and use more data, models using imputed data was used when developing blended models of all methods.
+
+#### Blended Models
+
+Blended models combine the results of each well-performing individual model to create averaged or 'blended' predictions. In this case, the randomForest, boosted trees, and logistic regression models were chosen for blending. The simplest way of combing models is to average the probability results (a number between 0 and 1) of all three models. Feature Weight Linear Stacking (FWLS), randomForest and boosted trees were all tested as blending methods where the predictions from each of the three single models becomes an additional variable in a new model. Each model blending method has its own method of weighting the outcomes from the individual models as a function of the values in the original model. For example, for a certain discipline in the case study company, randomForests may predict the outcome best so this is weighted higher for those cases. For this reason, a variable importance study was conducted again to simplify the models.
+
+##### Variable Selection: Blended Model
+
+*Variable Importance: cforest*
+
+```{r}
+
+cfor.varimp = readRDS("report_data/cfor_blend_varimp.rds")
+
+ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+        geom_bar(stat='identity') + 
+                        labs(title = "Cforest variable importance: blend")
+
+
+```
+
+
+*Variable Importance: Logistic Regression*
+
+```{r}
+
+log.varimp = readRDS("report_data/logblend.rds")
+
+log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
+colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
+log.varimp = add_rownames(log.varimp)
+log.varimp = log.varimp %>% filter(P_value <= 0.05) %>% 
+        select(rowname, Estimate, P_value) %>% arrange(P_value)
+
+# order levels
+log.varimp$rowname <- factor(log.varimp$rowname,
+                               levels= log.varimp$rowname)
+
+#plot p values
+# ggplot(data=log.varimp, aes(x=rowname, y=P_value)) +
+#         theme(axis.text.x=element_text(angle=45,hjust=1)) + 
+#         geom_bar(stat='identity') +
+#         labs(title = "LogReg variable importance: blend")
+
+
+```
+
+Most significant variables (P value for coefficient < 0.05) are:
+
+Interaction term between:
+
+* Discipline * results of logistic regression model
+* Discipline * results of boosted tree model
+* number of employees on a job * results of logistic regression model
+* Client Business type * results of boosted tree model
+
+
+Single variables that aren't in interaction terms:
+
+* Total amount invoiced for the job
+* Timespan
+* Project category
+
+*Variable Importance: randomForest*
+
+```{r}
+
+rf.varimp = readRDS("report_data/rfblend.rds")
+rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
+rf.varimp = add_rownames(rf.varimp)
+rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
+# order levels
+rf.varimp$rowname <- factor(rf.varimp$rowname,
+                               levels= rf.varimp$rowname)
+
+#plot p values
+ggplot(data=rf.varimp, aes(x=rowname, y=MeanDecreaseAccuracy)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_bar(stat='identity') +
+        labs(title = "randomForest variable importance: blend")
+
+```
+
+Permutation importance by randomForest rates all three prediction models as most important followed by number of employees on a project, percent of hours done by the chief employee on the project, timespan, and project category.
+
+*Variable Importance: boosted trees*
+
+```{r}
+
+boost.varimp = readRDS("report_data/boostblend.rds")
+boost.varimp = add_rownames(boost.varimp)
+# order levels
+boost.varimp$rowname <- factor(boost.varimp$rowname,
+                               levels= boost.varimp$rowname)
+
+#plot p values
+ggplot(data=boost.varimp, aes(x=rowname, y=rel.inf)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_bar(stat='identity') +
+        labs(title = "Boosted Trees variable importance: blend")
+
+```
+Boosted trees ranks all three individual prediction models highest followed by Project category, Client Business type, and timespan.
+
+*Variable Importance Summary*
+
+Upon reviewing important variables ranked by each method of blended models, the following variables were deemed important by at least two methods and shall be used in the comparison of blended models:
+
+* all three results of prediction models, particularly logistic regression
+* project category
+* Client Business type
+* Total Amount invoiced for a project
+* Number of employees on a project
+* Timespan
+
+#### Comparison of Blended Models
+
+Four model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, boosted trees, simple averaging and were compared against logistic regression. Initially 20 train/test runs were performed for each method.
 
 
 
