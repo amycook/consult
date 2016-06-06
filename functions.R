@@ -81,3 +81,29 @@ cfor.plotsave<- function(df= vars, name= 'cfor_blend', formular = formula.rf){
                 
         
 }
+
+
+# check number of samples required to achieve power of 0.8
+
+n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
+        if(type.calc == "one.sample"){
+                d.calc = abs(mean(data))/sd(data)
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                     power =.8, type = c(type.calc), 
+                                     alternative = alt)
+                return(ceiling(pow_pow$n))  
+        }
+        
+        if(type.calc == 'two.sample'){
+                d.calc = abs(mean(data[[1]])-mean(data[[2]]))/
+                        (sqrt((sd(data[[1]])^2+sd(data[[2]])^2)/2))
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                     power =.8, type = c(type.calc), 
+                                     alternative = 'two.sided')
+                return(ceiling(pow_pow$n)) 
+        }
+        
+}
+
+
+

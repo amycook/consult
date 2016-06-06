@@ -36,7 +36,7 @@ if(.Platform$OS.type == 'windows'){
         opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
 }
 
-opts_chunk$set(fig.width=8, fig.depth = 5, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+opts_chunk$set(fig.width=10, fig.depth = 7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
 Originality Statement
@@ -1068,10 +1068,84 @@ Upon reviewing important variables ranked by each method of blended models, the 
 
 #### Comparison of Blended Models
 
-Four model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, boosted trees, simple averaging and were compared against logistic regression. Initially 20 train/test runs were performed for each method.
+Three model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, and boosted trees. Furthermore, 3 simple model blending techniques were tested that used only the predictions of the three individual models as variables. These were averaging, a simple boosted tree, and a simple logistic regression. All six methods were compared against the original logistic regression predictions. Initially 100 train/test runs were performed for each method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
+
+```{r}
+
+auc.list <- readRDS("report_data/blend_auc1.rds")
+means = lapply(auc.list, mean) %>% unlist
+greater = means[means> means["orig.log"]] %>% names
+auc.melt = melt(auc.list)
+auc.melt$greater = ifelse(auc.melt$L1 %in% greater, TRUE, FALSE)
 
 
+ggplot(auc.melt, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = greater, colour = greater)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 Blended Models of each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression", 
+                         "average" = "Simple Average",
+                         "orig.log" = "Orignal Logistic Regression", 
+                         "rf" = "Random Forest",
+                         "simp.boost" = "Simple Boosted Trees",
+                         "simp.log" = "Simple Logistic Regression")) +
+        scale_fill_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC greater \nthan Original Logistic \nRegression") +
+        scale_colour_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC greater \nthan Original Logistic \nRegression")
 
+```
+
+The plot shows that 4 methods could have a statistically significantly higher mean that the original logistic regression model: the simple blended logistic regression, the simple average, and the two boosted tree models. To achieve a power of 0.8, a two sample power analysis was performed on the 100 AUC results from each blended model against the AUC results from the original logistic regression. The boosted models required over 1000 samples while the simple averaged and simple logistic regression models required only 120. Therefore, 50 more iterations of the simple averaged and simple logistic models were performed since the boosted models results were not as promising.
+
+```{r}
+#load results from 150 iterations
+auc.150 = readRDS("report_data/blend_auc150.rds")
+
+```
+
+
+The results of the 150 iterations are shown in the plot below. Simple model averaging results in a p-value of `t.test(auc.150[['orig.log']], auc.150[['average']])$p.value %>% format(digits = 2) %>% as.numeric` while the simple logisitc regression blended model had a two-sample t.test p-value of `t.test(auc.150[['orig.log']], auc.150[['simp.log']])$p.value %>% format(digits = 2) %>% as.numeric`.
+
+```{r}
+
+index = c(2:3)
+pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]], auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value<0.05) %>% .$method
+auc.150 = melt(auc.150)
+auc.150$signif = ifelse(auc.150$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(auc.150, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = signif, colour = signif)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y = "mean", geom="point", colour = "gray60", shape =3) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 150 Blended Models of Best Methods") +
+        scale_x_discrete(labels = c( 
+                         "average" = "Simple Average",
+                         "orig.log" = "Orignal Logistic Regression",
+                         "simp.log" = "Simple Logistic Regression")) +
+        scale_fill_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC significantly \ngreater than Original \nLogistic Regression") +
+        scale_colour_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC significantly \ngreater than Original \nLogistic Regression")
+
+
+```
+
+
+Simple logistic regression and averaging the the results of the three individual models (logistic regression, boosted trees and random forests) give virtually the same distribution of results. As averaging the results of the models is simpler than logistic regression, this was adopted as the best model.
 
 
 # Results - over 5 pages, up to 20 pages
@@ -1137,7 +1211,7 @@ ggplot(all8a, aes(x = return.pdol, y = ..density..)) + geom_histogram() + geom_d
 
 ```
 
-The 95% confidence interval for this data is $`r (mean(all8a$return.pdol) - qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)` to $`r (mean(all8a$return.pdol) + qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)`. If a project returns $0 for every dollar spent (return per dollar = $0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the return per dollar is -$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the return per dollar is $1, the project has earned double what it cost to perform. If predictions have an average return per dollar error of $0.50, this represents an error in revenue of half what the project cost to complete. Clearly, this is not informative enough to bring into business decision making processes. 
+The 95% confidence interval for this data is $`r (mean(all8a$return.pdol)- qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)` to $`r (mean(all8a$return.pdol) + qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)`. If a project returns $0 for every dollar spent (return per dollar = $0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the return per dollar is -$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the return per dollar is $1, the project has earned double what it cost to perform. If predictions have an average return per dollar error of $0.50, this represents an error in revenue of half what the project cost to complete. Clearly, this is not informative enough to bring into business decision making processes. 
 
 Further regression methods could have been persued, however randomForest is a high-performing algorithm and was far from providing usable results. It is likely the case that either not enough data was available or that the given variables do not capably explain the level of return per dollar. Each row of data is a project, and takes the company months, sometimes years, to create a single row of data. Therefore, more data cannot be accessed or easily created. It was decided categorical predictions should be pursued next as predicting whether a job will be profitable or not is a simpler task and could more effectively leverage the limited data.
 
@@ -1154,7 +1228,16 @@ Boosted trees, random forests and logistic regression all have AUC means around 
 
 This individual models perform well above random chance (AUC = 0.5) and it can be expected that implementing a model would improve a manager's ability to predict whether a potential job will be profitable or loss-making. Whether the model is worth implementing in the work place is dependent on how the model affects decisions and the degree the algorithm will improve the 'bottom line' profits for the business. This will be reviewed in the following section.
 
-## Blended Model
+## Blended Models
+
+Trials of different methods of blending model results demonstrated that again, the simplest methods worked best with the data. In this case, averaging the results of the best three single models (logistic regression, random forests, and boosted trees) or taking a logistic regression of the three models outperformed more complex boosted trees, random forests, and logistic regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
+
+It was plausible that simple blending models would perform better than complex methods because the data was not big enough for complex models to learn intricate patterns. This was observed in the single method models when logistic regression performed as well as random forests and boosted trees. The literature does not extensively cover blended machine learning methods however their success in the 2009 Netflix competition generated some publications. The Netflix dataset comprised of almost 3,000,000 observations and the size of the datacould have facilitated the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed as well as blending results using logistic regression. It was expected that logistic regression would have an advantage over model averaging due to its ability to weight the prediction variables while maintaining a simple model structure. 
+
+The logistic regression blending model did indeed weight predictions from the original models differently. If the predicted probability from the original logistic regression model increased by 0.1, the odds of the model prediciting a loss making job increased by 37.4%. Similarly when probability predictions from the random forests model increased by 0.1, the odds of the blended model predicting a loss increased by 25.8%. On the other hand, for the same increase in the original boosted tree model, the odds of the blended logistic regression model predicting a loss increased by only 2.6%. This contrasted with the alternative simple model that averaged the probabilities from each original model (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were carried forward to analyse their respective bottom line impacts on the company's profits which could reveal performance differences.
+
+
+## Bottom Line Analysis
 
 comments on your results;
 explains what your results mean;
@@ -1162,9 +1245,6 @@ interprets your results in a wider context; indicates which results were expecte
 provides explanations for unexpected results.
 The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
 
-
-* this shows the profitability can be predicted with some success, but real question is, is it financially viable?
-* depending what the bottom line plot shows - yes or no. 
 * compare to past research. problems with past research and does this solve any of those?
     * poor user uptake - future work?
     * lack of trust - nearest neighbour must be presented with results - case bsaed reasoning
@@ -1172,7 +1252,8 @@ The Discussion should also relate your specific results to previous research or 
     * never been applied to a consultant within construction industry. has been applied lots to software
         * still has the potential to help with the way the industry is structured - hinges on user uptake.
         
-
+* this shows the profitability can be predicted with some success, but real question is, is it financially viable?
+* depending what the bottom line plot shows - yes or no. 
 
 
 # Conclusion

@@ -50,6 +50,8 @@ Best models are ..
 all10mice$f.rpdol <- as.factor(all10mice$b.rpdol)
 levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "0"] <- "profit"
 levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "1"] <- "loss"
+# first level denotes failure
+# models predict probability of success
 
 #perform 10-fold cross validation on train set to create complete train set of predictions for each method
 full.predict <- function(df = all10mice, method = "log", x.folds = 5, manual.seed = 100){
@@ -163,7 +165,12 @@ all10.blend = mutate(all10.blend, norm.log = sign(log) * abs(log)^(1/3))
 all10.blend = mutate(all10.blend, norm.rf = rf^0.5)
 all10.blend = mutate(all10.blend, norm.boost = log(boost))
 
+#setwd in onedrive data
 write.csv(all10.blend, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10blend.csv')
+# write.csv(all10.blend, 'all10blend2.csv')
+# all10.blend<- read.csv('all10blend2.csv')
+# ensure levels in correct order:
+all10.blend$f.rpdol =  factor(all10.blend$f.rpdol, levels= c("profit", "loss"))
 
 ggplot(all10.blend, aes(x= norm.log)) + geom_histogram()
 
@@ -417,7 +424,7 @@ iter.auc <- function(mult = 4, x.folds = 5,
         
         if ("simp.log" %in% methods) {
                 print("simp.log")
-                fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost,
+                fit <- glm(f.rpdol ~ log + rf + boost,
                                data = train,
                                family = binomial())
                 
@@ -484,11 +491,17 @@ iter.auc <- function(mult = 4, x.folds = 5,
         
 }
 
-iter.auc(mult = 10, x.folds = 10, seedy = 100, df = all10.blend,
+iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
          methods = c("orig.log","log","average", "boost","rf", "simp.log","simp.boost"))
+# iter.auc(mult = 10, x.folds = 10, seedy = 100, df = all10.blend,
+#          methods = c("simp.log"))
 
-auc.list
-saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+# simp.log.notrans <- auc.list
+# saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+auc.list <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+# auc.list <- append(auc.list, simp.log.notrans)
+# names(auc.list)[[8]] = "simp.log.notrans"
+#don't worry about simp.log.notrans  - transformation of model predictions doesn't improve results at all
 
 ggplot(melt(auc.list), aes(x= factor(L1), y= value)) + 
         geom_violin(aes(fill = L1, colour = L1)) + 
@@ -500,6 +513,95 @@ ggplot(melt(auc.list), aes(x= factor(L1), y= value)) +
                          "log" = "Logistic Regression", "average" = "Simple Average",
                          "orig.log" = "Orignal LogReg", "rf" = "Random Forest"))
 ```
+
+Now to check power for each of the tests against original log
+
+
+```{r}
+index = c(2:7)
+ns = data.frame("method" = names(auc.list)[c(2:7)], "n"= NA)
+for(i in seq_along(index)){
+        temp = n.samples(data = auc.list[c(1, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i,2] = temp
+        ns[i,1] = names(auc.list)[index[i]]
+}
+ns
+
+```
+
+
+According to power test, need 150 tests to tell if simp.log or average is better than previosu logistic regression methods.
+Other methods require thousands (ie not much different): boost, simp.boost
+Other methods look worse: FLWS, rf
+
+
+```{r}
+
+iter.auc(mult = 30, x.folds = 5, seedy = 100, df = all10.blend,
+         methods = c("orig.log","average", "simp.log"))
+auc.150 = auc.list
+saveRDS(auc.150, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/blend_auc150.rds")
+
+ggplot(melt(auc.150), aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = L1, colour = L1)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 20 models of each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression", "average" = "Simple Average",
+                         "orig.log" = "Orignal LogReg", "rf" = "Random Forest"))
+
+
+# n test for power = 0.8
+
+index = c(2:3)
+ns = data.frame("method" = names(auc.list)[c(2:3)], "n"= NA)
+for(i in seq_along(index)){
+        temp = n.samples(data = auc.150[c(1, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i,2] = temp
+        ns[i,1] = names(auc.list)[index[i]]
+}
+ns
+
+index = c(2:3)
+pvals = data.frame("method" = names(auc.list)[c(2:3)], 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]], auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+```
+
+Why does logistic regression perform the same as simple model averaging? lets check the coeffcients of the model.
+
+```{r}
+formula.slog <- "f.rpdol ~ log + rf + boost"
+
+fit.log = glm(as.formula(formula.slog),
+              data = train,
+              family = binomial())
+
+pred <- predict(fit.log, test, type = "response")
+pred.compare <- predict(fit.log, test, type = "terms")
+summary(fit.log)
+summary(fit.log)$coefficients %>% as.data.frame
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
