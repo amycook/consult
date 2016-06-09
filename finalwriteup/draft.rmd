@@ -1147,6 +1147,83 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
 
 Simple logistic regression and averaging the the results of the three individual models (logistic regression, boosted trees and random forests) give virtually the same distribution of results. As averaging the results of the models is simpler than logistic regression, this was adopted as the best model.
 
+### Bottom Line Analysis
+
+The first research question, whether machine learning and statistical techniques can predict project profitability based on historic data, has been answered. The measure of profitability could not be modelled but simplifying the profitability prediction to a binary (profit/loss) model was successful. To answer the second research question, whether the model would improve the business' profitability, a bottom line analysis was performed. 
+
+The models output a 'probability' between 0 and 1 that each project will be a loss-making job (where probability = 1). This leaves the question, at what probability would a decision-maker round the probability up to 1 or down to 0? And what business decision would then be made? To find the rounding threshold, an experimental business-scenario was tested. At a given threshold, all projects calculated above the threshold were considered too risky, and were rejected. All profits and losses from these projects were forfeited, and the profits from the remaining jobs (below the threshold) were summed to give a total profit. 
+
+Using this logic, if the threshold was 0, all projects were rejected and total profit would equal 0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. Probability results from the two blended models as well as three individual models were tested and because the models require a training and testing set, the process was repeated 100 times with 20 x 5 fold cross validation models to achieve a statistical power of 0.8. The plot below illustrates the results of each model at each threshold with a local polynomial regression line of best fit (loess) and a 95% confidence interval around the mean.
+
+```{r profit_curve, fig.depth = 10}
+finance.plot = readRDS("report_data/plot_finance.rds" )
+
+
+ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_point(alpha = 0.1, shape = 16) + 
+        stat_smooth() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        theme(legend.position = "bottom") + 
+        scale_colour_discrete(labels = c("average" = "Blend - Average",
+                                       "orig.boost"= "Blend - Log Reg",
+                                       "orig.log" = "Logistic Regression",
+                                       "orig.rf" = "Random Forest",
+                                       "simp.log" = "Boosted Trees"))+
+        guides(col = guide_legend(nrow = 2)) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Profit Curve for Blended and Individual Models")
+
+
+```
+
+The two blended models outperformed the individual models as shown in this table describing each models' optimal thresholds:
+
+```{r profit_table}
+
+finance.plot$method = as.factor(finance.plot$method)
+# want mean and sd for each method at each threshold
+
+fin.summary = finance.plot %>% group_by(threshold, method) %>% 
+        summarise_each(funs(mean_profit_ratio = round(mean(.), 1), 
+                            sd_prof_ratio = round(sd(.), 1)),
+                       profit.ratio)
+
+#for each method find max mean 
+
+best.fin = fin.summary %>% group_by(method) %>% 
+        filter(mean_profit_ratio == max(mean_profit_ratio)) %>% 
+        arrange(desc(mean_profit_ratio))
+kable(best.fin)
+
+best.mean = best.fin %>% filter(method == "average") %>% .$mean_profit_ratio
+best.sd = best.fin %>% filter(method == "average") %>% .$sd_prof_ratio
+
+```
+
+The average of the three individual models performed best with the highest mean profit ratio at `r best.mean`% and the narrowed standard deviation at `r best.sd`%. This means that for the blended average model, if all jobs above the probability threshold 0.55 were rejected, the profits would increase on average by `r best.mean - 100`% in comparison to historical profit data.
+
+For clarity, the plot for the average blended model is shown below:
+
+```{r av_profit_curve}
+ggplot(finance.plot %>% filter(method == "average"), 
+       aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_point(alpha = 0.1, shape = 16) + 
+        stat_smooth() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        theme(legend.position = "none") +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Profit Curve for Blended Average Model")
+
+```
+
 
 # Results - over 5 pages, up to 20 pages
 
@@ -1157,8 +1234,6 @@ Guidelines:
 Which results to discuss
 * restate research questions and hypotheses. can we predict profitability? ofocurse you can make a prediction, 
 real question might be is it worthwhile for the business to engage in this activity? we will look at this as a bottom line analysis. acknowledge that it may be worthwhile for other reasons such as confidence and transparency in historic projects.
-
-* tried model averaging - comparison to other methods.
 
 * bottom line analysis - run 1000 times to get confidence interval around the line.
     * should the business adopt the model?
@@ -1240,20 +1315,41 @@ The logistic regression blending model did indeed weight predictions from the or
 ## Bottom Line Analysis
 
 comments on your results;
-explains what your results mean;
-interprets your results in a wider context; indicates which results were expected or unexpected;
-provides explanations for unexpected results.
-The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
+* blended models significantly (?) outperformed individual models
+* 
 
-* compare to past research. problems with past research and does this solve any of those?
+explains what your results mean;
+
+* If the company's profits for one year were $1,000,000, the mean yearly increased profit would be `r (best.mean-100)/100*1000000` by using the best model and rejecting all jobs with a probability higher than `r best.fin %>% filter(method == 'average') %>% .$threshold`. 
+
+interprets your results in a wider context; indicates which results were expected or unexpected;
+it was expected that it would show financial benefits and the results look reasonable - not particuarly high or low.
+it was also expected that blended model would outperform the single models. Interesting that simple model averaging ended up signficantly (?) outperformiing blended lgoistic regression model in profit curve.
+
+provides explanations for unexpected results.
+why did it end up outperforming? no idea.
+
+The Discussion should also relate your specific results to previous research or theory. 
+* problems with past research and does this solve any of those?
     * poor user uptake - future work?
     * lack of trust - nearest neighbour must be presented with results - case bsaed reasoning
-        * results from boosted tree shows partial dependence plots - insight.
+    * results from boosted tree shows partial dependence plots - insight.
     * never been applied to a consultant within construction industry. has been applied lots to software
-        * still has the potential to help with the way the industry is structured - hinges on user uptake.
+    * still has the potential to help with the way the industry is structured - hinges on user uptake.
+
+
+You should point out what the limitations were of your study, and note any questions that remain unanswered. 
+* not sure how easy number of users is to predict - could do a study
+* could do a study on trust levels
+
+The Discussion CAN also include Conclusions/Future Research.
+could be a viable business move worth integrating
+
+
+
+
         
-* this shows the profitability can be predicted with some success, but real question is, is it financially viable?
-* depending what the bottom line plot shows - yes or no. 
+
 
 
 # Conclusion

@@ -357,6 +357,8 @@ cfor.plotsave(df= all10.blend, name= 'cfor_blend', formular = formula.rf)
 
 formula.log <- "f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
 
+formula.slog <- "f.rpdol ~ norm.log + norm.rf"
+
 formula.rf <- "f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
 
 formula.boost <- "b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
@@ -394,7 +396,7 @@ iter.auc <- function(mult = 4, x.folds = 5,
         names(auc) = methods
         
         #create model averaged column
-        df = mutate(df, model.av = (log + rf +boost)/3) 
+        df = mutate(df, model.av = (log + rf + boost)/3) 
         
         #set up 10 fold cv using caret function
         folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
@@ -493,14 +495,14 @@ iter.auc <- function(mult = 4, x.folds = 5,
 
 iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
          methods = c("orig.log","log","average", "boost","rf", "simp.log","simp.boost"))
-# iter.auc(mult = 10, x.folds = 10, seedy = 100, df = all10.blend,
-#          methods = c("simp.log"))
-
-# simp.log.notrans <- auc.list
+# iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
+#          methods = c("simp.log", "average"))
+# 
+# no.boost <- auc.list
 # saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
 auc.list <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
-# auc.list <- append(auc.list, simp.log.notrans)
-# names(auc.list)[[8]] = "simp.log.notrans"
+# auc.list <- append(auc.list, no.boost)
+# names(auc.list)[c(8,9)] = c("simp.log.noboost","average.noboost")
 #don't worry about simp.log.notrans  - transformation of model predictions doesn't improve results at all
 
 ggplot(melt(auc.list), aes(x= factor(L1), y= value)) + 
@@ -511,7 +513,7 @@ ggplot(melt(auc.list), aes(x= factor(L1), y= value)) +
              title = "AUC Distribution from 20 models of each Method") +
         scale_x_discrete(labels = c("boost" = "Boosted Trees", 
                          "log" = "Logistic Regression", "average" = "Simple Average",
-                         "orig.log" = "Orignal LogReg", "rf" = "Random Forest"))
+                         "orig.log" = "Orignal LogReg", "rf" = "Random Forest")) 
 ```
 
 Now to check power for each of the tests against original log
