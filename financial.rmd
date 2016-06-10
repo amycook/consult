@@ -417,7 +417,7 @@ ggplot(plot.results, aes(x= threshold, y= profit.ratio, colour = method)) +
 
 
 # why is it so shit? calc average prob for each iteration
-mean.prob = apply(compile.results[['simp.log']], 1, function(x) mean(x[2:11])) 
+mean.prob = apply(compile.results[['average']], 1, function(x) mean(x[2:11])) 
 analysis = data.frame(index = 1:length(mean.prob), mean.prob = mean.prob, 
                       bal = compile.results[['simp.log']]$balance.mlsto)
 analysis %>% arrange(mean.prob) %>% head(10)
@@ -503,8 +503,10 @@ ggplot(plot.results, aes(x= threshold, y= profit, colour = method)) +
 
 # I like simp.log best. 
 
-simp.l <- compile.results[['simp.log']]
+simp.l <- compile.results[['average']]
 simp.l$mean.iter <- rowMeans(simp.l[,2:11])
+
+saveRDS(simp.l, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_average_model.rds")
 
 # How many jobs are above threshold of 0.65?
 simp.l %>% filter(mean.iter>0.65) %>% nrow

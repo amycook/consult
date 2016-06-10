@@ -890,34 +890,9 @@ The performance of logistic regression and random forest algorithms cannot be st
 
 ```{r mice_violin}
 
-mice.totAUC <- readRDS("mice_df_auc.rds")
+mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
 
-#significant difference??
-index = c(1,3,4)
-pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
-for(i in seq_along(index)){
-        pvals$p_value[i] = t.test(mice.totAUC[[2]], mice.totAUC[[index[i]]])$p.value %>%
-                format(digits = 2) %>% as.numeric
-}
-
-signif = pvals %>% filter(p_value < 0.05) %>% .$method
-mice.totAUC = melt(mice.totAUC)
-mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
-
-
-ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
-        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
-        scale_fill_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly different \nfrom boosted trees") +
-        scale_colour_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly different \nfrom boosted trees") +
-        labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method - Imputed Data") +
-        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
-                         "log" = "Logistic Regression",
-                         "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
+  
         
         
 ```
@@ -1168,10 +1143,10 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
         geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
         theme(legend.position = "bottom") + 
         scale_colour_discrete(labels = c("average" = "Blend - Average",
-                                       "orig.boost"= "Blend - Log Reg",
+                                       "orig.boost"= "Boosted Trees",
                                        "orig.log" = "Logistic Regression",
                                        "orig.rf" = "Random Forest",
-                                       "simp.log" = "Boosted Trees"))+
+                                       "simp.log" = "Blend - Log Reg"))+
         guides(col = guide_legend(nrow = 2)) +
         labs(x = "Probability Threshold", 
              y = "Ratio of Model Profit to Historical Profit (%)",
@@ -1201,6 +1176,7 @@ kable(best.fin)
 
 best.mean = best.fin %>% filter(method == "average") %>% .$mean_profit_ratio
 best.sd = best.fin %>% filter(method == "average") %>% .$sd_prof_ratio
+best.t = best.fin %>% filter(method == "average") %>% .$threshold
 
 ```
 
@@ -1314,25 +1290,25 @@ The logistic regression blending model did indeed weight predictions from the or
 
 ## Bottom Line Analysis
 
-comments on your results;
-* blended models significantly (?) outperformed individual models
-* 
+```{r load_winner_results}
 
-explains what your results mean;
+simp.l <- readRDS("report_data/finance_average_model.rds")
 
-* If the company's profits for one year were $1,000,000, the mean yearly increased profit would be `r (best.mean-100)/100*1000000` by using the best model and rejecting all jobs with a probability higher than `r best.fin %>% filter(method == 'average') %>% .$threshold`. 
+```
 
-interprets your results in a wider context; indicates which results were expected or unexpected;
-it was expected that it would show financial benefits and the results look reasonable - not particuarly high or low.
-it was also expected that blended model would outperform the single models. Interesting that simple model averaging ended up signficantly (?) outperformiing blended lgoistic regression model in profit curve.
+The blended models significantly (?) outperformed individual models which was expected given the two blended models' AUC results were significantly higher than the original logistic regression results (which were in line with random forests' and boosted trees' results). The simple average of logistic regression, random forests, and boosted trees results produced a better profit curve than a logistic regression of the same three variables.  The model produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r (best.mean-100)/100*1000000` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects. The improvements in profit sound promising, however it is important to consider possible limitations in the data which is discussed in the next section.
 
-provides explanations for unexpected results.
-why did it end up outperforming? no idea.
+Because of the positive AUC results, it was expected the models would translate into financial benefits for the company. The results look reasonable, profit gains may be high enough to trigger further cost-benefit analyses for introducing the model into business decisons. It was surprising that, given the similar AUC results, simple model averaging signficantly (?) outperformed the blended logistic regression model's profit curve. This may be because ... ROC curves.
 
-The Discussion should also relate your specific results to previous research or theory. 
+
+*** you are here **** 
+
+Previous research indicated problems with user uptake once models were developed and a lack of trust in the model output [@Akintoye2000]. 
+
+ 
 * problems with past research and does this solve any of those?
     * poor user uptake - future work?
-    * lack of trust - nearest neighbour must be presented with results - case bsaed reasoning
+    * lack of trust - nearest neighbour must be presented with results - case based reasoning
     * results from boosted tree shows partial dependence plots - insight.
     * never been applied to a consultant within construction industry. has been applied lots to software
     * still has the potential to help with the way the industry is structured - hinges on user uptake.
@@ -1342,13 +1318,6 @@ You should point out what the limitations were of your study, and note any quest
 * not sure how easy number of users is to predict - could do a study
 * could do a study on trust levels
 
-The Discussion CAN also include Conclusions/Future Research.
-could be a viable business move worth integrating
-
-
-
-
-        
 
 
 
@@ -1356,6 +1325,17 @@ could be a viable business move worth integrating
 
 Future work
 * user testing on trust levels of prediction with nearest neighbour
+
+Conclusions
+could be a viable business move worth integrating
+
+Suggestions
+
+Could collect data for future projects: expected team size, expected time frame.
+
+* trialled ensemble tree methods on cost estimation (in this case project proftability)
+* attempted to predict project profitability using a single consulting company's CRM data in the construction industry
+* assessed tangible profit outcomes of machine learning models
 
 
 
