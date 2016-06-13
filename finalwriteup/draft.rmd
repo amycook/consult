@@ -36,7 +36,7 @@ if(.Platform$OS.type == 'windows'){
         opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
 }
 
-opts_chunk$set(fig.width=10, fig.depth = 7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+opts_chunk$set(fig.width=8, fig.depth = 8, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
 Originality Statement
@@ -56,7 +56,9 @@ Date....................
 
 # Glossary
 
-B2B- Business to Business
+B2B - Business to Business
+CRM - Customer Relationship Management. Refers to a common type of software used by businesses to record client and project details as well as employee timesheet records. Generally accessable to each employee in a company.
+
 
 # Acknowledgements
 
@@ -66,38 +68,29 @@ B2B- Business to Business
 
 # Introduction - 2 pages
 
-* vague interesting few sentences - context
-
 Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of these sort every day, guessing how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. These mental calculations can be particularly inaccurate if the individual has never performed the task before. These errors are trivial in everyday activities, but they can have more meaning for businesses that sell their time as their chief product. For example, consulting businesses give expert advice to other professionals, in exchange for a fee for the amount of time the constultant spent on the problem. The delivery of 'expert advice' is generally in the form of a document (which could be anything from a report to hundreds of drawings) and can range from an hours advice to thousands of hours work on a substantial project. Before a project commences, the client and consultant must agree on a fee for the expert advice, or a fee structure. The nature of how a fee is structured can be as creative as the engaged parties wish, however a couple of simple examples are as follows: the client agrees to pay for the consultants time by the hour until the task is completed, or the consultant provides a fixed fee to complete the project in full, regardless of their hours spent. The nature of the fee structure brings an element of financial risk to one party which must be mitigated.
 
 This thesis focuses on the risk a consulting company undertakes when setting a fixed fee for a project before their role has commenced. Clients commonly ask for competitive fixed quotes from several consultants before settling with one or negotiating further. The way a consulting manager decides on their fixed fee varies greatly from industry to industry and company to company. Typically, consulting manager has extensive experience in the type of project he is quoting and can use a combination of intuition, ratios of the entire project cost, and looking up a couple of past similar projects. Such a method often results in a wide range of profitabilities for projects depending on the ability of the manager to predict the amount of time the project will demand from the consulting team. This thesis examines a case study consulting company that has recorded internal historical project performance data since 2002. The study tests whether a statistical predictive model based on past project data can predict the profitability of a project based on characteristics available at the beginning of a project. This thesis asks further whether the prediction can impact a consulting manager's determination of a fixed fee. 
 
-****
-
-# Chapter 1 Problem Description
-
-
+# Problem Description
 
 In this chapter the research motivations are explained along with the goals of the project and the specific research hypothesis. Finally the contributions of this body of work are outlined along with the structure of the thesis.
 
-## 1.1 Research Motivations - 4.5 pages
+## Research Motivation - 4.5 pages
 
-description of problem:
+**Problem Description:**
 
 Project decision makers have struggled with forecasting project costs accurately for decades, across many industries. A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% (Flyvbjerg, 2006). A study across 1471 IT projects showed that 27% of projects ran over budget, and one in 6 of those projects were more than 200% over budget on average (Flyvbjerg and Budzier, 2011). These statistics cast a concerning glimpse at the financial story playing out behind the scenes of these projects which can cause job losses, ruin private businesses, and churn through government balancesheets. Complex long term projects are necessary to produce  railways, houses, websites, and movies. This research focuses on the financial risk that is transferred to consulting companies who are enlisted to complete portions of these complex projects. The risk is transferred by requiring a fixed flat fee from the consultant, meaning they commit to complete their role for a nominated price. In a similar way to infrastructure and IT projects, consultants are susceptible to underestimating the amount of their time that will be spent in their role, and must wear the cost of extra employee hours spent. For privately owned businesses, mitigating this risk would increase the chances of the business surviving as well as growing and succeeding.
 
 The ramifications of unprofitable projects in a private business are multifold. Employee morale deteoriates and employees may view themselves as incompetent if they are responsible for the project's delivery. Employees also experience stress attempting to complete the project within a disappearing budget and may produce lower quality work in exchange for speed. This is unfortunate if in reality, the project fee was under estimated. Unprofitable projects also limit a business' opportunity to invest money into marketing or staff training, which would improve a business' standing. The financial risk taken on fixed flat fee projects may also discourage business' from taking different risks with better potential pay-offs, such as expanding the business into a new area. Logically, predicting fixed fee project costs more accurately could positively affect a business' growth opportunities and staff morale.
 
-Why its not easily solvable:
+**Why its Not Easily Solvable:**
 
 The challenge for consultants to reduce the risk of a project going over budget, in terms of hours spent, is not easily solved. Complex projects are always different from each other, and similar work may take significantly different amounts of time. For example, an ad filmed in a remote location for chocolate will cost significantly more than an ad filmed on an exisitng set, even though the product structure is almost identical. Therefore, a fixed product price, which you could apply to products such as appliances, is inappropriate for film projects. One option is charging for consultants' time and the hiring of materials by the hour; a zero risk fee structure. However in many industries this is not competitive enough. Other consultancies may be willing to offer a fixed flat fee for the same work, reducing financial risk for the client, and luring the client to them. Another fee strategy may be to track worker hours, and stop work once the consulting fee has been depleted. Then, negotiate further fees, or variations, with the client and persuade them to accept. This also satisfactorily reduces consultant financial risk, and in some cases, depending on the nature of the work or uncontrollable changes, this method can be effective. However, if the project has been following a predictable process but the hours are nevertheless inflating beyond expectation (a common situation), consultants may prefer to wear losses or endure very marginable profits to preserve the relationship with their client. Consultant's may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry over creating financial friction. Clearly, there is no straightforward solution to reducing the financial risk taken on by consultant's who offer fixed fees in complex projects. In some indusries, fixed flat fee structures are expected and business' must conform to survive.
 
-
-current practise:
+**Current Practise:**
 
 Limited research is available on the cost estimation techniques performed by industry for complex projects, however two surveys were performed in 2000: one on construction projects, the other on IT projects. The construction cost estimation study by @Akintoye2000 surveyed 84 UK construction contractors, ranging from small to medium to large, about their estimating practises. They found that the main method for cost estimation was breaking the project into detailed parts and adding up the cost of each item. The next two most popular methods were 'comparison with similar projects based on documented facts', and 'comparison with similar projects based on personal experience'. These can all be classified as experience based models [@Akintoye2000]. A survey by Moores and Edwards in 1992 of 54 software developing companies found that detailed project planning tools were used by most companies as opposed to cost estimation tools, suggesting that projects were priced based on an analysis of a detailed breakdown of tasks within a project. In the same survey, 91% of software companies cited cost estimation as a problem. Although limited recent literature is available on industry cost estimation practises, historically it can be observed that for complex construction and software projects, cost predictions are chiefly made with a mixture of experience, project comparisons, and an analysis of the project details and tasks. It is also acknowledged that cost estimation is a problem and hypothesised that inexperience and lack of time are chief contributors [@Akintoye2000].
-
-theory about problem with current practise:
 
 @Lovallo2003 tackled the psychology behind the high failure rates of executives in predicting costs of projects such as manufacturing plant construction, mergers and acquisitions, large infrastructure and software development. Their theory stems from Kahneman's work on decision making that won him the nobel prize for economics in 2002. His research argues that humans' natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project. A manager optimistically sees challenges in a project as something that can be overcome by the team's high skill level, and downplay or ignore the risk of problems that are out of the team's control. It is for this reason that it does not matter if the project is broken down to the highest level of detail for cost prediction, all complex projects are at risk of encountering a multitude of problems that the manager could never foresee. Each problem has a low chance of occurring, but in combination the risk is much greater [@Lovallo2003]. @Lovallo2003 call the practise of analysing a project based on project details and its unique complexities the 'inside view'. Research has shown that if people are forced to make predictions about their skills after being exposed to an 'outside view', their predictions are significantly more accurate. This outside view can be applied to complex projects, and involves ignoring the details of the current project and instead analysing the outcomes of several projects of a similar description. Mobilising the outside view in this way is called reference class forecasting [@Lovallo2003]. One method @Lovallo2003 recommend is to obtain correlation statistics from past similar projects - the correlation between the forecast cost and the actual cost. The correlation for the current project can then be estimated via a statistical model which is used to adjust the forecasted cost made by detailed analysis (the inside view) [@Flyvbjerg2011]. The traditional way to think about a project is to focus on the project details. Even though gathering data from similar projects could significantly improve a cost prediction, it is rarely thought of by managers [@Flyvbjerg2011].
 
@@ -107,17 +100,13 @@ The implementation of reference class forecasting began in project management fo
 
 The visualisation presents a powerful communication tool for influencing decision makers and improving forecast cost accuracy, however access to credible data to a sufficient number of projects can be a challenge [@Flyvbjerg2011]. Overall, the theory of optimism bias is a credible explanation for the problem of persistant underestimation of project costs. The accompanying solution of reference class forecasting presents a promising solution given enough accurate data.
 
-previous research:
-
 The theory of reference class forecasting was first clearly published in 2003, however the idea of predicting project costs from previous data has been the subject of research for many years before that and continues to this day. Although research results have often been promising, industry uptake of the idea is not yet established. 
 
-### 1.1.1 Overview of Past Reference Class Forecasting Methods and relevant Industry Uptake
+### Overview of Past Reference Class Forecasting Methods and relevant Industry Uptake
 
 In the following section, an overview of the historical attempts to integrate reference class forecasting will be presented followed by published theories for the lack of industry uptake.
 
-***need to really do more research on this!!***
-
-#### 1.1.1.1 Existing Models
+#### Existing Models
 
 A substantial amount of research on project cost prediction has been dedicated to the fields of software development and construction projects in particular. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects from around the world, and each project a different client and project team. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks [@Love2005][@Kim2004]. Most studies report neural networks are more accurate than linear regression, and generally the studies report positive predictive powers of their developed models.
 
@@ -126,7 +115,7 @@ A McKinsey study outlined a case in the film industry where a motion picture com
 Statistical research projects which trial reference forecasting have shown promising results in IT, construction, and film projects. However, there is little evidence that the methods have successfully transitioned into industry.
 
 
-#### 1.1.1.2 Industry Uptake of Existing Models and Current Practises
+#### Industry Uptake of Existing Models and Current Practises
 
 Surveys on current industry practise for cost estimation are scarce, however, a survey of the construction industry in the UK in 2000 found that a manager's experience and intuition is still the dominant method for construction cost calculation [@Akintoye2000]. A study on the IT industry by @Jorgensen2007 cited that the parametric models were not comprehensive enough to be used in industry and also found that expert judgment was not mobilised enough in the process of developing these tools. 
 
@@ -153,7 +142,7 @@ It is not completely clear why industry uptake of cost estimation tools using th
 In fact, a study by @Moores1992 concluded that a lack of framework to support the outside view model use and a failure in marketing were the two most common explanations for lack of uptake of cost estimating tools which use statistical techniques in predicting project costs. This is unfortunate as almost all research indicates an outside view analysis of a job substantially improves cost estimation accuracy for fixed price projects. 
 
 
-### 1.1.2 Case Study
+### Case Study
 
 This research will explore the potential for reference class forecasting to improve cost estimation in the context of an engineering consulting company in the construction industry. In this field, labour is the chief cost and the long traditional history of this industry mandates fixed price projects as the norm. In recent years, the size of losses from unprofitable projects in the case study could equal up to 25-30% of the profits from profitable projects. This demonstrates substantial room for improvement and the possiblity of multitude positive flow on effects. 
 
@@ -184,7 +173,7 @@ A statistical model predicting a measure of project financial success will be de
 The company has a wealth of data but limited means to extract insight. This study will exploit the CRM data by performing more sophisticated statistical analysis with the intention of building a predictive model for cost estimation. The benefits of this study in comparison to previous cases are that thousands of past data points are available, when previous studies used on average 15-20 cases and at most 170. This improves the potential for accurate predictions. If successful, the model also has higher potential for managerial uptake as the algorithm will be directly built and trained on company data. Managers can interrogate 'similar' data points and relate to the actual projects or speak to a colleague who was involved. This has the potential to give the 'outside view' stronger influence on the final decision.
 
     
-### 1.1.3 Case Study Limitations
+### Case Study Limitations
 
 The case study provides a framework to test the value of a consulting company's CRM data in assisting project cost estimates. However, it is important to be aware of limitations when reviewing outcomes and framing the problem. The most obvious limitation is that we are disection a single company in a specific industry, which limits the ability to state conclusions could apply to a broad range of cases. This can be overcome with future studies.
 
@@ -196,13 +185,12 @@ Finally, CRM data is entered by employees manually as time passes, jobs are invo
 
 Although this case study presents an opportunity to test the predictive power held within the organisations' existing CRM data, limitations exist which must be understood and built into the framework for predictions. These include missing data that could have been entered for each project, but historically has not been required, missing data that is very detailed and will never be available, and the potential for a small degree of human error to be embedded within the data. 
 
-
-### 1.1.4 Research Motivation Summary
+### Research Motivation Summary
 
 Fixed price cost estimation for complex projects is a difficult task and when performed incorrectly, can have devastating affects on businesses and governments. Many theories have delved into human nature and our tendency to optimistically assess our capabilities with respect to a given task. In this case, the optimism often results in negative business consequences affecting employee morale and the capacity of a company to flourish and grow. Over the past few decades, significant research has been dedicated to creating predictive models that present the 'outside view' of a project, by statistically comparing a new project to numerous similar projects and their characteristics. It has been shown that these models improve the cost estimation, however industry uptake has not been successful. It has proven to be a challenging task to persuade managers to use this so called reference class models in practise and remove themselves from additions based on intricate details of the completed project. This may be due to a number of reasons including lack of understanding, time, and lack of collaboration with industry in development of these models. This research examines the potential for a company's internally generated CRM data to be used in creating a reference class forecasting model. This has the potential to influence the managers' decisions in the company more however its limitations must be understood in order to create a good model.
 
 
-## 2.0 Thesis aims
+## Thesis aims
 
 For the reasons explained above, the aim of this research is as follows:
 
@@ -217,38 +205,21 @@ The predictive model built from Hypothesis 1 can be proven to have a positive im
 
 
 
-## 1.2 Thesis contributions - Gaps in literature
+## Thesis Contributions - Gaps in literature
 
 * a gap in the study of predicting internal performance in businesses with business clients. The literature has assessed performance of movies, customer analytics but rarely employee performance or business clients. This is particularly relevant to consulting companies that tackle complicated discrete projects with set timelines. Statistical and machine learning models to predict the correct fee for projects according to project type, client, and other characteristics could reduce risk for a range of consulting businesses in setting initial fees.
 
 * A gap in machine learning predictive models which cater for variables with large amounts of missing data. the nature of consulting jobs is quite complex and historically, not all information about a project is possible to obtain. Variables with missing data are alternatively treated as optional bonus variables in a multi-step model as opposed to missing information which must be imputed or deletion of the entire case that contains missing information.
 
-* the application of clustering methods to business to business decisions.
-
-
-
-
-
-## 1.3 Thesis structure
-
-lit review
-Background info
-present the case study
-Present the models you've developed
-summary of findings, implications for use within industry, limitations
-
-
-
-
-# Chapter 2 Literature Review - 25 pages for pHd
+# Literature Review - 25 pages for pHd
 
 This chapter provides an overview of the literature available about current business to business (B2B) cost estimation methods, use cases of CRM data, as well as machine learning algorithms and statistical business prediction models. The most prominent statistical and machine-learning models developed for business applications shall be reviewed along with models applied to the most closely related business cases to this project. Gaps in past research will also be highlighted.
 
-## 2.1 Project Cost Estimation Methods
+## Project Cost Estimation Methods
 
 This project will tackle the problem of estimating fixed fees for complex consulting projects. It is therefore imperitive to understand what research has been performed to date and how this project contributes to the body of work. The task of estimating fixed fees can be likened to the terms 'cost estimation' or 'effort estimation' in the literature. The bulk of research to date has been performed with project data in either the construction industry or software development. The research into cost estimation in each of these industries is reviewed below, detailing different methods and outcomes. Finally a gap in the literature will be highlighted which this research aims to fill. 
 
-### 2.1.1 Cost Estimation in the Construction Industry
+### Cost Estimation in the Construction Industry
 
 Research into cost estimation in the construction industry chiefly focuses on predicting the final building cost of construction. Various studies have surveyed popular methods for cost estimation while others have  investigated new methods such as building information modelling (BIM) analyisis, case based reasoning, and predictive algorithms. The cost estimation methods of detailed analysis (inside view), case based reasoning, and predictive algorithms shall be reviewed.
 
@@ -294,11 +265,11 @@ Advantages of CBR include algorithmic efficiency as well as user engagement. In 
 
 CBR can be described as a systematic method of expert judgment, where the decision maker manually compares similar projects from his or her experience [@Shepperd1996]. CBR that is performed manually through personal experience, without the assistance of algorithms, was the second most popular method for construction estimation in @Akintoye2000's survey in the UK. This indicates it is quite an intuitive method for decision maker's to cross check their detailed cost estimate, although an algorithmic version of CBR has not been taken up by industry. 
 
-**summary** 
+**Summary** 
 
 In summary, research into cost estimation in the construction industry has been undertaken using a variety of methods ranging from detailed manual analysis, algorithmic models, and case based reasoning. Neural networks generally outperformed all other systematic methods, such as regression and case based reasoning, but had a significant disadvantage of being a black box. Alternative methods such as boosted trees have the potential to perform as well as neural networks and provide insight into the structure of the algorithm. This is true for CBR as well, although it has not been shown to predict as accurately as neural networks. There exists a gap in the research in ways to intelligently combine CBR with machine learning methods that could predict well, provide insight to the structure, and engage the user in reviewing similar projects. Also, as stated previously, there exists a gap in the application of cost estimating in the construction industry to smaller components of the project, such as consulting and contracting companies who each face a similar problem in estimating their fixed fee. These companies could mobilise information in their internal project databases, as opposed to available literature which surveys dozens of companies involved in selected construction projects.
 
-### 2.1.1 Effort Estimation in the IT Industry
+### Effort Estimation in the IT Industry
 
 Like the construction industry, the software industry faces the challenging task of estimating the cost of a project before full engagement with their client. However, unlike construction projects, the major cost associated with the project is *effort* as opposed to the cost of building materials. A parallel can be drawn between software project effort estimation research and consultants effort in the construction industry, which was a gap in the research of the previous section. 
 
@@ -341,13 +312,13 @@ In contrast to the construction industry, the literature in software effort esti
 
 Research into effort estimation in the software industry has followed a similar path to the cost prediction of construction projects. Expert judgment via detailed analysis is still the predominant method for effort estimation. Case based reasoning and algorithmic methods such as neural networks have found some success in effort estimation (at similar levels) but have not been successfully adopted by industry. It was noted that case based reasoning resonated more with decision makers because its effort prediction could be justified by the model. This visibility of the model prediction structure is very important for future work if the results are to be translated to industry. Effort estimation remains a problem, however agile methods of project management and effort management are changing the contractual approach of consulting in the software industry [@Badenfelt2011]. This innovative method keeps delivery times short (and therefore predictable effort) and defines projects as something with a fixed cost and time. This means if a change occurs, other less important elements must be discarded maintain the fixed amount. Software development is a relatively new field in comparison to the construction industry and is able to adopt this new model relatively quickly across the industry. However, effort estimation for consulting companies in the construction industry are faced with a long history of tradition that is much harder to tackle. This leaves a gap in research in algorithimic models that predict effort for consulting companies in the construction industry. From previous literature, the models should allow decision makers to interrogate the structure of the prediction and be based on internal company data.
 
-## 2.2 Statistical and machine learning methods
+## Statistical and machine learning methods
 
-### 2.2.1 Introduction
+### Introduction
 
 The aim of this project is to use statistical techniques to model the profitability of projects. In order to optimise the model, several statistical and machine learning techniques will be tested, and compared and it is therefore prudent to review the range of statistical and machine learning techniques that have been successfully applied in the literature. These vary from simple methods such as Linear Regression to complex, deep learning such as Neural Networks. The previous section highlighted the use of linear regression, neural networks, SVM and in one case boosted trees for prediction, however other business problems have utilised a wider range of methods. These include Naiive Bayes, Random Forests, and machine learned Bayesian Networks. The following section will present each method's advantages and disadvatanges and an example of a past successful application. 
 
-### 2.2.2 Linear Regression
+### Linear Regression
 
 Linear regression is one of the simplest and most popular statistical prediction methods [@Hastie2009]. An equation for a line is learned, which is defined by a constant and a coefficient times the value of each variable. The coefficients are chosen to minimise the residual sum of squares (least squared) [@Hastie2009]. The reason this method is popular is that it is simple, provide stable predictions, and can be adapted for categorical variables [@Seng2010]. The integration of categorical variables is called Anova, and the algorithm compares group mean variances within the categorical variable. 
 
@@ -356,11 +327,11 @@ There are several drawbacks to linear regression. For example assumptions must b
 Despite the limitations of linear regression models, they have widespread business applications due to their simplicity and ease of application. Regression is used to predict risk in the finance and insurance industries, predict who to target in marketing exercises, and predict consumption spending in the field of economics [@Harrell2013]. Due to its simplicity and widespread application, linear regression is a good starting point for an analysis and benchmark for performance against complex models.
 
 
-### 2.2.3 Logistic Regression
+### Logistic Regression
 
 The method behind linear regression can be adapted to predict a binary response variable (1 or 0). A predictive linear equation is computed so that the predictor variables are combined with coefficients to give an output between 0 and 1. This is then transformed into the log odds to mediate extreme variable input values. The result is a probability an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Similar pros and cons exist for logistic regression as linear regression, and it too can be used as a benchmark to compare other binary predictive models due to its speed and simplicity. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survive/death [@Moore1989]. 
 
-### 2.2.4 Naive Bayes
+### Naive Bayes
 
 Naive Bayes prediction method makes conditional independence assumptions about the predictor variables in order to greatly simplify probability calculations for the response variable (the response variable must be categorical). Specifically, it is assumed that each variable is conditionally independent given the respose class alone, without considering other predictor variables. Mathematically this means that each variable's probability contribution can be simply calculated by looking at the probability of a response class given a predictor value by itself. The predictor variables probability estimates are combined for each possible response class, and the response class with the highest probability is chosen [@Provost2013]. 
 
@@ -369,7 +340,7 @@ The advantages of this method are that the conditional independence assumption e
 A real world success story for Naive Bayes classifiers hinges on their ability to be refined incrementally with each piece of new data, as opposed to re-calibrating the entire model. Naive Bayes has been used in complex spam detection systems where new spam emails or toxic text themes can be quickly added to the filtering model. The Naive Bayes method provides a good benchmark to compare against more complex models that should outperform it [@Caruana2006].
 
 
-### 2.2.5 Decision Trees/ Ensemble Trees
+### Decision Trees/ Ensemble Trees
 
 Decision trees are one of the simplest and most intuitive machine learning methods. There are several brands of basic decision tree algorithms including ID3, C4.5, CART, and CHAID with CART and C4.5 being the most popular [@Kabra2001]. Ravi Kumar and Ravi [@Kumar2007] recommend the CART algorithm as it is capable of solving both classification and regression problems whereas the remaining decision trees solve classification problems only. Single decision trees have the risk of over-fitting the data and low predictive accuracy but have favourable characteristics such as providing intuitive rules that a decision maker can follow in real-life scenarios. In addition their results do not depend heavily on the skill of the data analyst [@Kabra2001][@Putler2012].
 
@@ -379,32 +350,32 @@ Ensemble decision trees have a different foundation to more traditional statisti
 
 Along with the many advantages of trees and ensemble trees, it is important to be aware of their limitations. As trees are not built on a probabilistic framework, results can not be provided in this framework. For example, confidence intervals for predictions are not available for standard ensemble methods [@Louppe2014]. Also, variable importance tables provided by random forests and boosted trees can be biased towards variables with many categories and another type of ensemble method, conditional forests, should be used [@Radenkovic2010]. The methods can also be prone to overfitting if not handled carefully. Ensemble trees have many advantages particularly predictive power, but it is important to recognise that the best method for a problem often depends on the type of problem [@Louppe2014][@Caruana2006].
 
-### 2.2.5 Bayesian Networks
+### Bayesian Networks
 
 A bayesian network is a graphical probabilistic model that illustrates the conditional dependencies between variables in a data set. The model is visually represented by a DAG (directed acyclic graph) and is capable of linking the conditional dependency between any variable to another variable or via other variables which are represetned by arcs [@Heckerman1998]. This kind of conditional relationship is bayesian. Bayesian networks have found success in combining deterministic models with observation data as well as expert knowledge as the statistical relationships between variables can be determined from different places and manually entered into a single model [@Kragt2009]. 
 
 Bayesian networks are excellent at representing knowledge from different sources and types, and visuallising them in a way that communicates results well to decision makers [@Kragt2009]. Therefore bayesian networks become an excellent decision support tool. Network relatitonships can be machine learned, however this is not widely included in the suite of machine learning methods and is referred to more as a way to model complex networks. Drawbacks of bayesian networks include their inability to handle continuous numeric variables (which must be discretised). This means that the varialbe relationships are categorical [@Kragt2009]. Popular applications of bayesian networks are modelling uncertainty in natural resource management and modelling complex business network structures such as airports [@Wu2013]. 
 
 
-### 2.2.6 SVM's and Neural Networks
+### SVM's and Neural Networks
 
 Neural networks were inspired by biological neural networks of the human nervous system and require a lot of training data. They are very flexible in the relationships they can mimic and are not greatly dependent on the skills of the analyst (Putler & Krider, 2012). A disadvantage is that although the results are accurate, the algorithm is a black box - meaning the data is input and the results output without providing the user insight into the methodology. Neural networks can perform high level tasks as a result of deep learning such as hand writing recognition, vehicle control, face recognition, and cancer detection [@Haykin2004].
 
 The simplest type of Support vector machines (SVM's) calculate the linear boundary between two categories in feature space so that the category of future cases may be determined depending on which side of the boundary they fall. The location of the boundary is determined by the position of the widest clear margin that can be drawn between the two categories, allowing a certain number of misclassifications. This concept can be adapted to non linear boundaries by performing kernel transformations on prior variables as well as regression problems by introducing loss functions [@Auria2008]. Advantages of SVM's include the ability to model non linear relationships in data, and that no assumptions about the distributions of the data must be made as the model is non-probabilistic. They are also known to be robust over different samples and perform well in high-dimensional feature space [@Auria2008]. On the other hand, the output is in the form of distance to the boundary (as opposed to probability) and results are not transparent (similar to neural networks) [@Caruana2006]. Also, SVM's are known to be very slow to train and therefore often not suitable for industry purposes [@Auria2008]. Because SVM's perform well in high-dimensional space and can form non-linear rules they have been applied to protein classification (medicine) and text and image recognition [@Byun2002].
 
 
-### 2.2.7 Summary
+### Summary
 
 This section reviewed the advantages and disadvantages of statistical and machine learning techniques that have been successfully applied to business problems. These include linear regression, logistic regression, naive bayes, decision trees and ensemble trees, bayesian networks, neural networks, and SVM's. Linear/logistic regression and naive bayes are computationally very fast with a simple concept that make broad assumptions about the data, but work well as baseline models against which to compare complex models. In certain cases these simpler models are significantly outperformed by complex models however it is important to compare both. Neural networks and SVM's are excellent machine learning predictors which can perform well with messy data and no assumptions, however they are slow and do not provide insight into the results of analysis. This is not appropriate for the profitability prediction problem in this project because communication of the reasoning behind predictions is crucial for uptake of the model by decision makers. 
 
 On the other hand, ensemble tree methods can perform as well as neural networks and SVM's and make no assumptions about the structure of the data, but provide insights into the model such as variable importance and variable relationships. Bayesian networks are excellent for presenting the structure and reasoning behind the predictive model, however are very slow to train and have generally not been included in the machine learning literature as much as the other methods. This may be due to low awareness of learned bayesian networks or lower performance. In conclusion, simple models such as linear/logistic regression and naive bayes are good baseline models to implement, while ensemble tree methods and bayesian networks may handle messy data better than the simpler models while still providing insight to decision makers.
 
 
-## 2.3 Statistical and machine learning methods applied to business problems
+## Statistical and Machine Learning Methods Applied to Business Problems
 
 The aim of this research project is to create a predictive model for the profitability of a company's consulting projects using their internal CRM data. The literature pertaining closely to the cost prediction topic has been reviewed in section 2.1, however it is relevant to broaden the assessessment of the literature on advanced machine learning techniques that have been applied to general business problems. The simpler statistical methods have been covered already, so the focus of this sections is on the topic of machine learning prediction methods for business decision-makers. Popular applied topics include predicting stock fluctuation, customer churn analysis, fraud prediction, customer classification, market segment analysis, product success prediction, and recommendation systems (Seng & Chen, 2010). This section will first discuss the use and merits of the employed more advanced machine learning methods, followed by a case study of employee-churn prediction.
 
-### 2.3.2 Summary of Advanced Statistical and Machine Learning Methods Applied to Business Problems
+### Summary of Advanced Methods
 
 According to Breiman [@Breiman2001b], simple theoretical models such as linear regression are informative but often provide unsatisfactory accuracy for modelling real life data which is messy and does not necessarily align with the rules of statistical theory. As this project will address a problem with a large quantity of messy data, it is worthwhile reviewing the algorithmic machine-learning predictive models that have developed rapidly in recent years. They have found success because they are able to sometimes fit real-life data with more accuracy than theoretical models [@Breiman2001b]. Ravi Kumar and Ravi [@Kumar2007] performed a detailed review of statistical and machine learning techniques that were applied over 37 years in the context of bankruptcy prediction in banks. The most widely used model was neural networks, however logistic and linear regression, decision trees, SVM’s, discriminant analysis (DA), and statistical clustering techniques (such as K Nearest Neighbour) were also popular. Supporting Breiman’s [@Breiman2001b] statements, it was found that DA and linear regression techniques were not preferred due to their low accuracy. The overall assessment was that SVM’s outperformed Neural networks (back propagation neural networks were used most extensively), which sometimes outperformed decision trees, and the rest of the methods were generally inferior. Although SVM’s performed the best, as discussed, they are often extremely complex and slow, requiring a high memory [@Kumar2007]. In support of SVM predictive performance, a study by Davenport and Harris [@Davenport2007] concluded that statisticians experienced in predictive machine learning algorithms generally acknowledge that SVM’s yield the highest prediction accuracy compared to other machine learning algorithms. 
 
@@ -412,47 +383,44 @@ As SVM’s are often computationally too expensive and advanced for a smaller sc
 
 Ravi Kumar and Ravi's [@Kumar2007] study concludes that ensemble techniques, which refers to combinations of two completely different algorithms, can often outperform individual techniques. For example, combining the contrasting advantages of neural networks and decision trees is a worthwhile ensemble technique. A paper studying financial earnings management prediction combined these two methods by running them one after another. The neural network was run first to create a high rate of prediction accuracy via its complex non-linear learning properties [@Tsai2009].  Then, to resolve the lack of explanatory qualities that neural networks are notorious for, decision trees were employed. The 81% of cases that were correctly predicted by the neural network were used to generate decision trees, and in turn useful decision rules [@Tsai2009]. This strategy is a promising way to benefit from the strengths of well performing complementary techniques.
 
-### 2.3.3 Employee Churn Case Study
+### Employee Churn Case Study
  
 The literature on predictive business models is generally limited to studies on product sales, customer behaviour, or overall performance of large businesses. There are far fewer studies that assist with internal business decisions dealing with employees, teams, and delivering projects as is the case with this project. An exception is Saradhi and Vijaya’s [@Saradhi2011] study on employee churn, where ‘churn’ refers to the number of individuals moving out of a group within a certain time. Saradhi and Vijaya applied popular customer churn predictive models to employee churn - a novel application that focussed internally on employees rather than externally on customers. The project chose three machine learning classification algorithms that are normally used in customer churn and it was proposed that the variables and model behaviour of employee churn could be related to customer churn. The associated costs of losing customers and finding new customers can also be correlated to the costs of losing staff and hiring new staff. 
 
 Naive Bayes, Random forests (an ensemble decision tree method) and SVM’s were built. A comparison study showed that Naïve Bayes is outperformed by random forests which match Saradhi and Vijaya’s prediction [@Caruana2006]. The SVM model actually far out performed random forests and Naive Bayes by achieving 81% vs 51% and 55% correct predictions respectively. This was attributed to the ability to introduce class penalties in SVMs whereas the other two methods are limited by class imbalance [@Saradhi2011]. This means that SVM’s had a superior method of balancing the importance of the variables in the data set which was skewed by a heavy majority of employees who kept their job versus the minority who left (25% churn). It should be noted that the boosted tree ensemble method performs a similar task of weighting misclassified cases or outliers and it would have been worthwhile comparing this method to SVMs. Particularly because boosted trees provide insight into the predictive model which could aid uptake of the model with decisoin makers. However, it is noteworthy that their study proved that predictive techniques used on customres could be translated to predicting internal behaviour of employees. 
 
-### 2.3.4 Gap/conclusion
+### Gap
 
 The limited literature on analysis similar to Sardhi and Vijaya’s Employee Churn study [@Saradhi2011] highlights a gap in the application of predictive techniques to model internal performance in businesses. This is particularly relevant to consulting companies that tackle complicated discrete projects with set timelines. In this project, internal consulting project data will be used to predict a new project performance in terms of internal employee structure as well as client characteristics. A review of the literature in machine learning applied to business problems revealed that SVM's have found to be the most accurate technique followed by neural networks and ensemble tree methods. As discussed in section 2.2, it was also noted that neural networks and SVM's do not provide insight into the model's predictions to the decision maker. A gap exists in applying these cutting edge machine learning techniques to internal business decision-making.
 
-## 2.4 Conclusion
+## Conclusion
 
 The literature pertaining to the aim of this research project, cost prediction using internal consulting CRM data, has been extensively reviewed. The problem of cost prediction has been addressed in many studies beforehand which have generally been limited to prediction of construction costs for buildings and infrastructure and effort estimation for IT projects. The prediction models consisted of case based reasoning, linear regression, neural networks and in one or two instances an ensemble tree or SVM. This leaves a gap in the literature in effort estimation for consulting companies in the construction industry as well as trialling a broader range of prediction methods. 
 
 An exhaustive list of machine learning and statistical methods were reviewed theoretically as well as practically in the broader scope of business problem prediction. It was determined that bayesian networks and ensemble tree methods have potential to perform estimation as well as complex algorithms such as neural networks while providing the additional benefit of insights into the reasoning behind model predictions.
 
 
-# Chapter 3 Methods - 2 to 8 pages
+# Chapter 3 Method - 2 to 8 pages
 
 The aim of this project is to determine whether the profitability of projects for consulting businesses can be predicted using statistical and machine learning techniques. As stated in the literature review, a gap in research exists for testing whether internal CRM data from a company in the construction industry could predict project profitability. This section will explain the chosen methodology for testing this aim using a case study Engineering consulting company that charges for their time spent on project delivery. Once the predicition potential has been assessed, a secondary aim is to determine the positive impact the predictive model could have on the overall profitability of the company.
 
-**justify the process by which the research questions were answered**
-**argue and justify each decision that was taken to arrive at how to organise reserach**
-
-## 3.1 Obtaining data
+## Obtaining data
 
 An assessment of the literature revealed that the predictive power of internal timesheet data has not yet been tested yet for project profitability for consulting companies in the construction industry. In addition, this is the sole source of project data available for these types of businesses besides interviewing project managers and reviewing the account records of invoicing versus employee costs. As the internal CRM for the case study company stores a detailed account of time spent on each project along and client information for twelve years, it was clear that this source of data could reveal the most and was most suitable to statistical analysis. The complete twelve years of project timesheets and invoices was extracted via the CRM software interface, describing 4169 projects. The projects varied from total invoiced amounts of $500 to over $1,000,000 across four internal disciplines in the company. At the time of data extraction, it was not clear whether the full twelve years were necessary and relevant to predicting current project profitability but this was to be determined later in the analysis.
 
 Once the data was extracted from the CRM, an employee from the case study company performed the task of de-identification. This is an important step before research commences as the privacy of project employees, clients, and project names must be removed for ethical reasons. In the case of employee names, professional titles replaced the names, and for client codes replaced client names.
 
-## 3.2 Cleaning and variable engineering
+## Cleaning and variable engineering
 
 The obtained data contained a rich source of project information and a lengthy process of cleaning the data and engineering useful variables was required. The data was initially in three types of datasets extracted from the same CRM software:
 
-* invoicing data
-* timesheet data
-* project summary data
+* Invoicing data
+* Timesheet data
+* Project summary data
 
 These three sources needed to be compiled into a single dataset that detailed one project per row as this is the structure required for predictive analytic methods when predicting the overall profitability of a project. Before compilation could begin however, thorough cleaning is required where the data was plotted and statistically assessed so that outliers could be visually or statistically discovered. Outliers were then investigated for data entry errors. Many such errors were encountered. One type of error for example was a user entering a 123 kilometer drive in a car as 123 hours. Once these errors were detected, they were discussed with the company directors and appropriate corrective action was taken.
 
-### 3.2.1 Variable Engineering
+### Variable Engineering
 
 Although dozens of variables were available from the initial dataset, it was prudent to engineer further descriptive variables, particularly in the invoicing dataset and timesheet dataset where the information needed to be compiled into a single row per project. All variables would eventually be tested for variable importance and predictive power with respect to project profitability. Examples of these engineered variables include:
 
@@ -488,19 +456,19 @@ Once the three data sources were combined, further variables were engineered:
 Besides the engineered variables, additional variables included in the project summary dataset were client industry, discipline, job description, and post code. Once numerous potentially important variables were engineered, the most important ones could be narrowed down. This improves the accuracy of a model because unnecessary or irrelevant variables add noise to the prediction of target values. Variable selection also increases computational efficiency by reducing the number of calculations and improves understanding of the prediction structure [@Weisberg2005].
 
 
-## 3.3 Variable selection
+## Variable Selection
 
-### 3.3.1 Outlier deletion
+### Outlier Deletion
 
 Before determining which variables contribute most to the target value, return per dollar, outliers were deleted. Specifically, cases with extreme return per dollar values were investigated as special scenarios may have contributed to these values and the model is not intended to predict special scenarios. Outliers were initially defined as return per dollar values sitting outside 1.5x the interquartile range (IQR) from the upper and lower quartiles as intially practised by Tukey, the inventor of the box plot [@Tukey1977]. The outlier projects determined by this method were then reviewed with an employee from the case study company. Based on their domain knowledge and assessment of the outlier cases, cut-off values for the range of return per dollar values were determined. Outliers were projects with return per dollar values greater than 3 or below -2.
 
-### 3.3.2 Variable selection Methods
+### Variable Selection Methods
 
 Three methods of variable selection were trialled and compared to test whether the different methods highlighted different variables as important. These were Analysis of Variance (ANOVA), conditional inferece forests (cforests), and random forests. It was expected that random forests would highlight variables that had more categories as more important which is a well known bias; it is also a bias that cforests have overcome [@Strobl2007]. ANOVA is based on linear theory which contrasts conditional forest and random forests more free-form structure. Therefore, it is important to compare the contrasting methods' assessment of variable importance.
 
 When running variable importance tests, the dependent variable must be clearly defined. For this problem, the dependent variable can be numeric or categorical: whether a project was profitable (binary classification) or *how* profitable a project was (regression). The regression model was chosen as a variable important for predicting the degree of profitability would also predict profitable vs not profitable.
 
-#### 3.3.2.1 ANOVA
+#### ANOVA
 
 ANOVA is closely related to linear fit models but incorporates the analysis of differences in group means (i.e. categorical variables) [@Lunney1970]. The method is simple and fast but assumes variables are normally distributed and linearlly related. The variables must therefore be normalised before analysis, however it cannot be assumed that each variable can be perfectly normalised. A disadvantage of this method is that linear relationships and normal variables do not necessarily represent real world data in the best way [@Breiman2001b].
 
@@ -508,23 +476,23 @@ In order to compare variable importance, the output of the model is assessed whi
 
 The p-value output from ANOVA models give a good indication of which variables have a statistically significant relationship with the target variable. However, the values should not be used to rank the variables against one another, and significant p-values can occur by chance.
      
-#### 3.3.2.2 Random Forest
+#### Random Forest
 
 The random forest algorithm can produce a permutation variable importance for each variable as part of its output. Variable importance is represented as a score, and to do this a permutation and calcuations are performed on each variable. More specifically, consider a single covariate. The values of this variable in the out of bag sample are randomly permuted (reordered) for each tree - a technique that mimics the absence of that variable. The trees in the random forest are then run again. Variable importance can now be derived by comparing the results of the forest where the covariate has been permuted to the original random forest. If the accuracy of the premuted forest is much less than the original forest, then that variable is important. Importance scores are calculated as the mean decrease in accuracy over all trees for that permuted variable in the random forest [@Breiman2005].
 
 The random forest variable importance provides valuable insight because it addresses the impact of each predictor variable individually as well as in multivariate interactions with other predictor variables. It handles uncorrelated variables well if the samples for the trees are subsampled without replacement [@Strobl2007]. However, a severe disadvantage of random forest variable importance is that it is not reliable for variable selection where potential predictor variables vary in their scale of measurement or their number of categories. The importance of correlated predictors is overestimated and the algorithm tends to select variables that have many possible splits or many missing values [@Strobl2007]. Overall, the random forest permutation importance is useful as it is able to compare variables in a machine learning environment and can include multivariate interactions, but the current random forest importance measure overestimates the importance of variables with many categories and some numeric variables.
     
-#### 3.3.2.3 Cforests
+#### Cforests
 
 Cforests are an alterantive ensemble tree method to random forests that overcome the aforementioned shortfalls of random forests such as overestimating the importance of variables with many categories and numeric variables. It is built from ctrees that are based on a conditional inference framework. The key difference between ctrees and standard decision trees are that a significance test procedure for splitting instead of an purity meausre such as the Gini coefficient, which is centered around information gain. 
 
 The details behind the significance test procedure of a ctree are as follows. Each variable is permuted in every possible way, and a correlation value is calucated between the tested variable and target variable, for each permutation. The unchanged variable correlation is then compared with the correlation values for all permutations of that variable. From this, a p-value for the true correlation value can be calculated. The predictor variable with the lowest p-value is selected as the splitting variable [@Hothorn2006]. Using an ensemble forest of these trees, permutation is then calculated in the same fashion as random forests, via permuting a variable, re-running the forest and comparing the decrease in accuracy. Several sources recommend cforests over other machine learning variable importance methods due to its unbiased qualities [@Strobl2007][@Strobl2009][@Hothorn2006].
 
-#### 3.3.3 Variable Selection Summary
+#### Variable Selection Summary
 
 Limiting the predictive model to a concise set of meaningful variables reduces noise and improves predictions. Less variables means that a simpler model is being used for prediction which is easier to understand for stakeholders [@Weisberg2005]. For these reasons, a subset of the most important variables were chosen before modelling began. This entailed first eliminating outliers, then comparing important variables from ANOVA as well as random forests and cforests. The literature implies that cforests would suit the data for this project as it is unbiased and not limited to linear theory [@Strobl2007]. 
 
-## 3.4 Model selection
+## Model selection
 
 Previous studies predicting project profitability in software and construction projects were largely limited to case-based reasoning, regression and neural networks. There is a need to test more sophisticated machine learning algorithms that are as powerful as neural networks but provide insight into the reasoning behind predictions. Ensemble trees (boosted trees and random forests) and bayesian networks fit these criteria. Regression and naiive bayes models were also included as simple baseline models. Complex models should be measured against simple models that can be computed at a fraction of the cost. The complete list of models for this study are:
 
@@ -539,7 +507,7 @@ Some models have limitations and required additional data processing steps such 
 All methods except Gradient Boosted trees could not handle missing values. Preliminary runs of each method used subsets of the data without missing values. Then, imputing methods were trialled with gradient boosted trees since boosted trees can handle missing values. The MICE random forest method has been proven to work well with complex data sets [@Shah2014]. It works by first performing a standard random forest imputation of missing values which are treated as 'place holders'. Then, the imputations for one variable are deleted and the remaining full variables are used to impute the single variable using random forest imputation. This is repeated for each variable and their 'place-holder' imputations are replaced by an imputation targeted at the single variable. This cycle is repeated five times by default [@Azur2011]. If the imputed dataset gave similar predictive results using boosted trees as unimputed data using boosted trees, the imputed data must be reasonable. It is then trialled on the remaining methods and compared to un-imputed trials.
 
 
-## 3.5 Model comparison, Model averaging
+## Model Comparison, Model Averaging
 
 To compare the models, mean squared error statistic was used for regression models and the area under the receiver operating characteristic (ROC) curve (AUC) statistic was used for binary classification. AUC is a better statistic than classification accuracy in comparing algorithms when the probability of the outcome is relevant to the problem. This is true for problems where the decision can depend on whether the probability is above a certain threshold [@Huang2005].
 
@@ -566,7 +534,7 @@ To plot the curve in an ROC, points are plotted for results on the training set 
 In order to compare whether models perform significantly better than one another, the AUC or mean squared error results from multiple-fold cross validations were used as the data points. Once the best two or three models were determined, these were combined using model averaging. Finally, the best model is determined between the single models and model averaged model.
 
 
-## 3.6 Bottom Line Translation
+## Bottom Line Translation
 
 Although predictive power of the final model is important, for the method to be integrated into a company's decisions, the affect on a business' bottom line should be tested. This was done using a profit curve - a chart that plots the amount of profit the company earns on the y axis vs the probability threshold on the x axis. 
 
@@ -574,29 +542,27 @@ A simple approach was taken for this analysis, where projects with a probability
 
 A profit curve is made from a single train/test instance of the data. In order to understand the uncertainty around the profit curve, hundred-fold train/test splits were run and results calculated for each model and threshold point. This resulted in a statistical confidence interval around each threshold point which can be represented graphically. The final profit curve and surrounding confidence interval will indicate whether the algorithm makes a compelling case for integration into the company's decision making process.
 
+```{r}
+## Method Conclusion
 
-## 3.7 Method Conclusion
-
-In summary, to determine whether a 
-* obtained data: 4169 jobs from a single case study company over 12 years. Data was de-dentified by an employee of the company
-* the data was all from the company CRM. There were three chief sources:
-    * invoicing data
-    * timesheet data
-    * project summary data
-* the data was cleaned from mistakes which were generally discovered as outliers 
-* many new variables were engineered from the data, often by summarising time series data into a value that is relevant to a final data set of a single job per row
-* variable selection: dozens of variables available which were condensed to the most important 10-12. variable importance methods were ANOVA, random forest, and cforests. the overlapping important variables were chosen first as well as some others
-* 5 models were tested: baseiline: log reg, naiive bayes.
-* sophisticated ML: boosted reg, random frest, bayesian networks
-* best were comapred to a model averaged version
-* Analysis of impact on bottom line for business if model is integrated into decision making
-* link: results
-
-
-
+# In summary, to determine whether a 
+# * obtained data: 4169 jobs from a single case study company over 12 years. Data was de-dentified by an employee of the company
+# * the data was all from the company CRM. There were three chief sources:
+#     * invoicing data
+#     * timesheet data
+#     * project summary data
+# * the data was cleaned from mistakes which were generally discovered as outliers 
+# * many new variables were engineered from the data, often by summarising time series data into a value that is relevant to a final data set of a single job per row
+# * variable selection: dozens of variables available which were condensed to the most important 10-12. variable importance methods were ANOVA, random forest, and cforests. the overlapping important variables were chosen first as well as some others
+# * 5 models were tested: baseiline: log reg, naiive bayes.
+# * sophisticated ML: boosted reg, random frest, bayesian networks
+# * best were comapred to a model averaged version
+# * Analysis of impact on bottom line for business if model is integrated into decision making
+# * link: results
+```
 
 
-# Chapter 4: Results
+# Results
 
 This section presents key charts and tables of results that progressively answer the research question: can a statistical or machine learning model based on historical project data predict the profitability of a new project and have a positive impact on the bottom line of the business? 
 
@@ -652,7 +618,7 @@ kable(rf.rank, format = 'markdown')
 
 ```
 
-### cForest
+### Cforest
 
 Cforests were also run with a core of 13 complete variables, and incomplete variables were given added to the core variables individually in separate runs. Variables with an unlimited number of c ategories can be included in cforests which is an advantage over randomForests. Cforests compute a variable importance ranking which is a number relating to the reduction in error the variable provides. The variable importance rankings for the core 13 variables are as follows:
 
@@ -676,7 +642,7 @@ Some incomplete variables that were added one at a time ranked in the top 6 most
 * Client contact id (code.contact)
 * Project category (JD.Second)
 
-### Variable selection summary
+### Variable Selection Summary
 
 Based on the results of the three methods for variable importance, 11 independent variables were selected for the prediction modelling:
 
@@ -890,11 +856,33 @@ The performance of logistic regression and random forest algorithms cannot be st
 
 ```{r mice_violin}
 
-mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
+mice.totAUC <- readRDS("mice_df_auc.rds")
 
-  
-        
-        
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(mice.totAUC[[2]], mice.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+mice.totAUC = melt(mice.totAUC)
+mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
+
+ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different \nfrom boosted trees") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of each Method - Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
 ```
 
 
@@ -937,7 +925,7 @@ Blended models combine the results of each well-performing individual model to c
 
 ```{r}
 
-cfor.varimp = readRDS("report_data/cfor_blend_varimp.rds")
+cfor.varimp = readRDS("cfor_blend_varimp.rds")
 
 ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
         theme(axis.text.x=element_text(angle=45,hjust=1)) + 
@@ -952,7 +940,7 @@ ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
 
 ```{r}
 
-log.varimp = readRDS("report_data/logblend.rds")
+log.varimp = readRDS("logblend.rds")
 
 log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
 colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
@@ -993,7 +981,7 @@ Single variables that aren't in interaction terms:
 
 ```{r}
 
-rf.varimp = readRDS("report_data/rfblend.rds")
+rf.varimp = readRDS("rfblend.rds")
 rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
 rf.varimp = add_rownames(rf.varimp)
 rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
@@ -1015,7 +1003,7 @@ Permutation importance by randomForest rates all three prediction models as most
 
 ```{r}
 
-boost.varimp = readRDS("report_data/boostblend.rds")
+boost.varimp = readRDS("boostblend.rds")
 boost.varimp = add_rownames(boost.varimp)
 # order levels
 boost.varimp$rowname <- factor(boost.varimp$rowname,
@@ -1045,9 +1033,9 @@ Upon reviewing important variables ranked by each method of blended models, the 
 
 Three model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, and boosted trees. Furthermore, 3 simple model blending techniques were tested that used only the predictions of the three individual models as variables. These were averaging, a simple boosted tree, and a simple logistic regression. All six methods were compared against the original logistic regression predictions. Initially 100 train/test runs were performed for each method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
 
-```{r}
+```{r, fig.height=10}
 
-auc.list <- readRDS("report_data/blend_auc1.rds")
+auc.list <- readRDS("blend_auc1.rds")
 means = lapply(auc.list, mean) %>% unlist
 greater = means[means> means["orig.log"]] %>% names
 auc.melt = melt(auc.list)
@@ -1079,14 +1067,14 @@ The plot shows that 4 methods could have a statistically significantly higher me
 
 ```{r}
 #load results from 150 iterations
-auc.150 = readRDS("report_data/blend_auc150.rds")
+auc.150 = readRDS("blend_auc150.rds")
 
 ```
 
 
-The results of the 150 iterations are shown in the plot below. Simple model averaging results in a p-value of `t.test(auc.150[['orig.log']], auc.150[['average']])$p.value %>% format(digits = 2) %>% as.numeric` while the simple logisitc regression blended model had a two-sample t.test p-value of `t.test(auc.150[['orig.log']], auc.150[['simp.log']])$p.value %>% format(digits = 2) %>% as.numeric`.
+The results of the 150 iterations are shown in the plot below. Simple model averaging results in a p-value of `r t.test(auc.150[['orig.log']], auc.150[['average']])$p.value %>% format(digits = 2) %>% as.numeric` while the simple logisitc regression blended model had a two-sample t.test p-value of `r t.test(auc.150[['orig.log']], auc.150[['simp.log']])$p.value %>% format(digits = 2) %>% as.numeric`.
 
-```{r}
+```{r, fig.width = 8, fig.height=10}
 
 index = c(2:3)
 pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
@@ -1131,7 +1119,7 @@ The models output a 'probability' between 0 and 1 that each project will be a lo
 Using this logic, if the threshold was 0, all projects were rejected and total profit would equal 0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. Probability results from the two blended models as well as three individual models were tested and because the models require a training and testing set, the process was repeated 100 times with 20 x 5 fold cross validation models to achieve a statistical power of 0.8. The plot below illustrates the results of each model at each threshold with a local polynomial regression line of best fit (loess) and a 95% confidence interval around the mean.
 
 ```{r profit_curve, fig.depth = 10}
-finance.plot = readRDS("report_data/plot_finance.rds" )
+finance.plot = readRDS("plot_finance.rds" )
 
 
 ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) + 
@@ -1184,7 +1172,7 @@ The average of the three individual models performed best with the highest mean 
 
 For clarity, the plot for the average blended model is shown below:
 
-```{r av_profit_curve}
+```{r av_profit_curve, fig.height=10}
 ggplot(finance.plot %>% filter(method == "average"), 
        aes(x= threshold, y= profit.ratio, colour = method)) + 
         geom_point(alpha = 0.1, shape = 16) + 
@@ -1200,33 +1188,34 @@ ggplot(finance.plot %>% filter(method == "average"),
 
 ```
 
-
+```{r}
 # Results - over 5 pages, up to 20 pages
-
-Guidelines:
-* Outlines what you found out in relation to your research questions or hypotheses, presented in figures and in written text.
-* Results contain the facts of your research. Often you will include a brief comment on the significance of key results, with the expectation that more generalised comments about results will be made in the Discussion section.
-
-Which results to discuss
-* restate research questions and hypotheses. can we predict profitability? ofocurse you can make a prediction, 
-real question might be is it worthwhile for the business to engage in this activity? we will look at this as a bottom line analysis. acknowledge that it may be worthwhile for other reasons such as confidence and transparency in historic projects.
-
-* bottom line analysis - run 1000 times to get confidence interval around the line.
-    * should the business adopt the model?
-    
-* to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the case based reasoning approach
-
-
+# 
+# Guidelines:
+# * Outlines what you found out in relation to your research questions or hypotheses, presented in figures and in written text.
+# * Results contain the facts of your research. Often you will include a brief comment on the significance of key results, with the expectation that more generalised comments about results will be made in the Discussion section.
+# 
+# Which results to discuss
+# * restate research questions and hypotheses. can we predict profitability? ofocurse you can make a prediction, 
+# real question might be is it worthwhile for the business to engage in this activity? we will look at this as a bottom line analysis. acknowledge that it may be worthwhile for other reasons such as confidence and transparency in historic projects.
+# 
+# * bottom line analysis - run 1000 times to get confidence interval around the line.
+#     * should the business adopt the model?
+#     
+# * to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the case based reasoning approach
+```
 
 # Discussion - 10 to 20 pages
 
-The Discussion section:
-
-comments on your results;
-explains what your results mean;
-interprets your results in a wider context; indicates which results were expected or unexpected;
-provides explanations for unexpected results.
-The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
+```{r}
+# The Discussion section:
+# 
+# comments on your results;
+# explains what your results mean;
+# interprets your results in a wider context; indicates which results were expected or unexpected;
+# provides explanations for unexpected results.
+# The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research.
+```
 
 ## Variable Importance
 
@@ -1292,50 +1281,37 @@ The logistic regression blending model did indeed weight predictions from the or
 
 ```{r load_winner_results}
 
-simp.l <- readRDS("report_data/finance_average_model.rds")
+simp.l <- readRDS("finance_average_model.rds")
 
 ```
 
 The blended models significantly (?) outperformed individual models which was expected given the two blended models' AUC results were significantly higher than the original logistic regression results (which were in line with random forests' and boosted trees' results). The simple average of logistic regression, random forests, and boosted trees results produced a better profit curve than a logistic regression of the same three variables.  The model produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r (best.mean-100)/100*1000000` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects. The improvements in profit sound promising, however it is important to consider possible limitations in the data which is discussed in the next section.
 
-Because of the positive AUC results, it was expected the models would translate into financial benefits for the company. The results look reasonable, profit gains may be high enough to trigger further cost-benefit analyses for introducing the model into business decisons. It was surprising that, given the similar AUC results, simple model averaging signficantly (?) outperformed the blended logistic regression model's profit curve. This may be because ... ROC curves.
+Because of the positive AUC results, it was expected the models would translate into financial benefits for the company. The results look reasonable, profit gains may be high enough to trigger further cost-benefit analyses for introducing the model into business decisons. It was surprising that, given the similar AUC results, simple model averaging signficantly (?) outperformed the blended logistic regression model's profit curve. This means that model averaging predicted projects with probabilities closer to 1 (loss-making jobs) with more accuracy than blended logistic regression. This may be because ... ROC curves.
 
+### Limitations and Future Work
 
-*** you are here **** 
+One of the unknown factors in translating this research into business practises is how well users can guess the project variables. The data used to develop the model was obtained from the company's records of how projects played out and there are no records of initially expected values of variables. For example, if a project lasted 2 years and it was initially expected it would only take 1.5 years, the only data the company retains is that the project lasted two years. This begs the question, how well could a user predict the variables before beginning a project? Uncertainty has been managed to a degree by binning variables such as 'total amount invoiced' and 'timespan' to 5 or 6 broad categories (i.e. "1 day - 3 weeks", "3 weeks - 2.5 months", etc). However, two remaining categories: team size and percent of project completed by professional level employees were left as continuous variables. It would be interesting to test how well business managers could guess these four variables at the start of a project. 
 
-Previous research indicated problems with user uptake once models were developed and a lack of trust in the model output [@Akintoye2000]. 
+The process of guessing varibles at the beginning of a project and then waiting for the project to complete is a long checking process. However, it would be worthwhile integrating this data into the system's pre-existing data collecting processes. When a new project is entered into the database, it could be required that the project manager guesses the time-span (1 of 6 categories), total amount invoiced (1 of 5 categories), team size and percent to be completed by professionals. This data itself could feed into a revised version of the prediction algorithm.
 
- 
-* problems with past research and does this solve any of those?
-    * poor user uptake - future work?
-    * lack of trust - nearest neighbour must be presented with results - case based reasoning
-    * results from boosted tree shows partial dependence plots - insight.
-    * never been applied to a consultant within construction industry. has been applied lots to software
-    * still has the potential to help with the way the industry is structured - hinges on user uptake.
+Another limitation for these types of algorithms in general, as identified in the literature, is user uptake of the models and a lack of trust in the output [@Akintoye2000]. It was for this reason the case study only tested models that provided insight into variable relationships (ensemble trees and logistic regression) as opposed to neural networks and SVM's that operate as 'black box' predictors. It is envisioned that a future user interface for this algorithm would display variable relationships such as this partial dependency plot produced by a boosted tree model that displays the probability of losing money vs. the team size: 
 
+![](images/boosted tree/partial_dep_plots/no_users.png) 
 
-You should point out what the limitations were of your study, and note any questions that remain unanswered. 
-* not sure how easy number of users is to predict - could do a study
-* could do a study on trust levels
+Running a nearest-neighbour algorithm concurrently with the probability algorithm could provide a cross check of the algorithm's results and engage the user's past experiences in similar projects. This could work by presenting a graphical summary of the 4 or 5 most-similar past projects to the new project being assessed by the manager. Memories of how these similar projects played out would be triggered as well as communication with other manager's that led the similar projects. This would allow the user to connect specific past experience with the probability model output. Further development and testing is required to assess how much users trust the algorithm output and how trustworthiness may be improved.
 
-
+![](images/app/NN_wharf.png) 
 
 
 # Conclusion
 
-Future work
-* user testing on trust levels of prediction with nearest neighbour
+The aim of this project was to predict the profitability of projects for consulting businesses using their internal CRM data. Specifically, a statistical or machine learning model was created based on historical project data. The second aim was to test whether the model would have a positive impact on the overall profitability of a case study business. These research aims were fulfilled and the prediction model was refined to a binary classification problem of whether a project would be profitable or loss-making. This suited the limited data size best which was also highly complex. After testing several machine-learning and statistical models, a blended model of logistic regression, random forests, and boosted tree models predicted project profitability best. When applied to improving overall profitability of the business, the blended model which simply averaged the raw probability results from the three aforementioned models outperformed the individual models as well as the logistic regression blended  model. Final results showed the model could improve profitability of the business by between `r (-1.96*best.sd + best.mean) %>% round(1)`% and `r (1.96*best.sd + best.mean) %>% round(1)`% (the 95% confidence interval) by rejecting projects that have a 'probability' of being a loss-making job over `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
 
-Conclusions
-could be a viable business move worth integrating
+These results make a significant contribution to literature in this area as they provide a clear framework for how a business can realise tangible profit improvements using a set of algorithms and project data that is passively collected by businesses. Previous studies verified algorithms' prediction accuracy in cost estimation but stopped short of how the algorithms could be implemented in every day decision making and the affect on budgets. Additionally, this research tested ensemble tree methods and furthermore blended models on the problem of cost estimation. Past research had largely experimented with regression models and to some extent neural networks and case based reasoning. The advantage of ensemble tree methods is that they provide insight into the model's reasoning while having comparable predictive power to neural networks. Having said that, a limitation to the study was that there was not sufficient data to utilise the strength of ensemble tree methods and logistic regression performed simiarly. However, the final highest performing model was a blend of regression and two ensemble tree methods. 
 
-Suggestions
+There are several aspects of this work that should be investigated further including how well managers can estimate project input variables before a project is won. Particularly, estimations of the timespan, team size, total invoiced amount, and percentage of hours completed by professionals should be tested. These initial estimates could also be included in the each project's data entry for future analysis. Finally, research into user uptake of the model should be assessed. It is likely that in order to establish a manager's trust with the algorithm, additional model output will be required such as partial dependency plots from the boosted trees. Also, a 'nearest neighbour' algorithm could be run concurrently to show the manager outcomes of past similar projects, which should align with the model's probabiltiy prediction. Overall, this project has successfully demonstrated a blended statistical and machine learning model has the potential to aid manager's in rejecting loss-making projects to improve their business's profitability. 
 
-Could collect data for future projects: expected team size, expected time frame.
-
-* trialled ensemble tree methods on cost estimation (in this case project proftability)
-* attempted to predict project profitability using a single consulting company's CRM data in the construction industry
-* assessed tangible profit outcomes of machine learning models
 
 
 
