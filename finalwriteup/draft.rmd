@@ -112,20 +112,21 @@ The theory of reference class forecasting was first definitively published in 20
 
 ### Further Reference Class Forecasting Models and Industry Uptake
 
-In the following section, an overview of several historical attempts to integrate reference class forecasting will be presented followed by published theories for the lack of industry uptake.
+In the following section, an overview of several attempts to integrate reference class forecasting will be presented followed by published theories for the lack of industry uptake.
 
 #### Existing Models
 
-A substantial amount of research on project cost prediction has been dedicated to the fields of software development and construction projects in particular. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects from around the world, and each project a different client and project team. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks [@Love2005][@Kim2004]. Most studies report neural networks are more accurate than linear regression, and generally the studies report positive predictive powers of their developed models.
+A substantial amount of research on project cost prediction has been dedicated to the fields of software development and construction projects, along with some work in the film industry. These analyses have generally used project information from 15 to 20 large projects. A single dataset may consist of projects completed in different countries with different clients and project teams. The mathematical methods used to predict project costs vary from statistical regressions to deep-learning neural networks [@Love2005][@Kim2004]. Most studies report their predictive models perform well and that generally neural networks are more accurate than linear regression.
 
-A McKinsey study outlined a case in the film industry where a motion picture company used reference class forecasting of movie project success (cases were weighted by similarity) to decide which movies should be heavily promoted. This model improved forecasts on financial return by 135% relative to single project analogies [@Flyvbjerg2014]. 
+A McKinsey study outlined a case in the film industry where a motion picture company used reference class forecasting of movie revenue (cases were weighted by similarity) to decide which movies should be heavily promoted. This model improved forecasts on financial return by 135% relative to comparison of a movie to a single past case [@Flyvbjerg2014]. 
 
-Statistical research projects which trial reference forecasting have shown promising results in IT, construction, and film projects. However, there is little evidence that the methods have successfully transitioned into industry.
+Statistical research projects on reference forecasting have shown promising results in IT, construction, and film projects. However, persuading industry to adopt these methods is a separate challenge.
 
+** you are here ** 
 
 #### Industry Uptake of Existing Models and Current Practises
 
-Surveys on current industry practise for cost estimation are scarce, however, a survey of the construction industry in the UK in 2000 found that a manager's experience and intuition is still the dominant method for construction cost calculation [@Akintoye2000]. A study on the IT industry by @Jorgensen2007 cited that the parametric models were not comprehensive enough to be used in industry and also found that expert judgment was not mobilised enough in the process of developing these tools. 
+Surveys on current industry practise in cost estimation are scarce; a survey of the construction industry in the UK in 2000 found that a manager's experience and intuition is still the dominant method for construction cost calculation [@Akintoye2000]. A study on the IT industry by @Jorgensen2007 cited that the parametric models were not comprehensive enough to be used in industry and also found that expert judgment was not mobilised enough in the process of developing these tools. 
 
 Although reference class models have not gained traction in either the software or construction industry (where most of the research to date has focussed), it is worth outlining their current practises in cost estimation and the reasons behind these.
 
