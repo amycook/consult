@@ -1,0 +1,28 @@
+---
+title: "trials"
+author: "Amy Cook"
+date: "June 16, 2016"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+$effort = \alpha*size^{\beta}$  
+$\alpha = productivity \ coefficient$  
+$\beta = economies \ of\ scale\ coefficient$  
+$size = estimated \ lines \ of \ code$
+
+$$
+\begin{aligned}
+ effort &= \alpha*size^{\beta} \\
+ \alpha &= productivity \ coefficient \\
+ \beta &= economies \ of\ scale\ coefficient \\
+ size &= estimated \ lines \ of \ code
+\end{aligned}
+$$
+
+
+* $project\ profit = total\ invoiced\ amount - cost\ from\ recorded\ employee\ hours$
+* $return\ per\ dollar = \frac{project\ profit}{cost\ from\ hours}$
