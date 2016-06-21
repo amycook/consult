@@ -643,17 +643,17 @@ To plot the curve in an ROC, a series of points and their coordinates are first 
 
 In order to compare which models performed significantly better than others, an adequate sample size of results statistics was required. Multiple models could be made by using different data in the training vs. testing sets, each providing a resulting test statistic (RMSE or AUC). 5 fold cross validation was used, which created 5 models, then the division of 5 folds was repeated using a different random seed to create another set of 5 training/testing data sets. Initially, 20 models of each method were created in this fashion. Then a two-sample power calculation was run using the two sets of 20 results to determine the sample size to achieve a statistical power of 0.8. Once the number of required samples was determined, more models were built via 5 fold cross validation to obtain additional results statistics. The highest performing models were advanced to the next stage where various methods of combining, or blending, methods were tested.
 
- ## Model Blending
+## Model Blending
 
-Several research groups involved in the high profile data science competition, Netflix Prize, developed sophisticated methods of model stacking, otherwise known as ensemble methods or model blending [@Sill2009]. In this research the term 'blending' is used to avoid confusion between ensemble tree methods. The idea behind model blending is to combine predictions from several methods with different theoretical foundations so that the strengths of each method can be combined. Historically, this was called model averaging in statistics and since the 1990's research showed that averaging results from different methods provided better predictive accuracy than any single model [@Madigan1994]. New methods of model blending were developed for the Netflix Prize that applied sophisiticated machine learning techniques to big, messy data. The prize-winning solution was a complex blend of sub-blends that incorporated results of individual models as variables along with original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incrememntal improvements in predictive accuracy, but the computational cost of the complex layers did not justify benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project a single layer of blending was trialled.
+Several research groups involved in the high profile data science competition, Netflix Prize, developed sophisticated methods of model stacking, otherwise known as ensemble methods or model blending [@Sill2009]. In this document, the term 'blending' will be used to avoid confusion with ensemble tree methods. The idea behind model blending is to combine predictions from several models derived from different methods that have different theoretical foundations. In this way, the strengths of each method can be combined. Historically, in statistics this was called model averaging and since the 1990's research has shown that averaging results from different methods provides better predictive accuracy than any single model [@Madigan1994]. New methods of model blending were developed for the Netflix Prize that applied sophisiticated machine learning techniques to big, messy data. The prize-winning solution was a complex blend of sub-blends which interacted results of individual models with the original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incremental improvements in predictive accuracy, but the computational cost of all the complex layers did not justify the benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project just a single layer of blending was trialled.
 
-Five blending methods, ranging from simple to complex were tested on the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, feature weighted linear stacking (FWLS), random forests, and boosted trees. The first two models are simply the average or weighted average of the three individual models. The last three methods take advantage of potentially meaningful interactions between an individual model's results and meta-features (the original variables). For example, if the regression predicted profitability better than the other models for Water projects, the model would take advantage of this interaction. Regression predictions would be weighted higher than the other model predictions for Water projects. 
+Five blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, feature weighted linear stacking (FWLS), random forests, and boosted trees. The first two models are simply the average or weighted average of the three individual model predictions. The last three methods take advantage of potentially meaningful interactions between an individual model's predictions and meta-features (the original variables). For example, if the boosted tree model predicted profitability better than the other models for Water projects, the blending model would take advantage of this interaction. Boosted tree predictions would be weighted higher than the other model predictions for Water projects. 
 
-A simplified explanation of FWLS is as a linear regression where meta-features as well as model predictions from individual models are included as variables. Then, each meta-feature is interacted with each column of model results [@Sill2009]. A linear regression is performed to weight each term's contribution to the final prediction. Random forests and boosted trees are also used to blend meta-features with output from several models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node is conditional upon the preceding split based on another variable and so on. 
+A simplified explanation of FWLS is as a linear regression where meta-features as well as model predictions from individual models are included as explanatory variables. Then, each meta-feature is interacted with each set of model results [@Sill2009]. A linear regression is performed to weight each term's contribution to the final predictive accuracy. Random forests and boosted trees were also used to blend meta-features with output from the best models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node determined by one variable is conditional upon the preceding split which was based on another variable and so on. 
 
-The five blended models were built on training and testing sets multiple times in a similar fashion to the individual models. A single training set for a blended model must be built from the test results of the individual models. Therefore, five fold cross validation was performed using each individual model to create a full dataset of test results. This was then added to the original dataset, and training and testing data could be partitioned to test the blended models. A maximum of five blended models were created from a complete set of test results, then a new set of test results were created for the next five blended models. This ensured a good mix of training and test data was employed.
+The five blended model types were built on training and testing data sets multiple times in a similar fashion to the individual models. A single training set for a blended model must be built from the test results of the individual models. Therefore, five fold cross validation was performed using each individual model to create a full dataset as a compilation of test data results. The complete test data predictions were then added to the complete original dataset, and training and testing data could be partitioned to test the blended models. A maximum of five blended models were created from a complete set of test results (built from the individual models), then a new set of test results were created for the next five blended models. This ensured the blended models were trained on a thorough mix of the complete data set.
 
-To begin, 20 models of each blending method were created. Then, a two-sample power calculation was performed to achieve statistical power of 0.8. The required number of samples (models) were then developed so that the highest performing blended model could be tested against the others for statistical significance. The next step was to assess the blended models' performance on overall profits for the company. This analysis differed from predicitve model accuracy, so several blended models as well as individual models were carried forward for this analysis.
+20 models of each blending method were initially created. Then, a two-sample power calculation was performed to calculate the number of samples required to achieve statistical power of 0.8. The specified number of models were then developed so that the highest performing blended model could be tested against the others for statistical significance. The next step was to assess the blended models' performance in terms of improving overall profits for the company. This analysis differed from accuracy in predicting profitability, so several blended models as well as individual models were carried forward for this analysis.
 
 ## Profit Curve
 
@@ -687,15 +687,15 @@ Finally, since a profit curve is made from a single training/testing instance of
 
 # Results
 
-This section presents key charts and tables of results that progressively answer the research question: can a statistical or machine learning model based on historical project data predict the profitability of a new project and have a positive impact on the bottom line of the business? 
+This chapter presents key charts and tables of results that progressively answer the research question: can a statistical or machine learning model based on a company's internal historical project data predict the profitability of a new project and have a positive impact on the bottom line of the business? 
 
 ## Variable Selection
 
-To create the best possible model, only important variables were selected to reduce the affects of noisy independent variables. There are currently 46 independent variables for the single dependent variable, return per dollar which is the measure of profitability for a project.
+To create the best possible model, only important variables were selected in order to reduce the effect of noisy explanatory variables and enhance simplicity and model comprehension. Initially there were 34 explanatory variables for the single response variable, return per dollar, i.e. the chosen measure of profitability for a project. By the end of variable selection, only 11 explanatory variables remained. As stated in the previous chapter, three predictive methods were selected which output variable importance scores which differ due to their unique theoretical foundations. These were linear regression, random forests, and cforests.
 
-### Regression
+### Linear Regression
 
-Regression requires complete datasets. Therefore, analysis was done with a core set of 13 complete variables and a single additional incomplete variable. That means a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F statistic of each variable is plotted in the boxplot below.
+Linear Regression must be fed complete datasets but the case study data set only had a core set of 13 complete variables (including the response variable). If an incomplete variable was added to the core variables, the 'complete' data set would shrink to the size of the incomplete variable. If another incomplete variable was added, the complete set of data would shrink again. Therefore, to make the most of the available data, each incomplete variable was added to the core variables one at a time, where a linear regression model was built for each. That meant a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F statistic of each variable is plotted below. The core variables recieved p-values in all 21 models, while 'add.variable' represents p-values for the additional incomplete variable in each model.
 
 ```{r, echo=FALSE, fig.height=5}
 
@@ -706,31 +706,31 @@ ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
         geom_hline(yintercept = 0.05, colour = 'red', linetype = 2) +
         scale_y_continuous(breaks = c(0, 0.05, .25, .5, .75, 1)) +
         labs(y = "P value of F statistic", x = "Independent Variables",
-             title = "Summary of P-values from Anova tests")
+             title = "Summary of F-statistic P-values from ANOVA models")
 
 
 ```
 
-The ANOVA model indicates the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the null hypothesis - the variables do not correlate linearly with the dependent variable, return per dollar.
+The ANOVA models indicated that the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the null hypothesis:
 
-* number of employees that contributed to the project (no.users)
+* number of employees on the project team (no.users)
 * Percent of hours completed by a professional as opposed to technical employee (pc.pro)
-* Business category of Client (Business) 
-* Discipline
+* Business category of the client (Business) 
+* Internal discipline (Discipline)
 * Number of internal disciplines involved in the project (Num.disc)
-* Timespan of the project (timespan)
+* Timespan of the project from first hours to final hours entered in timesheets (timespan)
 * Total amount invoiced for the project (inv.mlsto)
 
-Four of the added incomplete variables (categorised as add.variable) were significant in their ANOVA models:
+Four of the added incomplete variables (represented as 'add.variable') had F-statistic p-values below 0.05 in their ANOVA models:
 
 * Client id (code.client)
-* Project category (JD.Second)
-* Position of the main professional working on the project, ie mid-level, senior (ProjEng.Pos)
-* id of main professional working on the project (code.ProjEng)
+* Internal project category (JD.Second)
+* Position of the main professional working on the project, ie mid-level, senior etc. (ProjEng.Pos)
+* Id of the main professional working on the project (code.ProjEng)
 
+The variables listed above had p-values below 0.05, meaning the null hypothesis, that the continuous explanatory variables have no linear relationship with the reponse variable or that categorical variables have the same mean response values for each group, could be rejected. The important variable relationships found in linear ANOVA regression shall be compared to output from random forests and cforests below. 
 
-
-### Random Forest
+### Random Forests
 
 The random forest algorithm imputes missing values, however this was not desirable for the early stage of variable selection - before modelling had commenced. Instead, a subset of complete data was used made up of variables with at least 2300 complete cases. Additionally, random forests cannot handle categorical variables with more than 53 categories which eliminated more variables. The resulting 'core' dataset contained 16 variables and 2364 cases. Because each run of the algoritm is slightly different, 10 algorithms were run, which each output the ranking of variables by importance. The mean ranking of each variable is summarised below: 
 
@@ -775,7 +775,7 @@ Based on the results of the three methods for variable importance, 11 independen
 * Amount Invoiced for Project (inv.mlsto) - all models
 * Business category of Client (Business) - moderately for all models
 * Project category (JD.Second) - ANOVA and cForest
-* Total Amount Invoiced from Past Client Jobs (clint.totinv) - randomForest
+* Total Amount Invoiced from Past Client Jobs (client.totinv) - randomForest
 * Discipline - ANOVA
 * position of main employee on the project (majority.pos) - newly created to cater for findings in ANOVA
 * Percent of Hours completed by the main employee on the project (pc.majpos) - cForest
