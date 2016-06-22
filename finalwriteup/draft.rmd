@@ -3,9 +3,9 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output:
+  html_document: default
   word_document:
     reference_docx: mystyles.docx
-  html_document: default
 bibliography: Library.bib
 ---
 
@@ -699,7 +699,7 @@ Linear Regression must be fed complete datasets but the case study data set only
 
 ```{r, echo=FALSE, fig.height=5}
 
-plot.pvals = readRDS("report_data/AOV_varimp_plot.rds")
+plot.pvals = readRDS("AOV_varimp_plot.rds")
 
 ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
@@ -732,10 +732,13 @@ The variables listed above had p-values below 0.05, meaning the null hypothesis,
 
 ### Random Forests
 
-The random forest algorithm imputes missing values, however this was not desirable for the early stage of variable selection - before modelling had commenced. Instead, a subset of complete data was used made up of variables with at least 2300 complete cases. Additionally, random forests cannot handle categorical variables with more than 53 categories which eliminated more variables. The resulting 'core' dataset contained 16 variables and 2364 cases. Because each run of the algoritm is slightly different, 10 algorithms were run, which each output the ranking of variables by importance. The mean ranking of each variable is summarised below: 
+The randomForest algorithm can process datasets with missing values, however it does so by automatically imputing missing values [@randomForest]. This was not desirable in the early stage of variable selection. Instead, the completeness of the variables were assessed and it was decided that all variables with at least 2300 overlapping complete cases would be chosen. Additionally, the random forest algorithm cannot process categorical variables with more than 53 categories. This eliminated more variables and the resulting 'core' dataset contained 15 variables and 2364 cases. Because of the random forest algorithm's known biases and limitations with numbers of categories, a briefer approach to variable importance analysis was taken in comparison to regression and cforests. 
+
+Each tree in a random forest is created with a bootstrapped training sample of the data. The random sampling means the results of each forest are slightly different. To cater for the variation in results, 10 forests were run and the mean rank of each variable was recorded. Variable importance output from a single forest is simply a ranked list of the variables where rank 1 indicates the most important variable:  
 
 ```{r, echo = FALSE}
 
+#dataset created in var_select.rmd
 rf.rank = readRDS("RF_var_rank_subbed.rds")
 kable(rf.rank, format = 'markdown')
 
@@ -743,65 +746,67 @@ kable(rf.rank, format = 'markdown')
 
 ### Cforest
 
-Cforests were also run with a core of 13 complete variables, and incomplete variables were given added to the core variables individually in separate runs. Variables with an unlimited number of c ategories can be included in cforests which is an advantage over randomForests. Cforests compute a variable importance ranking which is a number relating to the reduction in error the variable provides. The variable importance rankings for the core 13 variables are as follows:
+Cforests were also run with the core 15 complete variables with 2364 complete cases. Incomplete variables were added to the core variables individually, each with their own separate run. Variables with an unlimited number of categories can be included in the cForest function which is an advantage over randomForests [@Hothorn2006; Strobl2007; Strobl2008]. Cforests compute a variable importance ranking which is a number relating to the reduction in error the variable provides (similar method to the permutation importance in random forests). The variable importance rankings for the core 15 variables are as follows:
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, fig.depth = 5}
 
 cfor.varimp = readRDS("cfor_varimp.rds")
+# how did pc.director sneak in there?
+cfor.varimp = cfor.varimp %>% filter(! var == "pc.director")
 
 ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
         theme(axis.text.x=element_text(angle=45,hjust=1)) +
         geom_bar(stat='identity') +
-        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance rankings of Complete Variables")
-
+        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance Rankings of Complete Variables")
 
 ```
 
 
-Some incomplete variables that were added one at a time ranked in the top 6 most important variables in their model:
+Four incomplete variables that were added indpendently ranked in the top 6 most important variables in their model:
 
 * Percent of Hours completed by the main employee on the project (pc.majpos)
 * Client id (code.client)
 * Client contact id (code.contact)
 * Project category (JD.Second)
 
+Once several methods of variable importance analysis have been completed, the separate results were rationalised and final variables were selected for the predictive models.
+
 ### Variable Selection Summary
 
-Based on the results of the three methods for variable importance, 11 independent variables were selected for the prediction modelling:
+Based on the results of the three methods for variable importance, 11 independent variables were selected for predictive modelling. They are listed in the table below along with the methods that highlighted each variable as important (randomForest = RF, cForest = CF):
 
-* Percent of hours completed by a professional level employee (pc.pro) -all models
-* Project timespan (timespan) - all models
-* Number of employees on Project (no.users) - all models
-* Amount Invoiced for Project (inv.mlsto) - all models
-* Business category of Client (Business) - moderately for all models
-* Project category (JD.Second) - ANOVA and cForest
-* Total Amount Invoiced from Past Client Jobs (client.totinv) - randomForest
-* Discipline - ANOVA
-* position of main employee on the project (majority.pos) - newly created to cater for findings in ANOVA
-* Percent of Hours completed by the main employee on the project (pc.majpos) - cForest
-* Billing Type (hourly vs. fixed fee) - advice of Case Study partner
+| Variable Description                                                 | ANOVA | RF | CF |
+|----------------------------------------------------------------------|-------|----|----|
+| % of Hours Completed by a Professional-level Employee                | x     | x  | x  |
+| Timespan                                                             | x     | x  | x  |
+| Number of Employees on Project                                       | x     | x  | x  |
+| Amount Invoiced for Project                                          | x     | x  | x  |
+| Business Category of Client                                          | x     | x  | x  |
+| Project Category                                                     | x     |    | x  |
+| Total Amount Invoiced from the Client - Past Jobs                    |       | x  |    |
+| Discipline                                                           | x     |    |    |
+| Position of Main Project Employee - new variable from ANOVA findings | x     |    |    |
+| % of Hours by Main Project Employee                                  |       |    | x  |
+| Billing Type (requested by case study company)                       |       |    |    |
 
 
-
+The variables above were used to build the predictive models and the results are summarised in the following two sections.
 
 ## Model Results
 
-Once the independent variables were narrowed down to a succinct list, the prediction models were tested. First prediction return per dollar as a regression problem was trialled followed by prediction profit or loss as a binary classification problem.
+Once the explanatory variables were narrowed down to a succinct list, the predictive models were built and tested. First, prediction of return per dollar as a regression problem was attempted followed by prediction of profit or loss as a binary classification problem. linear regression, random forests and boosted tree methods were applied to both problems and had varying levels of success.
 
-### Regression Model
+### Regression Models
 
 #### ANOVA
 
-In ANOVA, linear relationships are tested and normal distributions are assumed for numeric variables. Therefore, where appropriate, numeric variables were normalised via log or cube root transformations. Trials of various variable interactions revealed that interactions between:
+In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. Since linear relationships are being tested, continous variables are assumed to be normally distributed. Therefore, where appropriate, numeric variables were normalised via logarithmic or cube root transformations. Trials of various variable interactions revealed that interactions between:
 
-* total amount invoiced 
-* percent of job by professional level employee
-* total amount invoiced 
-* client id
-* project category 
-* number of employees on the job
+* total amount invoiced * percent of job by professional level employee
+* total amount invoiced * client id
+* project category * number of employees on the job
 
-were statistically significant. Two types of ANOVA trials were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms. The second method was developed to get around the problem that when all variables are combined, only 15% of the projects have complete data. Therefore the ANOVA test would eliminate 85% of the data and imputing the data was not desirable at an early stage due to the amount of missing categorical data. The second method would choose a project (row in the dataset) randomly, and this case would have certain columns complete. The data was then filtered for all jobs that had at least the same columns complete, and the ANOVA test was run on this reduced set. This method allowed variables with a larger proportion of missing data to be analysed while not attempting to analyse all variables at once. 
+were statistically significant. Two types of ANOVA models were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms. The second method was developed to overcome the problem of missing data. When all variables were combined, only 15% of the project cases had complete data and therefore the ANOVA test would eliminate 85% of the data upon execution. Imputing the missing data was not desirable at that stage due to the volume of missing categorical data and an inability to ensure the imputed data was not hampering results. The second method was a more complicated procedure that required dozens of models but allowed variables with missing data to be included. First, a project was randomly selected (a row in the dataset) which would have certain variables complete. The data was then filtered for all projects that had at least the same columns complete, and an ANOVA model was built on this reduced data set. This method allowed variables with a larger proportion of missing data to be included while not attempting to analyse all variables at once. 
 
 ```{r insert_data}
 # load function for determining number of required samples for 0.8 power
@@ -836,7 +841,7 @@ results.A2 <- dplyr::filter(results.A2, diff>-15)
 ```
 
 
-To assess the results of the ANOVA models, the root mean squared error (RMSE) of the return per dollar predictions were compared against the RMSE if all predictions were simply the mean of return per dollar for all projects. Then, the RMSE's from model predictions were subtracted from RMSE's using mean return per dollar. If the models were effective, RMSE should be lower for model predictions, and the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only. Note, only `r n.samples(data = results.A2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+The results of the ANOVA models were assessed using the root mean squared error (RMSE) statistic of the return per dollar predictions. These were compared against a baseline RMSE which was the RMSE of the predicted return per dollar values against the mean return per dollar of all projects. Then, the RMSE from each model was subtracted from the RMSE using mean return per dollar. If the models were effective, the RMSE should be lower for ANOVA model predictions, so the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only (method 1 using ANOVA). Note, only `r n.samples(data = results.A2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
 
 ```{r, echo = FALSE}
 
@@ -847,7 +852,7 @@ results.core %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + ge
 
 ```
 
-A student t test indicates the difference is significantly above 0 with a p-value of `r t.test(results.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of return per dollar over using the mean return per dollar to a statistically significant degree. However, the mean difference is only $`r mean(results.core$diff) %>% format(digits = 1)`. Furthermore, the mean error in return per dollar is $`r mean(results.core$final.RMSE) %>% format(digits = 2)` which is unacceptably high. 
+A student t-test indicates the difference is significantly above 0 with a p-value of `r t.test(results.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of return per dollar over using the mean return per dollar to a statistically significant degree. However, the mean difference is only \$`r mean(results.core$diff) %>% format(digits = 1)`. Furthermore, the mean RMSE in return per dollar is \$`r mean(results.core$final.RMSE) %>% format(digits = 2)` which is unacceptably high. Almost 50 cents is a large mean error when the value is estimating the profit from \$1 spent.
 
 Results from 100 models using method 2, which captures incomplete variables, are shown below.
 
@@ -860,9 +865,9 @@ results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geom
 
 ```
 
-A student t test indicates the difference is not significantly above 0 which is clear from the plot (p-value = `r t.test(results.A2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 3)`). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the dataset was `r results.core$test.nrow[1]*4` for the core variables but averaged only `r (mean(results.A2$test.nrow)*4) %>% round(0)` for the sampled set of all variables. Regression results from ANOVA models were poor - randomForest was trialled next.
+A student t-test indicates the difference is not significantly above 0 which is clear from the plot (p-value = `r t.test(results.A2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 3)`). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the dataset was `r results.core$test.nrow[1]*4` for the core variables but averaged only `r (mean(results.A2$test.nrow)*4) %>% round(0)` for the sampled set of all variables. Regression results from ANOVA models were poor - the randomForest algorithm was trialled next.
 
-#### randomForest
+#### Random Forest
 
 ```{r load_rf_results}
 results.rf.core = readRDS("reg_rf_core.rds")
@@ -873,8 +878,7 @@ results.rf2 = readRDS("reg_rf.rds")
 
 ```
 
-
-Numeric predictions of return per dollar were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run. The randomForest parameters were first tuned using the caret package and found optimal values mtry = 5 and ntree = 500 [@caret]. A density plot of 50 models of the core variables using different train/test sets is shown below. The x-axis measures the decrease in RMSE obtained by using the randomForest model over simply the mean of all project return per dollar values. Note, only `r n.samples(data = results.rf2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+Numeric predictions of return per dollar were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run (similar to the two ANOVA methods). The randomForest parameters were first tuned using the caret package and optimal values mtry = 5 (the number of randomly selected explanatory variables to consider at each split) and ntree = 500 (the number of decision trees to ensemble) were determined [@caret]. A density plot of 50 models of the core variables using different training/test sets is shown below. The plot was created using the same procedure used in the ANOVA models where the x-axis measures the RMSE obtained by using the randomForest model subtracted from the RMSE using the mean of all project return per dollar values. Note, only `r n.samples(data = results.rf2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
 
 ```{r, echo = FALSE}
 
@@ -885,7 +889,7 @@ results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() +
 
 ```
 
-This plot shows a mean return per dollar RMSE improvement of $`r mean(results.core$diff) %>% format(digits = 1)` which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is `r t.test(results.rf.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)` and is rejected. Results from 100 randomForest models using method 2 are shown below:
+This plot shows a mean return per dollar RMSE improvement of \$`r mean(results.core$diff) %>% format(digits = 1)` which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is `r t.test(results.rf.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)` and could be rejected. Results from 100 randomForest models using method 2 are shown below:
 
 ```{r, echo = FALSE}
 
@@ -896,7 +900,7 @@ results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+ geom_histogram() + geo
 
 ```
 
-The p-value for these models and the afore-mentioned null hypothesis is `r t.test(results.rf2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. The null hypothesis is rejected which contrasts the parallel ANOVA test. On the right hand side, of the graph above, the RMSE is improved by almost \$0.20 but also worsens by over \$0.10 per dollar. A density plot of the RMSE for the models is shown below:
+The p-value for these models and the afore-mentioned null hypothesis is `r t.test(results.rf2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. The null hypothesis was rejected which contrasted the matching ANOVA test. On the right hand tail of the graph above, the RMSE is improved by almost \$0.20 but also worsens by over \$0.10 per dollar on the left tail. A density plot of the RMSE for the models is shown below:
 
 ```{r, echo = FALSE}
 
@@ -906,17 +910,26 @@ results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+ geom_histogram()
 
 ```
 
-Although the randomForest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for return per dollar was wide and the mean was high ($`r mean(results.rf2$final.RMSE) %>% round(2)`).
+Although the randomForest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for return per dollar was wide and the mean RMSE was high (\$`r mean(results.rf2$final.RMSE) %>% round(2)`).
 
-The two regression models predicting return per dollar resulted in high mean RMSE's ranging from $`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. Because of the poor results, further development of regression models was postponed in favour of investiation of binary classification models. The classification is a simpler task than regression because it requires less precision.
+The two regression models predicting return per dollar resulted in high mean RMSE's ranging from \$`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. Because of the poor results, further development of regression models was deffered in favour of investiation of binary classification models. Binary classification is a simpler task than regression because it requires less precision. The challenge is how to gainfully apply the results to the business scenario.
 
-### Classification Models
+### Binary Classification Models
 
-#### Initial Trial of five Methods
+The cost estimation problem analysed in the literature review had been converted to a profitability estimation problem and was finally converted to a binary profit/loss prediction. The predictive formula was re-structured so that the 11 explanatory variables predicted a new response variable: profitable (or not). The original return per dollar response variable was transformed by converting aLl 'return per dollar' values less than or equal to zero to 'loss making' jobs and 'return per dollar' values greater than 1 became 'profitable' jobs. The following section summarises results from the trialled binary classification methods.
 
-To begin analysis, all prediction methods were trialled using as much data as possible for each method. Boosted trees and Naiive bayes algorithm are able to process data with missing values, so all data could be used. Logistic regression, randomForest and Bayesian Networks require complete datasets so a subset of complete data was used for these. It was expected that Boosted trees would perform best as they are powerful and can use incomplete data. For this reason, 4 x 5 fold runs of each method were performed (20 models total for each method) and statistically compared against boosted trees. A power calculation was used to calculate the number of runs required for a statistical power of 0.8.
+#### Initial Trial of Five Methods
 
-The models were compared using the Area under the curve (AUC) test statistic calculated from the Reciever Operating Curve (ROC) as this gives a good indication of model performance under binary classification [@pROC][@Putler2012]. An example plot of five ROC's resulting from five fold cross validation models using the boosted tree algorithm is shown below:
+The five prediction methods, Boosted Trees, Naive Bayes, Logistic Regression, Random Forests and Bayesian Networks, were intially trialled without imputing data, using the maximum amount of data possible depending on the method. Boosted Trees and Naiive Bayes are able to process data with missing values, so all data could be input [@gbm; @e1071]. Logistic Regression, Random Forest and Bayesian Networks require datasets without missing values so a subset of complete data was used for these. It was expected that Boosted Trees would perform best as they are known to have powerful predictive capabilities and can use incomplete data. For this reason, 4 x 5-fold runs of each method were performed (20 models each) and statistically compared against Boosted Trees' results. A power calculation was then used to calculate the number of runs required for a statistical power of 0.8.
+
+The models were compared using the AUC test statistic calculated from the ROC as this gives a good indication of model performance under binary classification [@pROC][@Putler2012]. An example plot of five ROC's built from 5-fold cross validation using the boosted tree algorithm is shown below.
+
+Before the plot could be made, the Boosted Tree algorithm parameters were tuned to optimise the AUC outcomes. The caret package was used for this and the tuned parameters are summarised below [@caret]:
+
+* shrinkage = 0.001
+* number of trees = 10,000
+* minimum terminal node size = 20
+* maximum tree depth = 5
 
 ```{r}
 # image below generated from file rf_log_naiive_auc.rmd
@@ -929,15 +942,9 @@ The models were compared using the Area under the curve (AUC) test statistic cal
 [@pROC]
 
 
-* Boosted trees first tuned using caret package [@caret]:
-* shrinkage = 0.001
-* no trees = 10000
-* min terminal node size = 20
-* max tree depth = 5
+In the plot above, the average AUC was 0.763 which indicated that altogether, taking into account a range of possible thresholds, the model was predicting profit/loss better than random chance (AUC = 0.5) but not perfectly (AUC = 1). 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. Bayesian Networks and Naiive Bayes did not perform as well and the power calculation revealed only 5 and 8 models were required respectively. Bayesian Networks were then dropped as Naiive Bayes perfomed slightly better and were faster and simple enough to work as a baseline comparison to the higher-performing methods.
 
-In this example, the average area under the curve (AUC) was 0.763 indicating that on the whole, taking into account all possible thresholds, the model is predicting profit/loss better than random chance (AUC = 0.5) but not perfectly (AUC = 1). 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the boosted tree results. The comparison of logistic regression required 100 models, while randomForest required over 700 because the AUC distributions were close. Bayesian Networks and Naiive Bayes did not perform as well and the power calculation revealed only 5 and 8  models were required to achieve a power of 0.8 respectively. Bayesian Networks were then dropped as Naiive Bayes perfomed slightly better and was fast and simple enough to work well as a baseline comparison to the higher performing methods.
-
-It was finally decided that randomForest and boosted trees would likely not be distinguishable since the power calculations indicate 700 models are required. hence 100 models of each method were created as required for logistic regression.  10 fold cross validation was performed 10 times. The violin plot below summarises the AUC values from each method. The 'violins' are coloured according to whether the distributions significantly vary to boosted trees using a critical value of 0.05.
+It was finally decided that randomForest and Boosted Trees would likely not be distinguishable since the power calculation indicated that 700 models were required. Hence, 100 models of each method were built as calculated for logistic regression. 10-fold cross validation was performed 10 times. The violin plot below summarises the AUC values produced by each method. The 'violins' are coloured according to whether the distributions significantly vary to boosted trees using a critical value of 0.05.
 
 ```{r reduced_violin}
 
@@ -975,7 +982,9 @@ ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) +
 ```
 
 
-The performance of logistic regression and random forest algorithms cannot be statistically differntiated from boosted trees. The same process was repeated using an imputed dataset. Imputation was done using the MICE package and allowed all algorithms to be trialled with a full dataset. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for random forest unless over 450,000 models were made.
+The AUC performance of Logistic Regression and the randomForest algorithms cannot be statistically differentiated from Boosted Trees. 
+
+Next, data imputation methods were trialled which would make the complete data set available to Logistic Regression and randomForests. It was possible this would improve AUC results and the same process as above could be repeated. Imputation was done using the MICE method with randomForest imputation [@mice]. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for random forest unless over 450,000 models were made.
 
 ```{r mice_violin}
 
@@ -1009,6 +1018,7 @@ ggplot(mice.totAUC, aes(x= factor(L1), y= value)) +
 ```
 
 
+Boosted Trees, Logistic Regression, and randomForest all performed significantly better than the baseline algorithm, Naive Bayes, however none outperformed boosted trees. The results from each method using reduced data sets (to cater for missing values) alongside results using imputed complete data are shown below. 
 
 ```{r all_violin}
 
@@ -1036,7 +1046,7 @@ ggplot(combine.micer, aes(x= factor(L1), y= value)) +
         
 ```
 
-Imputed data tightens the distribution of randomForest substantially but slightly spreads the distribution of Boosted trees and logistic regression. Since the methods using imputed data have a similar performance, slightly tighter distributions of results and use more data, models using imputed data was used when developing blended models of all methods.
+Results using imputed data tightened the distribution of randomForest AUC output substantially but slightly increased the distribution spread of Boosted Trees and Logistic Regression. Since the methods using imputed data performed similarly, substantially tightened the distribution of randomForest results, and made use of more data, the imputed data models were propogated forward to the development of blended models.
 
 #### Blended Models
 
@@ -1242,7 +1252,7 @@ The models output a 'probability' between 0 and 1 that each project will be a lo
 ```{r power_profit_curve}
 
 # How to achieve statistical power of 0.8?
-finance.plot = readRDS("report_data/plot_finance_100.rds" )
+finance.plot = readRDS("plot_finance_100.rds" )
 fin.summary.1 = finance.plot %>% group_by(threshold, method) %>% 
         summarise_each(funs(mean_profit_ratio = round(mean(.), 1), 
                             sd_prof_ratio = round(sd(.), 1)),
@@ -1279,7 +1289,7 @@ Using this logic, if the threshold was 0, all projects were rejected and total p
 
 ```{r profit_curve, fig.depth = 10}
 
-finance.plot = readRDS("report_data/plot_finance.rds" )
+finance.plot = readRDS("plot_finance.rds" )
 
 ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) + 
         geom_point(alpha = 0.1, shape = 16) + 
@@ -1474,7 +1484,7 @@ These results make a significant contribution to literature in this area as they
 There are several aspects of this work that should be investigated further including how well managers can estimate project input variables before a project is won. Particularly, estimations of the timespan, team size, total invoiced amount, and percentage of hours completed by professionals should be tested. These initial estimates could also be included in the each project's data entry for future analysis. Finally, research into user uptake of the model should be assessed. It is likely that in order to establish a manager's trust with the algorithm, additional model output will be required such as partial dependency plots from the boosted trees. Also, a 'nearest neighbour' algorithm could be run concurrently to show the manager outcomes of past similar projects, which should align with the model's probabiltiy prediction. Overall, this project has successfully demonstrated a blended statistical and machine learning model has the potential to aid manager's in rejecting loss-making projects to improve their business's profitability. 
 
 
-
+# References
 
 
 

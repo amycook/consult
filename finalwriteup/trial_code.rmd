@@ -26,3 +26,21 @@ $$
 
 * $project\ profit = total\ invoiced\ amount - cost\ from\ recorded\ employee\ hours$
 * $return\ per\ dollar = \frac{project\ profit}{cost\ from\ hours}$
+
+* total amount invoiced * percent of job by professional level employee
+* total amount invoiced * client id
+* project category * number of employees on the job
+
+| Variable Description                                                 | ANOVA | RF | CF |
+|----------------------------------------------------------------------|-------|----|----|
+| % of Hours Completed by a Professional-level Employee                | x     | x  | x  |
+| Timespan                                                             | x     | x  | x  |
+| Number of Employees on Project                                       | x     | x  | x  |
+| Amount Invoiced for Project                                          | x     | x  | x  |
+| Business Category of Client                                          | x     | x  | x  |
+| Project Category                                                     | x     |    | x  |
+| Total Amount Invoiced from the Client - Past Jobs                    |       | x  |    |
+| Discipline                                                           | x     |    |    |
+| Position of Main Project Employee - new variable from ANOVA findings | x     |    |    |
+| % of Hours by Main Project Employee                                  |       |    | x  |
+| Billing Type (requested by case study company)                       |       |    |    |
