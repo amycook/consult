@@ -647,7 +647,7 @@ In order to compare which models performed significantly better than others, an 
 
 Several research groups involved in the high profile data science competition, Netflix Prize, developed sophisticated methods of model stacking, otherwise known as ensemble methods or model blending [@Sill2009]. In this document, the term 'blending' will be used to avoid confusion with ensemble tree methods. The idea behind model blending is to combine predictions from several models derived from different methods that have different theoretical foundations. In this way, the strengths of each method can be combined. Historically, in statistics this was called model averaging and since the 1990's research has shown that averaging results from different methods provides better predictive accuracy than any single model [@Madigan1994]. New methods of model blending were developed for the Netflix Prize that applied sophisiticated machine learning techniques to big, messy data. The prize-winning solution was a complex blend of sub-blends which interacted results of individual models with the original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incremental improvements in predictive accuracy, but the computational cost of all the complex layers did not justify the benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project just a single layer of blending was trialled.
 
-Five blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, feature weighted linear stacking (FWLS), random forests, and boosted trees. The first two models are simply the average or weighted average of the three individual model predictions. The last three methods take advantage of potentially meaningful interactions between an individual model's predictions and meta-features (the original variables). For example, if the boosted tree model predicted profitability better than the other models for Water projects, the blending model would take advantage of this interaction. Boosted tree predictions would be weighted higher than the other model predictions for Water projects. 
+Six blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, a boosted tree model using individual model results only, feature weighted linear stacking (FWLS), random forests, and boosted trees. The first three models are simply the average, weighted average, of the three individual model predictions. The last three methods take advantage of potentially meaningful interactions between an individual model's predictions and meta-features (the original variables). For example, if the boosted tree model predicted profitability better than the other models for Water projects, the blending model would take advantage of this interaction. Boosted tree predictions would be weighted higher than the other model predictions for Water projects. 
 
 A simplified explanation of FWLS is as a linear regression where meta-features as well as model predictions from individual models are included as explanatory variables. Then, each meta-feature is interacted with each set of model results [@Sill2009]. A linear regression is performed to weight each term's contribution to the final predictive accuracy. Random forests and boosted trees were also used to blend meta-features with output from the best models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node determined by one variable is conditional upon the preceding split which was based on another variable and so on. 
 
@@ -1050,15 +1050,17 @@ Results using imputed data tightened the distribution of randomForest AUC output
 
 #### Blended Models
 
-Blended models combine the results of each well-performing individual model to create averaged or 'blended' predictions. In this case, the randomForest, boosted trees, and logistic regression models were chosen for blending. The simplest way of combing models is to average the probability results (a number between 0 and 1) of all three models. Feature Weight Linear Stacking (FWLS), randomForest and boosted trees were all tested as blending methods where the predictions from each of the three single models becomes an additional variable in a new model. Each model blending method has its own method of weighting the outcomes from the individual models as a function of the values in the original model. For example, for a certain discipline in the case study company, randomForests may predict the outcome best so this is weighted higher for those cases. For this reason, a variable importance study was conducted again to simplify the models.
+Blended models combine the predictions from each higher-performing individual model to create averaged or 'blended' predictions. In this case, the randomForest, Boosted Trees, and Logistic Regression models were chosen and as outlined in the method, 6 techniques for model blending were trialled ranging from simple to complex. The simplest way was to average the probability output (a number between 0 and 1) of all three models. The next two simplest methods were to build a logistic regression and boosted tree from the three model outputs only. Feature Weighted Linear Stacking (FWLS), randomForest and boosted trees were also tested as blending methods where the predictions from each model became additional variables to the original explanatory variables (meta-features). The model predictions were interacted with each original variable so that models that performed more strongly under certain meta-feature conditions could be weighted as such. Some meta-features may have been dispensable in the blending process, so in order to maintain simple comprehensible models, a variable importance study was conducted again.
 
 ##### Variable Selection: Blended Model
+
+Variable assessments were completed and compared using cForests, Logistic Regression, randomForests and Boosted Trees. Cforests have the favourable characteristic of being unbiased while the remaining methods were used for the blending process. The results are summarised in the sections below.
 
 *Variable Importance: cforest*
 
 ```{r}
 
-cfor.varimp = readRDS("cfor_blend_varimp.rds")
+cfor.varimp = readRDS("report_data/cfor_blend_varimp.rds")
 
 ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
         theme(axis.text.x=element_text(angle=45,hjust=1)) + 
@@ -1068,12 +1070,13 @@ ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
 
 ```
 
+The cForest highlighted the results from the Logistic Regression and Boosted Trees as the most important variables. This was followed by the results from the randomForest model and the project team size, project category, total invoiced amount (category) and timespan (category). 
 
 *Variable Importance: Logistic Regression*
 
 ```{r}
 
-log.varimp = readRDS("logblend.rds")
+log.varimp = readRDS("report_data/logblend.rds")
 
 log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
 colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
@@ -1094,17 +1097,16 @@ log.varimp$rowname <- factor(log.varimp$rowname,
 
 ```
 
-Most significant variables (P value for coefficient < 0.05) are:
+The logistic regression found the F-statistics from the following variables were significant in rejecting the null hypothesis (p-value < 0.05):
 
 Interaction term between:
 
 * Discipline * results of logistic regression model
 * Discipline * results of boosted tree model
-* number of employees on a job * results of logistic regression model
+* team size for project * results of logistic regression model
 * Client Business type * results of boosted tree model
 
-
-Single variables that aren't in interaction terms:
+Single variables that were not also in interaction terms:
 
 * Total amount invoiced for the job
 * Timespan
@@ -1114,7 +1116,7 @@ Single variables that aren't in interaction terms:
 
 ```{r}
 
-rf.varimp = readRDS("rfblend.rds")
+rf.varimp = readRDS("report_data/rfblend.rds")
 rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
 rf.varimp = add_rownames(rf.varimp)
 rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
@@ -1130,13 +1132,13 @@ ggplot(data=rf.varimp, aes(x=rowname, y=MeanDecreaseAccuracy)) +
 
 ```
 
-Permutation importance by randomForest rates all three prediction models as most important followed by number of employees on a project, percent of hours done by the chief employee on the project, timespan, and project category.
+Permutation importance by randomForest rated all three prediction models as most important followed by team size for the project, percent of hours done by the chief employee on the project, timespan (category), project category, and client business type.
 
-*Variable Importance: boosted trees*
+*Variable Importance: Boosted Trees*
 
 ```{r}
 
-boost.varimp = readRDS("boostblend.rds")
+boost.varimp = readRDS("report_data/boostblend.rds")
 boost.varimp = add_rownames(boost.varimp)
 # order levels
 boost.varimp$rowname <- factor(boost.varimp$rowname,
@@ -1149,26 +1151,26 @@ ggplot(data=boost.varimp, aes(x=rowname, y=rel.inf)) +
         labs(title = "Boosted Trees variable importance: blend")
 
 ```
-Boosted trees ranks all three individual prediction models highest followed by Project category, Client Business type, and timespan.
+Boosted Trees ranked output from all three individual prediction models highest (Logistic Regression ranked highest) followed by Project category, Client Business type, and timespan (category).
 
 *Variable Importance Summary*
 
-Upon reviewing important variables ranked by each method of blended models, the following variables were deemed important by at least two methods and shall be used in the comparison of blended models:
+Upon reviewing important variables ranked by cForest and each method of model blending, the following variables were deemed important by at least two methods and were used in the development of blended models:
 
-* all three results of prediction models, particularly logistic regression
-* project category
-* Client Business type
-* Total Amount invoiced for a project
-* Number of employees on a project
+* All three results of prediction models, particularly logistic regression
+* Project category
+* Client business type
+* Total amount invoiced for a project (category)
+* Team size on a project
 * Timespan
 
 #### Comparison of Blended Models
 
-Three model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, and boosted trees. Furthermore, 3 simple model blending techniques were tested that used only the predictions of the three individual models as variables. These were averaging, a simple boosted tree, and a simple logistic regression. All six methods were compared against the original logistic regression predictions. Initially 100 train/test runs were performed for each method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
+Only three of the model blending techniques used the 8 variables determined above. These were FWLS, randomForest, and Boosted Trees. The remaining 3 techniques used only the predictions of the three individual models. All six methods were compared against the original logistic regression model. Initially 100 train/test runs were performed for each blending method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
 
-```{r, fig.height=10}
+```{r, fig.height=8}
 
-auc.list <- readRDS("blend_auc1.rds")
+auc.list <- readRDS("report_data/blend_auc1.rds")
 means = lapply(auc.list, mean) %>% unlist
 greater = means[means> means["orig.log"]] %>% names
 auc.melt = melt(auc.list)
@@ -1182,13 +1184,13 @@ ggplot(auc.melt, aes(x= factor(L1), y= value)) +
         theme(axis.text.x=element_text(angle=45,hjust=1)) +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 100 Blended Models of each Method") +
-        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
-                         "log" = "Logistic Regression", 
-                         "average" = "Simple Average",
-                         "orig.log" = "Orignal Logistic Regression", 
-                         "rf" = "Random Forest",
-                         "simp.boost" = "Simple Boosted Trees",
-                         "simp.log" = "Simple Logistic Regression")) +
+        scale_x_discrete(labels = c("boost" = "BT Blend", 
+                         "log" = "FWLS", 
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR", 
+                         "rf" = "RF Blend",
+                         "simp.boost" = "Simple BT Blend",
+                         "simp.log" = "Simple LR Blend")) +
         scale_fill_manual(values = c('navajowhite','sienna1'),
                           name = "Mean AUC greater \nthan Original Logistic \nRegression") +
         scale_colour_manual(values = c('navajowhite','sienna1'),
@@ -1196,16 +1198,22 @@ ggplot(auc.melt, aes(x= factor(L1), y= value)) +
 
 ```
 
-The plot shows that 4 methods could have a statistically significantly higher mean that the original logistic regression model: the simple blended logistic regression, the simple average, and the two boosted tree models. To achieve a power of 0.8, a two sample power analysis was performed on the 100 AUC results from each blended model against the AUC results from the original logistic regression. The boosted models required over 1000 samples while the simple averaged and simple logistic regression models required only 120. Therefore, 50 more iterations of the simple averaged and simple logistic models were performed since the boosted models results were not as promising.
+The above plot shows that 4 methods had a higher mean AUC than the original logistic regression model: 
+
+* the simple blended logistic regression 
+* the simple average 
+* and the two boosted tree models. 
+
+To achieve a power of 0.8, a two-sample power analysis was performed on the 100 AUC results from each blended model against the AUC results from the original logistic regression. The boosted models required over 1000 samples while the simple averaged and simple logistic regression models required only 120. Therefore, 50 more iterations of the simple averaged and simple logistic models were performed. The boosted tree models would not achieve a statistical power of 0.8 with only 150 samples when compared to the original logistic regression and were therefore dropped from the next stage of analysis.
 
 ```{r}
 #load results from 150 iterations
-auc.150 = readRDS("blend_auc150.rds")
+auc.150 = readRDS("report_data/blend_auc150.rds")
 
 ```
 
 
-The results of the 150 iterations are shown in the plot below. Simple model averaging results in a p-value of `r t.test(auc.150[['orig.log']], auc.150[['average']])$p.value %>% format(digits = 2) %>% as.numeric` while the simple logisitc regression blended model had a two-sample t.test p-value of `r t.test(auc.150[['orig.log']], auc.150[['simp.log']])$p.value %>% format(digits = 2) %>% as.numeric`.
+The results of the 150 iterations are shown in the plot below. Simple model averaging resulted in a p-value of `r t.test(auc.150[['orig.log']], auc.150[['average']])$p.value %>% format(digits = 2) %>% as.numeric` while the simple logisitc regression blended model had a two-sample t-test p-value of `r t.test(auc.150[['orig.log']], auc.150[['simp.log']])$p.value %>% format(digits = 2) %>% as.numeric`.
 
 ```{r, fig.width = 8, fig.height=10}
 
@@ -1229,9 +1237,9 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 150 Blended Models of Best Methods") +
         scale_x_discrete(labels = c( 
-                         "average" = "Simple Average",
-                         "orig.log" = "Orignal Logistic Regression",
-                         "simp.log" = "Simple Logistic Regression")) +
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR",
+                         "simp.log" = "Simple LR Blend")) +
         scale_fill_manual(values = c('navajowhite','sienna1'),
                           name = "Mean AUC significantly \ngreater than Original \nLogistic Regression") +
         scale_colour_manual(values = c('navajowhite','sienna1'),
@@ -1241,7 +1249,7 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
 ```
 
 
-Simple logistic regression and averaging the the results of the three individual models (logistic regression, boosted trees and random forests) give virtually the same distribution of results. As averaging the results of the models is simpler than logistic regression, this was adopted as the best model.
+The simple Logistic Regression blend and simple averaging of the individual models (logistic regression, boosted trees and random forests) gave virtually the same distribution of results, where both AUC distributions were signficantly greater than the original logistic regression model. The p-values from the two-sample t-tests were `r pvals$p_value[1]` and `r pvals$p_value[2]` for simple average and simple Logistic Regression methods respectively. It was encouraging that blended models produced higher AUC values than the original logistic regression model, however for the case study business, the real measure of success is the model's impact on the business' overall profits. It was not guaranteed higher AUC values directly related to improvements in profit so several methods, including original individual models as well as blended methods, were progressed to the profit analysis. 
 
 ### Bottom Line Analysis
 

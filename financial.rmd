@@ -282,7 +282,7 @@ if(.Platform$OS.type == 'windows'){
 }
 
 
-profit <- function(df = all10mice, method = c("average","simp.log","orig.log","orig.rf","orig.boost"), 
+profit <- function(df = all10mice, method = c("average","simp.log","simp.boost","orig.log","orig.rf","orig.boost"), 
                    seed = 300, 
                    k.folds = 5, # number of folds in initial model.blend generation
                    max.iter = 5, #max number of iterations from initial model.blend generation
@@ -320,9 +320,10 @@ profit <- function(df = all10mice, method = c("average","simp.log","orig.log","o
         df.blend = mutate(df.blend, norm.rf = rf^0.5)
         df.blend = mutate(df.blend, norm.boost = log(boost))
         
+        saveRDS(df.blend, "C:/Users/n9232371/Documents/github/consult/dfblend.rds")
         
         saveit <- iter.auc(mult = max.iter/k.folds.2, x.folds.iter = k.folds.2,
-                           methods = c("orig.log","average","simp.log", "orig.rf","orig.boost"),
+                           methods = c("orig.log","average","simp.boost", "simp.log", "orig.rf","orig.boost"),
                            df.iter = df.blend)
 
         dontknow = map(saveit, function(x) spread(x, iteration, pred))

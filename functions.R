@@ -204,7 +204,7 @@ assemble <- function(methods = c("log", "rf", "boost"), df.assem = all10mice, x.
 
 
 iter.auc <- function(mult =2, x.folds.iter = 5, 
-                     methods = c("orig.log","average",
+                     methods = c("orig.log","average","simp.boost",
                                  "simp.log", "orig.rf", "orig.boost"),
                      df.iter = all10.blend) {
         
@@ -241,6 +241,21 @@ iter.auc <- function(mult =2, x.folds.iter = 5,
                         
                         pred <- predict(fit, test, type = "response")
                         pred.list[["simp.log"]] = rbind(pred.list[["simp.log"]],
+                                                        data.frame("index" = folds[[k]],
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                        
+                }
+                
+                if ("simp.boost" %in% methods) {
+                        print("simp.boost")
+                        fit <- gbm(b.rpdol ~ norm.log + norm.rf + norm.boost, data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 6,
+                                   n.minobsinnode = 10)
+                        
+                        pred <- predict(fit, test, n.tree = 6000, type = "response")
+                        pred.list[["simp.boost"]] = rbind(pred.list[["simp.boost"]],
                                                         data.frame("index" = folds[[k]],
                                                                    "pred" = pred,
                                                                    "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
