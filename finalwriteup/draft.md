@@ -1,13 +1,6 @@
----
-title: "draft 1"
-author: "Amy Cook"
-date: "Tuesday, July 07, 2015"
-output:
-  html_document: default
-  word_document:
-    reference_docx: mystyles.docx
-bibliography: Library.bib
----
+# draft 1
+Amy Cook  
+Tuesday, July 07, 2015  
 
 
 
@@ -652,7 +645,7 @@ To create the best possible model, only important variables were selected in ord
 
 Linear Regression must be fed complete datasets but the case study data set only had a core set of 13 complete variables (including the response variable). If an incomplete variable was added to the core variables, the 'complete' data set would shrink to the size of the incomplete variable. If another incomplete variable was added, the complete set of data would shrink again. Therefore, to make the most of the available data, each incomplete variable was added to the core variables one at a time, where a linear regression model was built for each. That meant a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F statistic of each variable is plotted below. The core variables recieved p-values in all 21 models, while 'add.variable' represents p-values for the additional incomplete variable in each model.
 
-![plot of chunk unnamed-chunk-3](figure/unnamed-chunk-3-1.png)
+![](draft_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 The ANOVA models indicated that the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the null hypothesis:
 
@@ -702,7 +695,7 @@ Each tree in a random forest is created with a bootstrapped training sample of t
 
 Cforests were also run with the core 15 complete variables with 2364 complete cases. Incomplete variables were added to the core variables individually, each with their own separate run. Variables with an unlimited number of categories can be included in the cForest function which is an advantage over randomForests [@Hothorn2006; Strobl2007; Strobl2008]. Cforests compute a variable importance ranking which is a number relating to the reduction in error the variable provides (similar method to the permutation importance in random forests). The variable importance rankings for the core 15 variables are as follows:
 
-![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png)
+![](draft_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
 
 Four incomplete variables that were added indpendently ranked in the top 6 most important variables in their model:
@@ -756,13 +749,13 @@ were statistically significant. Two types of ANOVA models were run. The first us
 
 The results of the ANOVA models were assessed using the root mean squared error (RMSE) statistic of the return per dollar predictions. These were compared against a baseline RMSE which was the RMSE of the predicted return per dollar values against the mean return per dollar of all projects. Then, the RMSE from each model was subtracted from the RMSE using mean return per dollar. If the models were effective, the RMSE should be lower for ANOVA model predictions, so the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only (method 1 using ANOVA). Note, only 18 samples (models) were required for a statistical power of 80% [@pwr].
 
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6-1.png)
+![](draft_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
 
 A student t-test indicates the difference is significantly above 0 with a p-value of 8.9e-21. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of return per dollar over using the mean return per dollar to a statistically significant degree. However, the mean difference is only \$0.04. Furthermore, the mean RMSE in return per dollar is \$0.49 which is unacceptably high. Almost 50 cents is a large mean error when the value is estimating the profit from \$1 spent.
 
 Results from 100 models using method 2, which captures incomplete variables, are shown below.
 
-![plot of chunk unnamed-chunk-7](figure/unnamed-chunk-7-1.png)
+![](draft_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
 
 A student t-test indicates the difference is not significantly above 0 which is clear from the plot (p-value = 1). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the dataset was 2364 for the core variables but averaged only 876 for the sampled set of all variables. Regression results from ANOVA models were poor - the randomForest algorithm was trialled next.
 
@@ -772,15 +765,15 @@ A student t-test indicates the difference is not significantly above 0 which is 
 
 Numeric predictions of return per dollar were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run (similar to the two ANOVA methods). The randomForest parameters were first tuned using the caret package and optimal values mtry = 5 (the number of randomly selected explanatory variables to consider at each split) and ntree = 500 (the number of decision trees to ensemble) were determined [@caret]. A density plot of 50 models of the core variables using different training/test sets is shown below. The plot was created using the same procedure used in the ANOVA models where the x-axis measures the RMSE obtained by using the randomForest model subtracted from the RMSE using the mean of all project return per dollar values. Note, only 45 samples (models) were required for a statistical power of 80% [@pwr].
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8-1.png)
+![](draft_files/figure-html/unnamed-chunk-8-1.png)<!-- -->
 
 This plot shows a mean return per dollar RMSE improvement of \$0.04 which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is 6.4e-24 and could be rejected. Results from 100 randomForest models using method 2 are shown below:
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9-1.png)
+![](draft_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
 The p-value for these models and the afore-mentioned null hypothesis is 0.00013. The null hypothesis was rejected which contrasted the matching ANOVA test. On the right hand tail of the graph above, the RMSE is improved by almost \$0.20 but also worsens by over \$0.10 per dollar on the left tail. A density plot of the RMSE for the models is shown below:
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png)
+![](draft_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
 
 Although the randomForest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for return per dollar was wide and the mean RMSE was high (\$0.51).
 
@@ -814,19 +807,19 @@ In the plot above, the average AUC was 0.763 which indicated that altogether, ta
 
 It was finally decided that randomForest and Boosted Trees would likely not be distinguishable since the power calculation indicated that 700 models were required. Hence, 100 models of each method were built as calculated for logistic regression. 10-fold cross validation was performed 10 times. The violin plot below summarises the AUC values produced by each method. The 'violins' are coloured according to whether the distributions significantly vary to boosted trees using a critical value of 0.05.
 
-![plot of chunk reduced_violin](figure/reduced_violin-1.png)
+![](draft_files/figure-html/reduced_violin-1.png)<!-- -->
 
 
 The AUC performance of Logistic Regression and the randomForest algorithms cannot be statistically differentiated from Boosted Trees. 
 
 Next, data imputation methods were trialled which would make the complete data set available to Logistic Regression and randomForests. It was possible this would improve AUC results and the same process as above could be repeated. Imputation was done using the MICE method with randomForest imputation [@mice]. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for random forest unless over 450,000 models were made.
 
-![plot of chunk mice_violin](figure/mice_violin-1.png)
+![](draft_files/figure-html/mice_violin-1.png)<!-- -->
 
 
 Boosted Trees, Logistic Regression, and randomForest all performed significantly better than the baseline algorithm, Naive Bayes, however none outperformed boosted trees. The results from each method using reduced data sets (to cater for missing values) alongside results using imputed complete data are shown below. 
 
-![plot of chunk all_violin](figure/all_violin-1.png)
+![](draft_files/figure-html/all_violin-1.png)<!-- -->
 
 Results using imputed data tightened the distribution of randomForest AUC output substantially but slightly increased the distribution spread of Boosted Trees and Logistic Regression. Since the methods using imputed data performed similarly, substantially tightened the distribution of randomForest results, and made use of more data, the imputed data models were propogated forward to the development of blended models.
 
@@ -838,7 +831,7 @@ Blended models combine the predictions from each higher-performing individual mo
 
 *Variable Importance: cforest*
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png)
+![](draft_files/figure-html/unnamed-chunk-12-1.png)<!-- -->
 
 
 *Variable Importance: Logistic Regression*
@@ -863,13 +856,13 @@ Single variables that aren't in interaction terms:
 
 *Variable Importance: randomForest*
 
-![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png)
+![](draft_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
 Permutation importance by randomForest rates all three prediction models as most important followed by number of employees on a project, percent of hours done by the chief employee on the project, timespan, and project category.
 
 *Variable Importance: boosted trees*
 
-![plot of chunk unnamed-chunk-15](figure/unnamed-chunk-15-1.png)
+![](draft_files/figure-html/unnamed-chunk-15-1.png)<!-- -->
 Boosted trees ranks all three individual prediction models highest followed by Project category, Client Business type, and timespan.
 
 *Variable Importance Summary*
@@ -887,7 +880,7 @@ Upon reviewing important variables ranked by each method of blended models, the 
 
 Three model blending techniques were compared using the 8 variables determined above. These are FWLS, randomForest, and boosted trees. Furthermore, 3 simple model blending techniques were tested that used only the predictions of the three individual models as variables. These were averaging, a simple boosted tree, and a simple logistic regression. All six methods were compared against the original logistic regression predictions. Initially 100 train/test runs were performed for each method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
 
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
+![](draft_files/figure-html/unnamed-chunk-16-1.png)<!-- -->
 
 The plot shows that 4 methods could have a statistically significantly higher mean that the original logistic regression model: the simple blended logistic regression, the simple average, and the two boosted tree models. To achieve a power of 0.8, a two sample power analysis was performed on the 100 AUC results from each blended model against the AUC results from the original logistic regression. The boosted models required over 1000 samples while the simple averaged and simple logistic regression models required only 120. Therefore, 50 more iterations of the simple averaged and simple logistic models were performed since the boosted models results were not as promising.
 
@@ -896,7 +889,7 @@ The plot shows that 4 methods could have a statistically significantly higher me
 
 The results of the 150 iterations are shown in the plot below. Simple model averaging results in a p-value of 0.0019 while the simple logisitc regression blended model had a two-sample t.test p-value of 0.0021.
 
-![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
+![](draft_files/figure-html/unnamed-chunk-18-1.png)<!-- -->
 
 
 Simple logistic regression and averaging the the results of the three individual models (logistic regression, boosted trees and random forests) give virtually the same distribution of results. As averaging the results of the models is simpler than logistic regression, this was adopted as the best model.
@@ -914,24 +907,24 @@ The models output a 'probability' between 0 and 1 that each project will be a lo
 
 Using this logic, if the threshold was 0, all projects were rejected and total profit would equal 0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. Probability results from the two blended models as well as three individual models were tested and because the models require a training and testing set, the process was repeated 100 times with 20 x 5 fold cross validation models to achieve a statistical power of 0.8 (calculated after an initial run of 10 models). The plot below illustrates the results of each model at each threshold with a local polynomial regression line of best fit (loess) and a 95% confidence interval around the mean.
 
-![plot of chunk profit_curve](figure/profit_curve-1.png)
+![](draft_files/figure-html/profit_curve-1.png)<!-- -->
 
 The two blended models outperformed the individual models as shown in this table describing each models' optimal thresholds:
 
 
-| threshold|method     | mean_profit_ratio| sd_prof_ratio|
-|---------:|:----------|-----------------:|-------------:|
-|      0.55|average    |             108.8|           1.3|
-|      0.60|orig.boost |             103.4|           3.7|
-|      0.75|orig.log   |             102.9|           2.8|
-|      0.55|orig.rf    |             104.9|           3.6|
-|      0.60|simp.log   |             107.6|           3.0|
+ threshold  method        mean_profit_ratio   sd_prof_ratio
+----------  -----------  ------------------  --------------
+      0.55  average                   108.8             1.3
+      0.60  orig.boost                103.4             3.7
+      0.75  orig.log                  102.9             2.8
+      0.55  orig.rf                   104.9             3.6
+      0.60  simp.log                  107.6             3.0
 
 The average of the three individual models performed best with the highest mean profit ratio at 108.8% and the narrowed standard deviation at 1.3%. This means that for the blended average model, if all jobs above the probability threshold 0.55 were rejected, the profits would increase on average by 8.8% in comparison to historical profit data.
 
 For clarity, the plot for the average blended model is shown below:
 
-![plot of chunk av_profit_curve](figure/av_profit_curve-1.png)
+![](draft_files/figure-html/av_profit_curve-1.png)<!-- -->
 
 
 
@@ -962,7 +955,7 @@ Both ANOVA and randomForest models predicted at best within an average of $0.48 
 
 The RMSE can be evaluated in terms of the end-user's perspective (business manager who is proposing fees for new projects). There is a record of how previous projects have performed in terms of return per dollar. Refer below:
 
-![plot of chunk unnamed-chunk-21](figure/unnamed-chunk-21-1.png)
+![](draft_files/figure-html/unnamed-chunk-21-1.png)<!-- -->
 
 The 95% confidence interval for this data is $-0.65 to $1.43. If a project returns $0 for every dollar spent (return per dollar = $0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the return per dollar is -$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the return per dollar is $1, the project has earned double what it cost to perform. If predictions have an average return per dollar error of $0.50, this represents an error in revenue of half what the project cost to complete. Clearly, this is not informative enough to bring into business decision making processes. 
 
@@ -994,7 +987,7 @@ The logistic regression blending model did indeed weight predictions from the or
 
 
 
-The blended models significantly (?) outperformed individual models which was expected given the two blended models' AUC results were significantly higher than the original logistic regression results (which were in line with random forests' and boosted trees' results). The simple average of logistic regression, random forests, and boosted trees results produced a better profit curve than a logistic regression of the same three variables.  The model produced a 8.8% increase in profit by rejecting jobs with a probability of loss over 0.55. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$8.8 &times; 10<sup>4</sup> by rejecting all jobs with a probability higher than 0.55. In the data, projects assigned a probability higher than 0.55 represent only 4.2% of all projects.
+The blended models significantly (?) outperformed individual models which was expected given the two blended models' AUC results were significantly higher than the original logistic regression results (which were in line with random forests' and boosted trees' results). The simple average of logistic regression, random forests, and boosted trees results produced a better profit curve than a logistic regression of the same three variables.  The model produced a 8.8% increase in profit by rejecting jobs with a probability of loss over 0.55. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$8.8\times 10^{4} by rejecting all jobs with a probability higher than 0.55. In the data, projects assigned a probability higher than 0.55 represent only 4.2% of all projects.
 
 Alternative strategies exist for how to deal with projects that are marked with a probability of loss greater than 0.55. For example, contracts for these projects could be changed to hourly rate contracts without exceptions. This means that each hour booked on the project will definitely be charged to the client for each stage of the project. Another example would be to increase fixed fees for projects above the threshold by a nominal percentage. However, this method seems less practical as the case study projects above 0.55 would need to increase fees by 46% in order to generate a 15% profit. A proposed fee increase of that magnitude may not be as acceptable as an hourly rate contract depending on the project and client. Contracts could be adjusted in many other creative ways to reduce risk in high probability projects, and the threshold of 0.55 was optimised based on the accept/reject strategy. Different courses of actions could be developed for specific clients or project sizes via analysis of threshold scenarios.    
 
