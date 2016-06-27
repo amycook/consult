@@ -110,10 +110,9 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
 # perform 5-fold cross validation on train set to create complete train set of predictions for a method
 # output is a vector of predictions for the method
 
-full.predict <- function(df.pred = all10mice, method = "log", x.folds = 5, manual.seed = 100){
+full.predict <- function(df.pred = all10mice, method = "log", x.folds = 5){
         
         #set up 10 fold cv using caret function
-        set.seed(manual.seed)
         folds <- createFolds(df.pred$f.rpdol, k = x.folds, list = T, returnTrain = F)
         #now have folds[[1]] through folds[[10]] list of rows to exclude
         
@@ -176,36 +175,42 @@ full.predict <- function(df.pred = all10mice, method = "log", x.folds = 5, manua
         
 }
 
-#assemble dataset with individual model results as columns
+# assemble dataset with individual model results as columns
+# stores columns of original methods results in a list - 'iterations' long
 assemble <- function(methods = c("log", "rf", "boost"), df.assem = all10mice, x.folds.assem = 5,
-                     manual.seed.assem = 100){
+                     iterations = 100){
         
-        joined = NULL
+        joined = vector("list", iterations)
         
+        for(n in 1:iterations){
+        
+                print(
+                        paste("n =", n, "of", iterations,"\n", sep = ' ') %>% cat()
+                )
+                
         #create empty vectors  - one for each method
         for(i in seq_along(methods)){
-                temp = full.predict(df = df.assem, method = methods[i], x.folds = x.folds.assem,
-                                    manual.seed = manual.seed.assem)
-                if(is.null(joined)){
-                        joined = temp
+                temp = full.predict(df.pred = df.assem, method = methods[i], x.folds = x.folds.assem)
+                if(is.null(joined[[n]])){
+                        joined[[n]] = temp
                 } else{
-                        joined = full_join(joined, temp)
+                        joined[[n]] = full_join(joined[[n]], temp)
                 }
                 
         }
+                
+        }
         
-        df.blend = full_join(df.assem %>% mutate(rown = 1:nrow(df.assem)), joined, 
-                                by = c('rown'='rownames'))
-        df.blend <- df.blend %>% select(-rown)
-        
-        return(df.blend)
+        return(joined)
         
 }
 
+# testing <- assemble(methods = c("log", "rf", "boost"), df.assem = df, x.folds.assem = 5,
+#                     iterations = 2)
 
 iter.auc <- function(mult =2, x.folds.iter = 5, 
-                     methods = c("orig.log","average","simp.boost",
-                                 "simp.log", "orig.rf", "orig.boost"),
+                     methods = c("orig.log","average","simp.boost","FWLS","comp.rf",
+                                 "simp.log", "orig.rf", "orig.boost","comp.boost"),
                      df.iter = all10.blend) {
         
         #create test and train set: 0.75/0.25
@@ -222,7 +227,6 @@ iter.auc <- function(mult =2, x.folds.iter = 5,
         #now have folds[[1]] through folds[[10]] list of rows to exclude
         if(mult > 1){
                 for(k in 2:mult){                                
-                        set.seed(sample(1:1000,1))
                         folds.temp = createFolds(df.iter$f.rpdol, k = x.folds.iter, list = T, returnTrain=F)
                         folds = append(folds, folds.temp)
                 }
@@ -302,6 +306,47 @@ iter.auc <- function(mult =2, x.folds.iter = 5,
                                                                    "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
                 }
                 
+                if ("FWLS" %in% methods) {
+                        print("FWLS")
+                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + b.inv.log*norm.log + b.inv.log*norm.rf + Business*norm.boost,
+                                   data = train,
+                                   family = binomial())
+                        pred <- predict(fit, test, type = "response")
+                        pred.list[["FWLS"]] = rbind(pred.list[["FWLS"]],
+                                                        data.frame("index" = folds[[k]],
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                }
+                
+                if ("comp.boost" %in% methods) {
+                        print("comp.boost")
+                        fit <- gbm(b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost, 
+                                   data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 3,
+                                   n.minobsinnode = 10)
+                        
+                        pred <- predict(fit, test, n.tree = 6000, type = "response")
+                        pred.list[["comp.boost"]] = rbind(pred.list[["comp.boost"]],
+                                                        data.frame("index" = folds[[k]],
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                }
+                
+                if ("comp.rf" %in% methods) {
+                        print("comp.rf")
+                        fit <- randomForest(f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost,
+                                            data = train, mtry = 3, 
+                                            ntree = 1000, importance = TRUE
+                        )
+                        pred <- predict(fit, test, type = "prob")
+                        pred <- pred[, 2]
+                        pred.list[["comp.rf"]] = rbind(pred.list[["comp.rf"]],
+                                                        data.frame("index" = folds[[k]],
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                }
+                
                 
                 #print AUC's
                 cat(k, " ")
@@ -312,10 +357,10 @@ iter.auc <- function(mult =2, x.folds.iter = 5,
         
 }
 
-saveit <- iter.auc(mult =2, x.folds.iter = 5,methods = c("orig.log","average","simp.log"),
-                     df.iter = all10.blend)
+# saveit <- iter.auc(mult =2, x.folds.iter = 5,methods = c("orig.log","average","simp.log"),
+#                      df.iter = all10.blend)
 
-dontknow = map(saveit, function(x) spread(x, iteration, pred))
+# dontknow = map(saveit, function(x) spread(x, iteration, pred))
 
 
 

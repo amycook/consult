@@ -283,7 +283,7 @@ if(.Platform$OS.type == 'windows'){
 
 
 profit <- function(df = all10mice, method = c("average","simp.log","simp.boost","orig.log","orig.rf","orig.boost"), 
-                   seed = 300, 
+                   seed = 400, 
                    k.folds = 5, # number of folds in initial model.blend generation
                    max.iter = 5, #max number of iterations from initial model.blend generation
                    k.folds.2 = 5, # number of folds for second step blended model development
@@ -304,26 +304,42 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
         
         #loop through however many versions of df.blend are required
         compile.results = NULL
-                
+        
+        #store results of three original models in list for each iteration
+        joined <- assemble(methods = c("log", "rf", "boost"), df.assem = df, x.folds.assem = 5,
+                    iterations = ceiling(tot.tests/k.folds.2))
+        
+        # saveRDS(joined, "/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
+        # run blended models on each of the 100 outputs from original models stored
+        # in joined list. Store as new list 'compile.results' for each blending method
         for(m in 1:ceiling(tot.tests/max.iter)){
         
         print(
                 paste("m =", m, "of", ceiling(tot.tests/max.iter),"\n", sep = ' ') %>% cat()
         )        
                 
-        # create complete set
-        df.blend = assemble(methods = c("log","rf","boost"), df.assem = df, x.folds.assem = 5,
-                     manual.seed.assem = sample(1:1000,1))
+        # create complete set using mth list item in joined
+        df.blend = full_join(df %>% mutate(rown = 1:nrow(df)), joined[[m]], 
+                                by = c('rown'='rownames'))
+        df.blend <- df.blend %>% select(-rown)
+        
+        # df.blend = assemble(methods = c("log","rf","boost"), df.assem = df, x.folds.assem = 5)
         
         
         df.blend = mutate(df.blend, norm.log = sign(log) * abs(log)^(1/3))
         df.blend = mutate(df.blend, norm.rf = rf^0.5)
         df.blend = mutate(df.blend, norm.boost = log(boost))
         
-        saveRDS(df.blend, "C:/Users/n9232371/Documents/github/consult/dfblend.rds")
+        # saveRDS(df.blend, "C:/Users/n9232371/Documents/github/consult/dfblend.rds")
+        # df.blend <- readRDS("/Users/yam/Documents/github/consult/dfblend.rds")
         
         saveit <- iter.auc(mult = max.iter/k.folds.2, x.folds.iter = k.folds.2,
-                           methods = c("orig.log","average","simp.boost", "simp.log", "orig.rf","orig.boost"),
+                           methods = c(
+                                  # "simp.log","average",
+                                  # "orig.log","orig.rf","orig.boost",
+                                  # "comp.rf","comp.boost","FWLS",
+                                   "simp.boost"
+                                  ),
                            df.iter = df.blend)
 
         dontknow = map(saveit, function(x) spread(x, iteration, pred))
@@ -336,7 +352,7 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
         
         }
         
-        # saveRDS(compile.results, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+        # saveRDS(compile.results, "/Users/yam/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
         # compile.results <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
         
         
@@ -345,6 +361,8 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
         df.blend$index = rownames(df.blend) %>% as.numeric
         # load balances
         all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        #iOS
+        all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
         all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
         all6$mlsto <- as.character(all6$mlsto)
         df.blend = left_join(df.blend, all6)
@@ -360,7 +378,7 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
         new.df = matrix(NA, nrow = length(threshold), ncol = ceiling(tot.tests/max.iter) + 1) %>% as.data.frame
         colnames(new.df) <- c('threshold', colnames)
         new.df$threshold = threshold 
-        prof.results = list(new.df, new.df, new.df, new.df, new.df)
+        prof.results = list(new.df)
         names(prof.results) = names(compile.results)
         
          
@@ -398,13 +416,13 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
 }
 
 #function below assigns results to 'prof.results' object in global env
-# profit(df = all10mice, method = c("average","simp.log","orig.log","orig.rf","orig.boost"), 
-#                    seed = 300, 
-#                    k.folds = 5, # number of folds in initial model.blend generation
-#                    max.iter = 5, #max number of iterations from initial model.blend generation
-#                    k.folds.2 = 5, # number of folds for second step blended model development
-#                    tot.tests = 500 # total number of results to create
-#                    )
+profit(df = all10mice, method = c("average","simp.log",'simp.boost', "orig.log","orig.rf","orig.boost"),
+                   seed = 300,
+                   k.folds = 5, # number of folds in initial model.blend generation
+                   max.iter = 5, #max number of iterations from initial model.blend generation
+                   k.folds.2 = 5, # number of folds for second step blended model development
+                   tot.tests = 500 # total number of results to create
+                   )
 
 # gather results for plotting
 plot.results = rbind_all(prof.results)
@@ -414,8 +432,11 @@ plot.results = gather(plot.results, key = iteration, value = profit, -method, - 
 orig.prof = plot.results %>% filter(threshold == 1) %>% .$profit %>% .[1]
 plot.results = mutate(plot.results, profit.ratio = (profit/orig.prof*100) %>% round(1))
 
-# saveRDS(plot.results,"C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/plot_finance_100.rds" )
+saveRDS(plot.results,"C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/plot_finance_100_3.rds" )
+saveRDS(plot.results,"/Users/yam/Documents/github/consult/finalwriteup/report_data/plot_finance_100_3.rds" )
 
+bind <- bind %>% filter(!method %in% 'FWLS')
+bind <- rbind(bind, plot.results)
 
 ggplot(plot.results, aes(x= threshold, y= profit.ratio, colour = method)) + 
         geom_point(alpha = 0.1, shape = 16) + 
@@ -442,6 +463,26 @@ Now need to check how mnay experiments to do.. power calc.
 #power calc - where should I do it from? 
 
 ```
+
+Check for significant difference between samples
+
+```{r t_test}
+plot.results
+
+index = c(2:8)
+pvals = data.frame("method" = levels(plot.results$method %>% as.factor)[c(2:8)], 
+                   "threshold" = 
+                   'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]], 
+                                  auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+```
+
+
+
 
 
 Check what happens when you increase the amount you invoiced by a certain percentage
@@ -512,10 +553,10 @@ ggplot(plot.results, aes(x= threshold, y= profit, colour = method)) +
 
 # I like simp.log best. 
 
-simp.l <- compile.results[['average']]
-simp.l$mean.iter <- rowMeans(simp.l[,2:11])
+simp.l <- compile.results[['simp.log']]
+simp.l$mean.iter <- rowMeans(simp.l[,2:101])
 
-saveRDS(simp.l, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_average_model.rds")
+saveRDS(simp.l, "/Users/yam/Documents/github/consult/finalwriteup/report_data/finance_average_model.rds")
 
 # How many jobs are above threshold of 0.65?
 simp.l %>% filter(mean.iter>0.65) %>% nrow

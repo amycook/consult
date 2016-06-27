@@ -166,7 +166,8 @@ all10.blend = mutate(all10.blend, norm.rf = rf^0.5)
 all10.blend = mutate(all10.blend, norm.boost = log(boost))
 
 #setwd in onedrive data
-write.csv(all10.blend, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10blend.csv')
+write.csv(all10.blend, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10blend2.csv')
+# all10.blend <- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10blend2.csv')[,-1]
 # write.csv(all10.blend, 'all10blend2.csv')
 # all10.blend<- read.csv('all10blend2.csv')
 # ensure levels in correct order:
@@ -352,10 +353,18 @@ cfor.plotsave(df= all10.blend, name= 'cfor_blend', formular = formula.rf)
 20 runs of each method. compare against logistic regression
 8 variables have been selected via variable importance analysis
 
+Now narrow down which interaction terms to include
+```{r}
+fit2 <- aov(b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + no.users*norm.log + b.inv.log*norm.log + Business*norm.log + JD.Second*norm.log + b.timespan.cbrt*norm.rf + no.users*norm.rf + b.inv.log*norm.rf + Business*norm.rf + JD.Second*norm.rf + b.timespan.cbrt*norm.boost + no.users*norm.boost + b.inv.log*norm.boost + Business*norm.boost + JD.Second*norm.boost + Discipline*norm.boost + Discipline*norm.log + Discipline*norm.rf,
+                                   data = all10.blend)
+
+
+```
+
 
 ```{r}
 
-formula.log <- "f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost"
+formula.log <- "f.rpdol ~ norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + b.inv.log*norm.log + b.inv.log*norm.rf + Business*norm.boost"
 
 formula.slog <- "f.rpdol ~ norm.log + norm.rf"
 
@@ -365,16 +374,6 @@ formula.boost <- "b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + 
 
 formula.sboost <- "b.rpdol ~ norm.log + norm.rf + norm.boost"
 
-#formula to add interaction terms for logistic regression
-metafeatures = strsplit(formula.log, split = c("\\s\\~\\s|\\s\\+\\s"))[[1]]
-methods = metafeatures[7:9]
-metafeatures = metafeatures[2:6]
-
-for(j in seq_along(methods)){
-        for(m in seq_along(metafeatures)){
-                formula.log <- paste(formula.log, " + ", metafeatures[m], "*", methods[j], sep = "")
-        }
-}
 
 # tune boosted trees and rf
 caret.all(df = train, formula = formula.rf, sample.frac = 0.75, seed = 100)
@@ -493,14 +492,17 @@ iter.auc <- function(mult = 4, x.folds = 5,
         
 }
 
+
 iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
-         methods = c("orig.log","log","average", "boost","rf", "simp.log","simp.boost"))
+         methods = c("orig.log","log","average", "comp.boost","comp.rf", "simp.log","simp.boost"))
+iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
+         methods = c("log"))
 # iter.auc(mult = 20, x.folds = 5, seedy = 100, df = all10.blend,
 #          methods = c("simp.log", "average"))
 # 
 # no.boost <- auc.list
-# saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
-auc.list <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+saveRDS(auc.list, "/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc.rds")
+auc.list <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/blend_auc1.rds")
 # auc.list <- append(auc.list, no.boost)
 # names(auc.list)[c(8,9)] = c("simp.log.noboost","average.noboost")
 #don't worry about simp.log.notrans  - transformation of model predictions doesn't improve results at all

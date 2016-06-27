@@ -1,0 +1,131 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('randomForest')
+library('caret')
+library('pROC')
+library('testthat')
+library('purrr')
+library(tidyr)
+library('broom')
+library('stringr')
+
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/')
+}
+
+
+```
+
+Want to calculate TPR, FPR etc for an 'average' blended model. Find an average model from plot_finance_100_3 data frame
+
+```{r}
+
+best.fin<- readRDS("~/Documents/github/consult/finalwriteup/report_data/best_fin.rds")
+plot.fin <- readRDS("~/Documents/github/consult/finalwriteup/report_data/plot_finance_100_3.rds")
+head(plot.fin)
+?inner_join
+# join best thresholds to plot.fin
+plot.fin <- inner_join(plot.fin, best.fin[,c('threshold','method','mean_profit_ratio')], by = "method")
+# filter for thresholds == best. thresholds
+plot.fin <- plot.fin %>% filter(threshold.x == threshold.y)
+plot.fin <- plot.fin %>% filter(abs(profit.ratio- mean_profit_ratio)<=.5)
+#subset first one from each method
+iter.key <- plot.fin %>% mutate(diff = abs(profit.ratio - mean_profit_ratio)) %>%
+        group_by(method) %>% arrange(diff) %>% slice(1) %>% ungroup()
+
+#iter.key lists the iterations I want to extract for each method from compile.results (finance_results)
+#may need to compile all my .. compile.results
+CR.av_simplog<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_av_simplog.rds")
+CR.comprf<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_comprf.rds")
+CR.FWLS<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLS.rds")
+CR.simpboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
+CR.compboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLScomp_boost.rds")
+CR.compboost[['FWLS']] <- NULL
+ans <- CR.compboost[['comp.boost']] %>% .$b.rpdol
+CR.compboost[['comp.boost']] <- CR.compboost[['comp.boost']] %>% select(-balance.mlsto, -b.rpdol) 
+#missing simp.boost for now
+# append all lists together
+
+CR <- append(CR.av_simplog, c(CR.comprf, CR.compboost, CR.simpboost, CR.FWLS))
+#flatten list
+CR <- bind_rows(CR, .id = "id") %>% as_data_frame
+# create new dataframe of CR, filtered by iter.key
+# use map_df
+key.CR <- iter.key %>% filter(method %in% c('average','comp.boost','comp.rf','FWLS','simp.log', 'simp.boost'))
+new.CR <- data.frame(row = 1:2364)
+for(i in 1:nrow(key.CR)){
+        col = CR %>% filter(id == key.CR$method[i]) %>% select_(key.CR$iteration[i])
+        names(col) <- key.CR$method[i]
+        new.CR = cbind(new.CR, col)
+}
+
+#now want to cbind optimal original results, stored in 'joined'
+joined <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
+key.oCR <- iter.key %>% filter(grepl('orig', method))
+key.oCR$index <- c(6, 91, 4)
+key.oCR$method <- gsub("orig.","", key.oCR$method)
+for(i in 1:nrow(key.oCR)){
+        col = joined[[key.oCR$index[i]]] %>% select_(key.oCR$method[i])
+        names(col) <- paste("orig.", key.oCR$method[i], sep = "")
+        new.CR = cbind(new.CR, col)
+}
+
+#now have all mean outputs for each method
+# want to create a confusion matrix for each
+# need to append answers.. 
+new.CR <- cbind(new.CR, b.rpdol = ans)
+conf.CR <- new.CR
+
+#push all probabilities one way or the other
+for(p in seq_along(iter.key$method)){
+        vec = conf.CR[,iter.key$method[p]]
+        vec <- ifelse(vec < iter.key[iter.key$method == iter.key$method[p],]$threshold.x, 0, 1)
+        conf.CR[,iter.key$method[p]] <- vec
+}
+
+
+```
+Make confusion matricies
+
+
+```{r}
+
+# sub all 1's for loss and 0's for profit
+conf.CR <- apply(conf.CR, 2, function(x) ifelse(x < 0.5, "profit", "loss")) %>% as.data.frame
+conf.CR <- apply(conf.CR, 2, function(x) x = factor(names(x), 
+                                               levels=c("profit","loss"))) %>% as.data.frame %>% head
+
+#generate list of tables
+methods = iter.key$method
+confs = vector(mode = 'list', length(methods))
+for(m in seq_along(methods)){
+        confs[[m]] = (table(conf.CR[, methods[m]], conf.CR$b.rpdol) %>% prop.table(2)*100) %>% round(1)
+}
+
+conf.plot <- as.data.frame(confs) %>% melt
+conf.plot <- conf.plot[,17:20]
+names(conf.plot)[1:4] <- c("model.pred","actual","method","pc")
+conf.plot$method <- gsub('.Freq',"",conf.plot$method)
+
+saveRDS(conf.plot, "~/Documents/github/consult/finalwriteup/report_data/conf_plot.rds")
+
+```
+
+
