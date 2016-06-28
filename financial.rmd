@@ -258,8 +258,8 @@ profit.cv<- function(df.string = "all10mice", method = "boost", seed = 300, k.fo
 
 }
 
-results.1 <- profit.cv(df.string = "all10mice", method = "log", seed = 400, k.folds = 8)
-results.2 <- profit.cv(df.string = "all10mice", method = "boost", seed = 400, k.folds = 8)
+results.1 <- profit.cv(df.string = "all10mice", method = "log", seed = 400, k.folds = 5)
+results.2 <- profit.cv(df.string = "all10mice", method = "boost", seed = 400, k.folds =5)
 results.3 <- profit.cv(df.string = "all10mice", method = "rf", seed = 300, k.folds = 3)
 
 
@@ -360,9 +360,12 @@ profit <- function(df = all10mice, method = c("average","simp.log","simp.boost",
         # now have a suite of predictions - merge with original all10.blend$balance.mlsto
         df.blend$index = rownames(df.blend) %>% as.numeric
         # load balances
+        if(.Platform$OS.type == 'windows'){
         all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
-        #iOS
+        } else{
         all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        }
+        #iOS
         all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
         all6$mlsto <- as.character(all6$mlsto)
         df.blend = left_join(df.blend, all6)

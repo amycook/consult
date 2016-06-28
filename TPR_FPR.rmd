@@ -22,8 +22,8 @@ library('stringr')
 
 # detect OS
 if(.Platform$OS.type == 'windows'){
-        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+        setwd("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/")
 } else{
         # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
         # setwd("~/Documents/github/consult/finalwriteup/report_data")
@@ -36,9 +36,15 @@ if(.Platform$OS.type == 'windows'){
 Want to calculate TPR, FPR etc for an 'average' blended model. Find an average model from plot_finance_100_3 data frame
 
 ```{r}
-
+if(.Platform$OS.type == 'windows'){
+best.fin<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/best_fin.rds")
+plot.fin <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/plot_finance_100_3.rds")
+} else{
 best.fin<- readRDS("~/Documents/github/consult/finalwriteup/report_data/best_fin.rds")
 plot.fin <- readRDS("~/Documents/github/consult/finalwriteup/report_data/plot_finance_100_3.rds")
+}
+
+
 head(plot.fin)
 ?inner_join
 # join best thresholds to plot.fin
@@ -52,11 +58,24 @@ iter.key <- plot.fin %>% mutate(diff = abs(profit.ratio - mean_profit_ratio)) %>
 
 #iter.key lists the iterations I want to extract for each method from compile.results (finance_results)
 #may need to compile all my .. compile.results
+if(.Platform$OS.type == 'windows'){
+CR.av_simplog<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_av_simplog.rds")
+CR.comprf<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_comprf.rds")
+CR.FWLS<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_FWLS.rds")
+CR.simpboost<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
+CR.compboost<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_FWLScomp_boost.rds")
+joined <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/joined.rds")
+
+} else{
 CR.av_simplog<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_av_simplog.rds")
 CR.comprf<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_comprf.rds")
 CR.FWLS<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLS.rds")
 CR.simpboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
 CR.compboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLScomp_boost.rds")
+joined <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
+
+}
+
 CR.compboost[['FWLS']] <- NULL
 ans <- CR.compboost[['comp.boost']] %>% .$b.rpdol
 CR.compboost[['comp.boost']] <- CR.compboost[['comp.boost']] %>% select(-balance.mlsto, -b.rpdol) 
@@ -77,7 +96,6 @@ for(i in 1:nrow(key.CR)){
 }
 
 #now want to cbind optimal original results, stored in 'joined'
-joined <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
 key.oCR <- iter.key %>% filter(grepl('orig', method))
 key.oCR$index <- c(6, 91, 4)
 key.oCR$method <- gsub("orig.","", key.oCR$method)
@@ -127,5 +145,37 @@ conf.plot$method <- gsub('.Freq',"",conf.plot$method)
 saveRDS(conf.plot, "~/Documents/github/consult/finalwriteup/report_data/conf_plot.rds")
 
 ```
+
+Investigate which jobs were deemed unprofitable
+Use simple logistic regression blend
+
+```{r}
+if(.Platform$OS.type == 'windows'){
+        all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+} else{
+        all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+}
+
+#iOS
+all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
+all6$mlsto <- as.character(all6$mlsto)
+df.blend = left_join(df.blend, all6)
+
+#merge simp.log
+head(new.CR)
+all10mice<- cbind(all10mice, new.CR %>% select(simp.log))
+
+
+```
+
+
+
+
+
+
 
 

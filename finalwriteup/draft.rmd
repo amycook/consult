@@ -1509,10 +1509,12 @@ The complex blended models had mixed results. FWLS and randomForests performed m
 
 The simple blended models performed more favourably, as already discussed, particularly the simple average and Logistic Regression. The Boosted Tree's lower bound confidence interval was `r best.fin %>% filter(method == "simp.boost") %>% .$lower_bound_95CI`% at its optimal threshold point. This is above 100%, so it is highly likely the algorithm would improve profits, but the margin was not high in comparison to the other two simple methods. 
 
-It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop, although this should be compensated for in the tuning phase. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing TP and FP statistics.
+It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop, although this should be compensated for in the tuning phase. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing confusion matrix statistics such as TPR and FPR.
 
 
 **Comparison of Confusion Matrix Statistics**
+
+To investigate method performance further, confusion matrix statistics were employed. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss-making projects. If the project was predicted correctly as loss-making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
 
 ```{r TP_plot}
 conf.plot <- readRDS("report_data/conf_plot.rds")
@@ -1528,7 +1530,7 @@ conf.plot$method <- factor(conf.plot$method,
 ggplot(conf.plot %>% filter(actual == "loss"), 
        aes(x = method, y = pc, fill = model.pred)) +
         geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
-        scale_fill_manual(values = c('dodgerblue2','red2'),
+        scale_fill_manual(values = c('red2','dodgerblue2'),
                           labels = c("FN: predicted as profit", "TP: predicted as loss"),
                           name = "Confusion \nMatrix Reference") +
         labs(x = "Method (Original or Blended)", y = "Percent of All Loss-Making Projects (%)",
@@ -1546,6 +1548,11 @@ ggplot(conf.plot %>% filter(actual == "loss"),
 
 ```
 
+Choosing the right probability threshold point is about finding the right balance point in an imperfect model. In this case, projects above a threshold point will include profitable and loss-making jobs. The optimal point is where the savings from rejecting loss-making jobs (TP) outweighs the lost profits from rejecting profitable jobs (FP) the most. All models were capable of different TP and FN ratios at alternate threshold points.
+
+The plot above shows the Complex Boosted Tree Blend has the highest TP rate followed by the Simple Averaged Blend and the Simple Logistic Regression Blend. All of these TP rates are below 25% which showed it was not worth catching a large percentage of loss-making jobs in comparison to the losses in rejected profitable jobs (FP's) that accompanied the TP's. This implies the models were not able to very cleanly divide loss-making jobs from profitable jobs. 
+
+A summary of predictive success on actual profitable jobs is shown below at each method's optimal threshold point. If a job was predicted to be profitable, and was therefore accepted, it was classified TN. If a job was loss-making but labelled profitable, the business would complete the job and make a loss (FN). 
 
 ```{r TN_plot}
 
@@ -1561,7 +1568,7 @@ conf.plot$method <- factor(conf.plot$method,
 
 conf.plot$model.pred <- factor(conf.plot$model.pred, 
                            levels= c("TN","FP"))
-levels(conf.plot$model.pred)
+
 ggplot(conf.plot %>% filter(actual == "profit"), 
        aes(x = method, y = pc, fill = model.pred)) +
         geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
@@ -1583,8 +1590,9 @@ ggplot(conf.plot %>% filter(actual == "profit"),
 
 ```
 
+The complex boosted tree method had by far the highest TP rate, but also had a high FP rate. The increased number of FP (i.e. rejected profitable jobs) offset the more accurate rejection of loss-making jobs so much that the simple averaged blend and simple logisitc regression blend outperformed it. The afore-mentioned simple blends performed almost identically, with a higher than average TP rate and average FP rate incomparison to other methods. Again, it is surprising FWLS did not produce a better profit curve as its TPR was almost on-par with the simple blends and has a better FP rate than the simple blends. The additional variables in FWLS seem to have changed the probabilities of jobs in a way that has reordered them less effectively. Perhaps in terms of the size of the losses and profits.
 
-
+All individual original methods used substantially lower TP rates at their optimal thresholds, yet still had higher FP rates than the other methods. This demonstrates how above their threshold points, there was a more equal ratio of actual profitable to actual loss-making jobs in comparison to the blended methods. Blending the individual methods has made use of their individual strengths and seems to have clustered the probabilities of the actual loss making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TP rates with lower FP rates at the blended methods' optimal thresholds.
 
 **Alternate Interpretations of Blended Model Results**
 
