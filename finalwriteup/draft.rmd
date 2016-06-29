@@ -1319,6 +1319,13 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
 
 The simple Logistic Regression blend and simple averaging of the individual models (logistic regression, boosted trees and random forests) gave virtually the same distribution of results, where both AUC distributions were signficantly greater than the original logistic regression model. The p-values from the two-sample t-tests were `r pvals$p_value[1]` and `r pvals$p_value[2]` for simple average and simple Logistic Regression methods respectively. It was encouraging that blended models produced higher AUC values than the original logistic regression model, however for the case study business, the real measure of success is the model's impact on the business' overall profits. It was not guaranteed higher AUC values directly related to improvements in profit so several methods, including original individual models as well as blended methods, were progressed to the profit analysis. 
 
+## Blended Models Discussion
+
+Trials of different methods of blending model results demonstrated that again, the simplest methods worked best with the data. In this case, averaging the results of the best three single models (Logistic Regression, Random Forests, and Boosted Trees) or taking a Logistic Regression of the three models outperformed more complex Boosted Trees, Random Forests, and Logistic Regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
+It was plausible that simple blending models would perform better than complex methods because the data was not big enough for complex models to learn intricate patterns. This was observed in the single method models (previous chapter) when Logistic Regression performed as well as Random Forests and Boosted Trees. The literature does not extensively cover blended machine learning methods however their success in the 2009 Netflix competition generated some publications. The Netflix data set comprised of almost 3,000,000 observations, so the size of the data could have enabled the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed almost as well as blending results using Logistic Regression. It was expected that Logistic Regression would have an advantage over model averaging due to its ability to weight the prediction variables while maintaining a simple model structure. 
+
+The Logistic Regression blending model did indeed weight predictions from the original models differently. If the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the model prediciting a loss making job increased by 37.4%. Similarly when probability predictions from the Random Forests model increased by 0.1, the odds of the blended model predicting a loss increased by 25.8%. On the other hand, for the same increase in the original Boosted Tree model, the odds of the blended Logistic Regression model predicting a loss increased by only 2.6%. This contrasted with the alternative simple model that averaged the probabilities from each original model (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and three complex blended models.
+
 ## Profit Analysis
 
 The first research question, whether machine learning and statistical techniques can predict project profitability based on historic data, has been answered. The measure of profitability could not be modelled but simplifying the profitability prediction to a binary (profit/loss) model was successful. To answer the second research question, whether the model would improve the business' profitability, a profit analysis was performed. 
@@ -1363,15 +1370,15 @@ for(i in seq_along(index)){
 
 Using this logic, if the threshold was 0, all projects were rejected and the total profit would equal \$0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. This profit calculation was made on a range of thresholds between 0 and 1 at 0.05 increments. The total profits were plotted for each threshold and joined to make a profit curve where at an optimal threshold, the total profits were highest (refer plot below).
 
-Profit curves for the three simple blended models as well as the three individual models were calculated. However, the total profit coordinates were based on probability outputs in test datasets. This means that the profit curve for the simple logistic regression blend (for example) would be different for different training/testing data divisions. I.e. the total profits at each point in the profit curve depends on the model parameters that were calculated using the training data and which projects were analysed in the test data. Therefore, the process of training a blended model, then calculating the profit curve from the test data was repeated multiple times to create a distribution of profit curves for each method (blended and individual). 
+Profit curves for the three simple blended models as well as the three individual models were calculated. However, the total profit coordinates were based on probability outputs in test data sets. This means that the profit curve for the simple logistic regression blend (for example) would be different for different training/testing data divisions. I.e. the total profits at each point in the profit curve depends on the model parameters that were calculated using the training data and which projects were analysed in the test data. Therefore, the process of training a blended model, then calculating the profit curve from the test data was repeated multiple times to create a distribution of profit curves for each method (blended and individual). 
 
 To start, 10 curves for each method were calculated (2 x 5-fold cross validation). Two-sampled power calculations (for a power of 0.8) were performed between the results of each method at their optimal threshold against the best performing method (simple average blend). For example, the optimal threshold for the simple average blended model was 0.55 while the optimal threshold for the original boosted tree model was 0.60. The 10 'total profit' values at these two thresholds were compared in the two-sample power calculation to determine the number of samples required to achieve a power of 0.8. The maximum required number of samples was 64 so 100 models were of each method were built (20 x 5 fold cross validation).
 
-The plot below illustrates the results of each model at each threshold with a line joining the mean value at each threshold for each method. The grey ribbon illustrates the 95% confidence interval around the mean at each threshold for the 100 models.
+The plot below illustrates the results of each model at each threshold with a line joining the mean value at each threshold for each method. The grey ribbon illustrates the 95% confidence interval for the profit improvement ratio at each threshold for the 100 models.
 
 ```{r profit_curve, fig.depth = 10}
 
-finance.plot = readRDS("report_data/plot_finance_100_3.rds" )
+finance.plot = readRDS("report_data/plot_finance_100_4.rds" )
 finance.plot$method <- factor(finance.plot$method, 
                                     levels=c("average", "simp.log","simp.boost",
                                              "comp.boost","comp.rf", "FWLS","orig.log",
@@ -1406,7 +1413,7 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
 
 ```
 
-The two blended models outperformed the individual models as shown in the plot above with higher profit ratios as well as tighter confidence intervals. The table below denotes each models' optimal thresholds and the corresponding increase in total profits:
+Two blended models clearly outperformed the individual models as shown in the plot above with higher profit ratios as well as tighter confidence intervals. The table below denotes each models' optimal thresholds and the corresponding increase in total profits:
 
 ```{r profit_table}
 
@@ -1437,7 +1444,7 @@ best.t = best.fin %>% filter(method == "simp.log") %>% .$threshold
 
 ```
 
-The simple logistic regression blend performed best with the highest mean profit ratio at `r best.mean`% with a standard deviation of `r best.sd`%. This means that for the simple blended logistic regression model, if all jobs above the probability threshold `r best.fin %>% filter(method == "simp.log") %>% .$threshold` were rejected, the profits would increase on average by `r best.mean - 100`% in comparison to historical profit data.
+The simple logistic regression blend performed best with the highest mean profit ratio at `r best.mean`% with a standard deviation of `r best.sd`%. This means that for the simple blended logistic regression model, if all jobs above the probability threshold `r best.t` were rejected, the profits would increase on average by `r best.mean - 100`% in comparison to historical profits.
 
 For clarity, the plot for the simple blended logistic regression model is shown below:
 
@@ -1478,17 +1485,8 @@ ggplot(finance.plot %>% filter(method == "simp.log"),
 # * to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the case based reasoning approach
 ```
 
-## Extended Analysis Discussion
 
-### Blended Models
-
-Trials of different methods of blending model results demonstrated that again, the simplest methods worked best with the data. In this case, averaging the results of the best three single models (Logistic Regression, Random Forests, and Boosted Trees) or taking a Logistic Regression of the three models outperformed more complex Boosted Trees, Random Forests, and Logistic Regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
-
-It was plausible that simple blending models would perform better than complex methods because the data was not big enough for complex models to learn intricate patterns. This was observed in the single method models (previous chapter) when Logistic Regression performed as well as Random Forests and Boosted Trees. The literature does not extensively cover blended machine learning methods however their success in the 2009 Netflix competition generated some publications. The Netflix dataset comprised of almost 3,000,000 observations, so the size of the data could have facilitated the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed as well as blending results using Logistic Regression. It was expected that Logistic Regression would have an advantage over model averaging due to its ability to weight the prediction variables while maintaining a simple model structure. 
-
-The Logistic Regression blending model did indeed weight predictions from the original models differently. If the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the model prediciting a loss making job increased by 37.4%. Similarly when probability predictions from the Random Forests model increased by 0.1, the odds of the blended model predicting a loss increased by 25.8%. On the other hand, for the same increase in the original Boosted Tree model, the odds of the blended Logistic Regression model predicting a loss increased by only 2.6%. This contrasted with the alternative simple model that averaged the probabilities from each original model (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and two complex blended models.
-
-### Profit Curve Analysis - Discussion
+## Profit Curve Analysis - Discussion
 
 ```{r load_winner_results}
 
@@ -1498,23 +1496,23 @@ simp.l <- readRDS("report_data/finance_average_model.rds")
 
 **Highest Profit Curves**
 
-The simple average blend and logistic regression blended models outperformed the complex blended models, which is rational in terms of theit AUC values, which were significantly higher than the others. The simple average of logistic regression, random forests, and boosted trees results produced a profit curve with an almost identical profit improvement (and standard deviation) to the Logistic Regression that blended the same three variables. The models produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t` for the blended Logistic Regression and `r best.fin %>% filter(method == 'average') %>% .$threshold` for simple averaging. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r (best.mean-100)/100*1000000` by rejecting all jobs with a probability higher than `r best.t` (blended logistic regression). In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects.
+The simple average blend and logistic regression blended models outperformed the complex blended models, which is rational because their AUC values were significantly higher than the others. The simple average of Logistic Regression, Random Forests, and Boosted Trees results produced a profit curve with an almost identical profit improvement (and standard deviation) to the Logistic Regression that blended the same three variables. The blended Simple Logistic Regression produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r comma_format() ((best.mean-100)/100*1000000)` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects.
 
 
 **Comparison of All Profit Curves**
 
 The tested profit curve models can be divided into three categories: original individual methods, simple blends of the individual methods, and complex blends of the individual methods that employed interactions with original features. All original methods did achieve improvements of profit at their optimal thresholds, but did not necessarily consistently improve profits across all cross-folded models. The shaded grey 95% confidence intervals in the Profit Curve plot shows that with the 100 sample models that were analysed, none of the lower bounds for the original methods' were above 100% on the y-axis. That is, it cannot be said with 95% confidence that the original methods' would produce a profit higher than historical profits if projects higher than the optimal thresholds (jobs that are likely to be loss-making) were rejected. Clearly this is not helpful for the case-study business to adopt.
 
-The complex blended models had mixed results. FWLS and randomForests performed more poorly than the individual methods while Boosted Trees produced a marginally higher profitability ratio (`r best.fin %>% filter(method == "comp.boost") %>% .$mean_profit_ratio`) but the lower bound of its confidence interval was `r best.fin %>% filter(method == "comp.boost") %>% .$lower_bound_95CI`, i.e. barely above original profits. 
+The complex blended models had mixed results. FWLS and randomForests performed more poorly than the individual methods while Boosted Trees produced a marginally higher profitability ratio (`r best.fin %>% filter(method == "comp.boost") %>% .$mean_profit_ratio`) but the lower bound of its confidence interval was `r best.fin %>% filter(method == "comp.boost") %>% .$lower_bound_95CI`, i.e. not above original profits. 
 
-The simple blended models performed more favourably, as already discussed, particularly the simple average and Logistic Regression. The Boosted Tree's lower bound confidence interval was `r best.fin %>% filter(method == "simp.boost") %>% .$lower_bound_95CI`% at its optimal threshold point. This is above 100%, so it is highly likely the algorithm would improve profits, but the margin was not high in comparison to the other two simple methods. 
+The simple blended models performed more favourably, as already discussed, particularly the simple average and Logistic Regression. The Boosted Tree's lower bound confidence interval was `r best.fin %>% filter(method == "simp.boost") %>% .$lower_bound_95CI`% at its optimal threshold point. This is not above 100%, and again does not make a convincing argument for the case-study to adopt it. 
 
-It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop, although this should be compensated for in the tuning phase. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing confusion matrix statistics such as TPR and FPR.
+It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop as previously stated. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable and did not pose that risk. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing confusion matrix statistics such as TPR and FPR.
 
 
 **Comparison of Confusion Matrix Statistics**
 
-To investigate method performance further, confusion matrix statistics were employed. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss-making projects. If the project was predicted correctly as loss-making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
+To investigate method performance further, confusion matrix statistics were scrutinised. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss-making projects. If the project was predicted correctly as loss-making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
 
 ```{r TP_plot}
 conf.plot <- readRDS("report_data/conf_plot.rds")
@@ -1548,11 +1546,11 @@ ggplot(conf.plot %>% filter(actual == "loss"),
 
 ```
 
-Choosing the right probability threshold point is about finding the right balance point in an imperfect model. In this case, projects above a threshold point will include profitable and loss-making jobs. The optimal point is where the savings from rejecting loss-making jobs (TP) outweighs the lost profits from rejecting profitable jobs (FP) the most. All models were capable of different TP and FN ratios at alternate threshold points.
+Choosing the right probability threshold point is about finding the right balance point in an imperfect model. In this case, projects above a threshold point will include profitable and loss-making jobs. The optimal point is where the savings from rejecting loss-making jobs (TP) outweigh the lost profits from rejecting profitable jobs (FP) the most. All models were capable of different TP and FN ratios at alternate threshold points.
 
-The plot above shows the Complex Boosted Tree Blend has the highest TP rate followed by the Simple Averaged Blend and the Simple Logistic Regression Blend. All of these TP rates are below 25% which showed it was not worth catching a large percentage of loss-making jobs in comparison to the losses in rejected profitable jobs (FP's) that accompanied the TP's. This implies the models were not able to very cleanly divide loss-making jobs from profitable jobs. 
+The plot above shows the Complex Boosted Tree Blend has the highest TP rate followed by the Simple Logistic Regression Blend and the Simple Averaged Blend. All of these TP rates are below 25% which shows it was not worth catching a large percentage of loss-making jobs in comparison to the losses in rejected profitable jobs (FP's) that accompanied the TP's. This implies the models were not able to very cleanly divide loss-making jobs from profitable jobs. 
 
-A summary of predictive success on actual profitable jobs is shown below at each method's optimal threshold point. If a job was predicted to be profitable, and was therefore accepted, it was classified TN. If a job was loss-making but labelled profitable, the business would complete the job and make a loss (FN). 
+A summary of predicted results on actual profitable jobs is shown below at each method's optimal threshold point. If a job was predicted to be profitable, and was therefore accepted, it was classified TN. If a job was loss-making but labelled profitable, the business would complete the job and make a loss (FN). 
 
 ```{r TN_plot}
 
@@ -1590,9 +1588,106 @@ ggplot(conf.plot %>% filter(actual == "profit"),
 
 ```
 
-The complex boosted tree method had by far the highest TP rate, but also had a high FP rate. The increased number of FP (i.e. rejected profitable jobs) offset the more accurate rejection of loss-making jobs so much that the simple averaged blend and simple logisitc regression blend outperformed it. The afore-mentioned simple blends performed almost identically, with a higher than average TP rate and average FP rate incomparison to other methods. Again, it is surprising FWLS did not produce a better profit curve as its TPR was almost on-par with the simple blends and has a better FP rate than the simple blends. The additional variables in FWLS seem to have changed the probabilities of jobs in a way that has reordered them less effectively. Perhaps in terms of the size of the losses and profits.
+The complex Boosted Tree method had the highest TP rate, but also had a high FP rate. The increased number of FP (i.e. rejected profitable jobs) offset the more accurate rejection of loss-making jobs so much that the simple averaged blend and simple logisitc regression blend outperformed it. The afore-mentioned simple blends performed similarly, with a higher than average TP rate and average FP rate in comparison to other methods. The complex Random Forest blend and FLWS both had lower TP rates than the simple blends but higher TN rates. In the end, the improved TN rate did not outweight the lower TP rate, i.e. the higher rate of accepting profitable jobs did not outweight the lower rate of accurately rejecting loss-making jobs.
 
-All individual original methods used substantially lower TP rates at their optimal thresholds, yet still had higher FP rates than the other methods. This demonstrates how above their threshold points, there was a more equal ratio of actual profitable to actual loss-making jobs in comparison to the blended methods. Blending the individual methods has made use of their individual strengths and seems to have clustered the probabilities of the actual loss making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TP rates with lower FP rates at the blended methods' optimal thresholds.
+All individual original methods used substantially lower TP rates at their optimal thresholds, while their TN rates were spread out. This means, as the trialled threshold values moved, and the TP rate improved, the increasing lost profits from FP's was too great to justify a TP rate higher than 4.6%. Blending the individual methods has made use of their individual strengths and seems to have clustered the probabilities of the actual loss making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TP rates with lower FP rates at the blended methods' optimal thresholds.
+
+**Review of Jobs Rejected by Simple Logistic Regression**
+
+All below analyses for results of a typical Simple Blended Logistic Regression Model
+
+* ratio of profitable to unprofitable
+
+```{r}
+reject.plot <- readRDS('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/reject_plot.rds')
+
+
+ggplot(reject.plot, aes(x = f.rpdol)) +
+        geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) + 
+        scale_y_continuous(labels = scales::percent) +
+        labs(x = "Project Performance", 
+             y = "Relative Frequency",
+             title = "Ratio of Profitable vs. Loss-Making Projects")
+
+```
+
+* size of projects in profitable and unprofitable divisions
+
+```{r}
+ggplot(reject.plot %>% filter(compare == "reject"), 
+             aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
+        geom_bar(stat = "identity") + 
+        theme(legend.position="none") +
+        scale_fill_manual(values = rep(c('dodgerblue4', 'darkolivegreen1'), 59)) + 
+        scale_y_continuous(labels = scales::dollar) +
+        labs(x = "Project Performance", 
+             y = "Cumulative Profits/Losses",
+             title = "Magnitude of Profits/Losses from Rejected Projects") +
+        geom_text(data = NULL, x = .5, y = 720000, size = 3, 
+                  colour = "gray60", hjust = 0,
+                  label = "Alternate Colours \nIndicate Different \nProjects")
+
+
+```
+
+
+* some plots of variables that vary quite a bit
+    * pc.pro
+    
+```{r}
+ggplot(reject.plot, 
+             aes(x = pc.pro)) +
+        geom_density() + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "% of Hours Completed by Professional Level Employee", 
+             y = "Density",
+             title = "Density of Percentage of Hours by Professional Level Employees") 
+```
+
+    * timespan kind of interesting: no 1d - 3wk or 3wk to 2.5 m
+    
+```{r}
+ggplot(reject.plot, 
+             aes(x = b.timespan.cbrt)) +
+        geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "Timespan", 
+             y = "Relative Frequency",
+             title = "Relative Frequency of Project Timespans") + 
+        theme(axis.text.x=element_text(angle=30, hjust=1))
+
+```
+    * return per dollar quite nice
+
+```{r}
+ggplot(reject.plot, 
+             aes(x = return.pdol)) +
+        geom_density() + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "Return per Dollar", 
+             y = "Density",
+             title = "Density Plots of Return per Dollar") +
+        scale_x_continuous(labels = scales::dollar)
+```    
+
+    
+Not in a plot, but state:
+    * majority position: mid tech and senior tech disproportionately high
+    * JD.Second: 16 categories originally.
+        * subdivision and sewerage disproportionately high
 
 **Alternate Interpretations of Blended Model Results**
 
