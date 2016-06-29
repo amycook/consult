@@ -1494,12 +1494,12 @@ simp.l <- readRDS("report_data/finance_average_model.rds")
 
 ```
 
-**Highest Profit Curves**
+### Highest Profit Curves
 
 The simple average blend and logistic regression blended models outperformed the complex blended models, which is rational because their AUC values were significantly higher than the others. The simple average of Logistic Regression, Random Forests, and Boosted Trees results produced a profit curve with an almost identical profit improvement (and standard deviation) to the Logistic Regression that blended the same three variables. The blended Simple Logistic Regression produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r comma_format() ((best.mean-100)/100*1000000)` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects.
 
 
-**Comparison of All Profit Curves**
+### Comparison of All Profit Curves
 
 The tested profit curve models can be divided into three categories: original individual methods, simple blends of the individual methods, and complex blends of the individual methods that employed interactions with original features. All original methods did achieve improvements of profit at their optimal thresholds, but did not necessarily consistently improve profits across all cross-folded models. The shaded grey 95% confidence intervals in the Profit Curve plot shows that with the 100 sample models that were analysed, none of the lower bounds for the original methods' were above 100% on the y-axis. That is, it cannot be said with 95% confidence that the original methods' would produce a profit higher than historical profits if projects higher than the optimal thresholds (jobs that are likely to be loss-making) were rejected. Clearly this is not helpful for the case-study business to adopt.
 
@@ -1510,7 +1510,7 @@ The simple blended models performed more favourably, as already discussed, parti
 It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop as previously stated. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable and did not pose that risk. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing confusion matrix statistics such as TPR and FPR.
 
 
-**Comparison of Confusion Matrix Statistics**
+### Comparison of Confusion Matrix Statistics
 
 To investigate method performance further, confusion matrix statistics were scrutinised. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss-making projects. If the project was predicted correctly as loss-making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
 
@@ -1590,17 +1590,16 @@ ggplot(conf.plot %>% filter(actual == "profit"),
 
 The complex Boosted Tree method had the highest TP rate, but also had a high FP rate. The increased number of FP (i.e. rejected profitable jobs) offset the more accurate rejection of loss-making jobs so much that the simple averaged blend and simple logisitc regression blend outperformed it. The afore-mentioned simple blends performed similarly, with a higher than average TP rate and average FP rate in comparison to other methods. The complex Random Forest blend and FLWS both had lower TP rates than the simple blends but higher TN rates. In the end, the improved TN rate did not outweight the lower TP rate, i.e. the higher rate of accepting profitable jobs did not outweight the lower rate of accurately rejecting loss-making jobs.
 
-All individual original methods used substantially lower TP rates at their optimal thresholds, while their TN rates were spread out. This means, as the trialled threshold values moved, and the TP rate improved, the increasing lost profits from FP's was too great to justify a TP rate higher than 4.6%. Blending the individual methods has made use of their individual strengths and seems to have clustered the probabilities of the actual loss making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TP rates with lower FP rates at the blended methods' optimal thresholds.
+All individual original methods used substantially lower TP rates at their optimal thresholds, while their TN rates were spread out. This means, as the trialled threshold values moved, and the TP rate improved, the increasing lost profits from FP's was too great to justify a TP rate higher than 4.6%. Blending the individual methods has made use of their unique strengths and seems to have clustered the probabilities of the actual loss-making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TP rates with lower FP rates at the blended methods' optimal thresholds.
 
-**Review of Jobs Rejected by Simple Logistic Regression**
+### Review of Jobs Rejected by Simple Logistic Regression
 
-All below analyses for results of a typical Simple Blended Logistic Regression Model
+The profit curves and TP/FP rates give a good indication of overall performance of the methods, however an analysis of the characteristics of the predicted loss-making projects can provide more detailed insight.
 
-* ratio of profitable to unprofitable
+All below plots and comments summarise results from one Simple Blended Logistic Regression Model. The results from this model were chosen because it represented the mean for improvement in profits output by this blending method. The plot below illustrates how the ratio of profitable to unprofitable jobs compare in the full project population vs. the rejected projects.
 
 ```{r}
-reject.plot <- readRDS('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/reject_plot.rds')
-
+reject.plot <- readRDS('report_data/reject_plot.rds')
 
 ggplot(reject.plot, aes(x = f.rpdol)) +
         geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +
@@ -1615,10 +1614,12 @@ ggplot(reject.plot, aes(x = f.rpdol)) +
 
 ```
 
-* size of projects in profitable and unprofitable divisions
+Originally, 25% of projects were loss-making. The model rejects a population of projects which are over 60% loss-making. This represents a significant swing in proportions, but is not perfect. The class imbalance towards profitable jobs in the initial dataset may have weakened the model's ability to classify losses. @Saradhi2011 took advantage of SVM's ability to adjust class penalties to address class imbalance, however SVM's were avoided because of their black box predictions in this work and the remaining methods cannot accommodate class penalties. 
+
+The plot below illustrates the monetary size of profits and losses from rejected projects. The different coloured bands indicate different projects and it can be observed that the magnitude of rejected profits and losses vary greatly. They range from profits/losses of just \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% tail(1) %>% round(0)` to losses of \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% head(1) %>% round(-3)`.
 
 ```{r}
-ggplot(reject.plot %>% filter(compare == "reject"), 
+ggplot(reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))), 
              aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
         geom_bar(stat = "identity") + 
         theme(legend.position="none") +
@@ -1635,8 +1636,7 @@ ggplot(reject.plot %>% filter(compare == "reject"),
 ```
 
 
-* some plots of variables that vary quite a bit
-    * pc.pro
+The variable 'percentage of hours completed by a professional level employee' had an interesting contrast in the statistical distribution of all projects vs. the rejected projects (refer plot below).
     
 ```{r}
 ggplot(reject.plot, 
@@ -1651,8 +1651,10 @@ ggplot(reject.plot,
              title = "Density of Percentage of Hours by Professional Level Employees") 
 ```
 
-    * timespan kind of interesting: no 1d - 3wk or 3wk to 2.5 m
-    
+The algorithm tended to accept projects which were completed 100% by a professional level employee and rejected more projects with 0-60% of hours by a professional employee. This could either indicate that professional level employees complete projects more efficiently or that the types of projects that do not require technical employees are more profitable.
+
+The distribution of timespans of rejected projects differed significantly to the timespan distribution of all projects. The chart below shows that proportionally very few short jobs were rejectd, i.e. projects that lasted between 1 day and 2.5 months. These projects are likely small and may be easier to estimate fixed fees. A much higher relative proportion of projects lasting 1.5 - 3 years were rejected. They may face an opposite challenge to the small projects. On the other hand, large projects can provide long term security for a small business and it is unlikely the company would want to reject them. It may make more sense to adjust the contract structure of large projects that have been highlighted as a risk. Alternate uses of the algorithm results are discussed in the next section. 
+
 ```{r}
 ggplot(reject.plot, 
              aes(x = b.timespan.cbrt)) +
@@ -1667,7 +1669,8 @@ ggplot(reject.plot,
         theme(axis.text.x=element_text(angle=30, hjust=1))
 
 ```
-    * return per dollar quite nice
+
+The statistical distribution of return per dollar in the rejected projects are skewed towards negative returns. This means the algorithm has identified a proportionally much higher percentage of loss-making projects which is not surprising given previous results.
 
 ```{r}
 ggplot(reject.plot, 
@@ -1684,16 +1687,42 @@ ggplot(reject.plot,
 ```    
 
     
-Not in a plot, but state:
-    * majority position: mid tech and senior tech disproportionately high
-    * JD.Second: 16 categories originally.
-        * subdivision and sewerage disproportionately high
+There were a couple more revealing differences between the full set of projects and the rejected projects. The first was that rejected projects had disproportionately more projects with mid-level and senior-level technical employees as the main worker on a project. The second was that a comparatively high percentage of rejected projects were subdivisions, sewerage, or civil building works. 
 
-**Alternate Interpretations of Blended Model Results**
+The detailed analysis of rejected project characteristics gave insight into the characteristics of projects that are likely to be loss-making as well as the accuracy of the algorithm. While it is interesting to observe characeristics of rejected projects, a complex combination of all the features contribute to the final probability of loss prediction.   
+
+### Alternate Interpretations of Blended Model Results
 
 Alternative strategies exist for how to deal with projects that are marked with a probability of loss greater than `r best.t`. For example, contracts for these projects could be changed to hourly rate contracts without exception. This means that each hour booked on the project will definitely be charged to the client for each stage of the project. Another example would be to increase fixed fees for projects above the threshold by a nominal percentage. However, this method seems less practical as the case study projects above `r best.t` would need to increase fees by 46% in order to generate a 15% profit. A proposed fee increase of that magnitude may not be as palatable as an hourly rate contract depending on the project and client. Contracts could be adjusted in many other creative ways to reduce risk in high probability projects. The threshold of `r best.t` was optimised based on the accept/reject strategy but different courses of actions could be developed for specific clients or project sizes via similar analyses of threshold scenarios.    
 
 To conclude, because of the promising AUC results, it is logical that the models would translate into financial benefits for the company. The `r (best.mean-100)`% improvement in profits looks reasonable, and may be high enough to trigger further cost-benefit analyses before finally introducing the model into business decisons. Further analyses are recommended before implementation of the model and are described in the section below.
+
+
+### User Interface and Engagement
+
+* Highlighted as a major problem in previosu cost estimation studies
+    * need to (1) communicate results usefully (2) trust
+* User actions will vary, options listed in previous section: reject project, adjust contract structure
+    * Communicate confidence
+    * future work: probability: bayesian?
+    * simple yes/no, easy, or on a scale of probability 0.6 to 1, but output is not statistically driven. score driven by machine learning algorithms.
+    * future work: which is preferable user chooses
+    
+
+* Shiny App: engage user trust by two strategies
+    * nearest neighbours
+    * model output
+
+    
+Another limitation for these types of algorithms in general, as identified in the literature, is user uptake of the models and a lack of trust in the output [@Akintoye2000]. It was for this reason the case study only tested models that provided insight into variable relationships (ensemble trees and logistic regression) as opposed to neural networks and SVM's that operate as 'black box' predictors. It is envisioned that a future user interface for this algorithm would display variable relationships such as this partial dependency plot produced by a boosted tree model. It displays the probability of a loss-making job vs. the team size: 
+
+![](images/boosted tree/partial_dep_plots/no_users.png) 
+
+Running a nearest-neighbour algorithm concurrently with the probability algorithm could provide a cross check of the algorithm's results and engage the user's past experiences in similar projects. This could work by presenting a graphical summary of the 4 or 5 most-similar past projects to the new project being assessed by the manager. Memories of how these similar projects played out would be triggered as well as communication with other manager's that led the similar projects. This would allow the user to connect specific past experience with the probability model output. Further development and testing is required to assess how much users trust the algorithm output and how trustworthiness may be improved.
+
+![](images/app/NN_wharf.png) 
+
+
 
 ## Limitations and Future Work
 
@@ -1703,13 +1732,13 @@ First, succesfully estimating project variables is critical in translating this 
 
 The process of guessing varibles at the beginning of a project and then comparing estimates upon project completion is a long checking process. However, it would be worthwhile integrating this practice into the system's pre-existing data-collecting processes. When a new project is entered into the database, it could be required that the project manager guesses the time-span (1 of 6 categories), total amount invoiced (1 of 5 categories), team size and percent to be completed by professionals. This data itself could feed into a revised version of the prediction algorithm.
 
-Another limitation for these types of algorithms in general, as identified in the literature, is user uptake of the models and a lack of trust in the output [@Akintoye2000]. It was for this reason the case study only tested models that provided insight into variable relationships (ensemble trees and logistic regression) as opposed to neural networks and SVM's that operate as 'black box' predictors. It is envisioned that a future user interface for this algorithm would display variable relationships such as this partial dependency plot produced by a boosted tree model. It displays the probability of a loss-making job vs. the team size: 
+**updating the model!**
+A lot of data cleaning in past data
+need to build a pipeline of cleaning - only 11 variables now, not too hard
+* re run algorithm monthly? does not take long, maybe 1 minute.
+* repeat validation every few months
 
-![](images/boosted tree/partial_dep_plots/no_users.png) 
 
-Running a nearest-neighbour algorithm concurrently with the probability algorithm could provide a cross check of the algorithm's results and engage the user's past experiences in similar projects. This could work by presenting a graphical summary of the 4 or 5 most-similar past projects to the new project being assessed by the manager. Memories of how these similar projects played out would be triggered as well as communication with other manager's that led the similar projects. This would allow the user to connect specific past experience with the probability model output. Further development and testing is required to assess how much users trust the algorithm output and how trustworthiness may be improved.
-
-![](images/app/NN_wharf.png) 
 
 
 
