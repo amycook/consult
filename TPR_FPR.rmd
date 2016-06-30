@@ -47,7 +47,6 @@ plot.fin <- readRDS("~/Documents/github/consult/finalwriteup/report_data/plot_fi
 
 
 head(plot.fin)
-?inner_join
 # join best thresholds to plot.fin
 plot.fin <- inner_join(plot.fin, best.fin[,c('threshold','method','mean_profit_ratio')], by = "method")
 # filter for thresholds == best. thresholds
@@ -60,37 +59,21 @@ iter.key <- plot.fin %>% mutate(diff = abs(profit.ratio - mean_profit_ratio)) %>
 #iter.key lists the iterations I want to extract for each method from compile.results (finance_results)
 #may need to compile all my .. compile.results
 if(.Platform$OS.type == 'windows'){
-CR.av_simplog<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_av_simplog.rds")
-CR.comprf<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_comprf.rds")
-CR.FWLS<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_FWLS.rds")
-CR.simpboost<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
-CR.compboost<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results_FWLScomp_boost.rds")
+CR <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
 joined <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/joined.rds")
 
 } else{
-CR.av_simplog<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_av_simplog.rds")
-CR.comprf<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_comprf.rds")
-CR.FWLS<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLS.rds")
-CR.simpboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_simpboost.rds")
-CR.compboost<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results_FWLScomp_boost.rds")
-# CR<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+CR<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
 joined <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
 
 }
 
-CR.compboost[['FWLS']] <- NULL
-ans <- CR.compboost[['comp.boost']] %>% .$b.rpdol
-CR.compboost[['comp.boost']] <- CR.compboost[['comp.boost']] %>% select(-balance.mlsto, -b.rpdol) 
-#missing simp.boost for now
-# append all lists together
-
-CR <- append(CR.av_simplog, c(CR.comprf, CR.compboost, CR.simpboost, CR.FWLS))
 #flatten list
 CR <- bind_rows(CR, .id = "id") %>% as_data_frame
 # create new dataframe of CR, filtered by iter.key
 # use map_df
 key.CR <- iter.key %>% filter(method %in% c('average','comp.boost','comp.rf','FWLS','simp.log', 'simp.boost'))
-new.CR <- data.frame(row = 1:2364)
+new.CR <- data.frame(CR[1:nrow(joined[[1]]),c('balance.mlsto','b.rpdol')])
 for(i in 1:nrow(key.CR)){
         col = CR %>% filter(id == key.CR$method[i]) %>% select_(key.CR$iteration[i])
         names(col) <- key.CR$method[i]
@@ -99,7 +82,7 @@ for(i in 1:nrow(key.CR)){
 
 #now want to cbind optimal original results, stored in 'joined'
 key.oCR <- iter.key %>% filter(grepl('orig', method))
-key.oCR$index <- c(6, 91, 4)
+key.oCR$index <- sapply(key.oCR$iteration, grep, colnames(CR)) - 2
 key.oCR$method <- gsub("orig.","", key.oCR$method)
 for(i in 1:nrow(key.oCR)){
         col = joined[[key.oCR$index[i]]] %>% select_(key.oCR$method[i])
@@ -110,7 +93,6 @@ for(i in 1:nrow(key.oCR)){
 #now have all mean outputs for each method
 # want to create a confusion matrix for each
 # need to append answers.. 
-new.CR <- cbind(new.CR, b.rpdol = ans)
 conf.CR <- new.CR
 
 #push all probabilities one way or the other
@@ -128,9 +110,7 @@ Make confusion matricies
 ```{r}
 
 # sub all 1's for loss and 0's for profit
-conf.CR <- apply(conf.CR, 2, function(x) ifelse(x < 0.5, "profit", "loss")) %>% as.data.frame
-conf.CR <- apply(conf.CR, 2, function(x) x = factor(names(x), 
-                                               levels=c("profit","loss"))) %>% as.data.frame %>% head
+conf.CR[,2:11] <- apply(conf.CR[,2:11], 2, function(x) ifelse(x < 0.5, "profit", "loss")) %>% as.data.frame
 
 #generate list of tables
 methods = iter.key$method
@@ -138,6 +118,7 @@ confs = vector(mode = 'list', length(methods))
 for(m in seq_along(methods)){
         confs[[m]] = (table(conf.CR[, methods[m]], conf.CR$b.rpdol) %>% prop.table(2)*100) %>% round(1)
 }
+names(confs) <- methods
 
 conf.plot <- as.data.frame(confs) %>% melt
 conf.plot <- conf.plot[,17:20]
@@ -184,7 +165,7 @@ reject$compare <- "reject"
 all10mice$compare <- "full"
 all10mice <- rbind(all10mice, reject)
 
-saveRDS(all10mice, '/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/reject_plot.rds')
+# saveRDS(all10mice, '/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/reject_plot.rds')
 
 
 #create % column for factor variable
@@ -225,7 +206,7 @@ head(reject)
 ggplot(reject, aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
         geom_bar(stat = "identity") + 
         theme(legend.position="none") +
-        scale_fill_manual(values = rep(c('blue', 'yellow'), 54)) + 
+        scale_fill_manual(values = rep(c('blue', 'yellow'), 59)) + 
         scale_y_continuous(labels = scales::dollar)
 ```
 
@@ -245,6 +226,29 @@ tapply(1:3, ind, sum)
 
 ```
 
+Making Shiny visualisation
+What is the spread in probability values like?
+
+```{r}
+CR$mean <- apply(CR[,3:102], 1, mean) 
+CR$sd <- apply(CR[,3:102], 1, sd) 
+CR <- mutate(CR, conf_95 = sd*1.96*2)
+summary(CR$conf_95)
+# median conf interval for a probability is 0.11, mean is 0.137, just say 0.12 spread
+ggplot(CR, aes(y = conf_95, x = mean)) + geom_point()
+#find mean conf_95 per bin of mean
+CR$mean_bins <- cut(CR$mean, 10)
+ddply(CR, .(mean_bins), summarise, mean_conf = median(conf_95))
+
+# probability outputs for log.reg
+ggplot(new.CR, aes(y = simp.log, x = "potato")) + geom_boxplot()
+max(new.CR$simp.log)
+exp <- new.CR
+all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+exp <- cbind(exp, return.pdol = all10mice$return.pdol)
+ggplot(exp, aes(x = simp.log, y = return.pdol)) + geom_point()
+
+```
 
 
 

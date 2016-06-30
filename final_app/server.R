@@ -1,13 +1,22 @@
-setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
-# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
-library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.3/library')
-library("dplyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
-library("plyr",lib = 'C:/Progra~1/R/R-3.2.3/library')
-library('magrittr',lib='C:/Progra~1/R/R-3.2.3/library')
-library('reshape2',lib='C:/Progra~1/R/R-3.2.3/library')
-library('shiny',lib='C:/Progra~1/R/R-3.2.3/library')
-library('shinythemes',lib='C:/Progra~1/R/R-3.2.3/library')
-library('FNN',lib='C:/Progra~1/R/R-3.2.3/library')
+if(.Platform$OS.type == 'windows'){
+        setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        all7<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7.csv')[,-1]
+        all7d<- read.csv('all7d.csv')[,-1]
+        
+} else{
+        setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        all7<- read.csv('all7.csv')[,-1]
+        all7d<- read.csv('all7d.csv')[,-1]
+        
+}
+library('ggplot2')
+library("dplyr")
+library("plyr")
+library('magrittr')
+library('reshape2')
+library('shiny')
+library('shinythemes')
+library('FNN')
 # library('ggplot2')
 # library("dplyr")
 # library("plyr")
@@ -17,7 +26,6 @@ library('FNN',lib='C:/Progra~1/R/R-3.2.3/library')
 # library('shinythemes')
 
 
-all7<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7.csv')[,-1]
 all7$Start.Date<- as.Date(all7$Start.Date)
 #delete anything more than 4 for inv.vs.cost
 #delete anything less than .2 for inv.vs.cost
@@ -28,15 +36,16 @@ df <- read.table(text = " id  min  max
     Sp1     150          151     ", header=TRUE)
 
 #make a new dataframe with information about crossbar sizes
-df2<- data.frame(id=c(rep("Sp1",1)), ymin= c(4), y.mean = c(13),
-                 ymax=c(22), confidence=c('90%'))
+df2<- data.frame(id=c(rep("Sp1",1)), ymin= c(-8.8), y.mean = c(-7),
+                 ymax=c(-5.2), confidence=c('90%'))
 df2 <- within(df2, 
               confidence <- factor(confidence, 
                                     levels=c('90%')))
+prof.labels = data.frame(xx = 0.53, yy = seq(-10,10,by= 10), 
+                         text = c("Loss-Making Job","Neutral","Profitable Job"))
 
 #### CREATE TABLE DATA FRAME FOR NEAREST NEIGHBOURS ####
 
-all7d<- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
 all7d$mlsto<- as.character(all7d$mlsto)
 
 # test.case<- all7d %>% select(Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type)
@@ -153,26 +162,29 @@ shinyServer(
                 output$fee.plot<- renderPlot( {
                         
                         x.height = 0.2 
-                        ticks = data.frame(xs = rep(x.height,11), ys = seq(0,100, by = 10))
-                        minor.ticks = data.frame(xs = rep(x.height, length(seq(0,100, by = 2.5))), 
-                                                 ys = seq(0,100, by = 2.5))
+                        ticks = data.frame(xs = rep(x.height,21), ys = seq(-10,10, by = 1))
+                        minor.ticks = data.frame(xs = rep(x.height, length(seq(-10,10, by = .5))), 
+                                                 ys = seq(-10, 10, by = .5))
+                        
 
                         
                         s= ggplot(df[1,]) +
                                 geom_pointrange(data = df2, aes(y = y.mean, ymin = ymin, ymax = ymax), 
                                                 x = x.height, size= 2.5, alpha = .7,
-                                                shape = 16, colour = 'royalblue3') +
-                                geom_segment(x = x.height, xend = x.height, y = 0, yend = 100, alpha = 0.75, size = 0.3) +
-                                geom_point(data = ticks, aes(x= xs, y= ys), size = 2) + 
-                                geom_point(data = minor.ticks, aes(x= xs, y= ys), size = 0.1) + 
-                                scale_y_continuous(limit = seq(0,100, by = 100),breaks = seq(0, 100, by = 10)) +
-                                labs(y="Probability (%)", x="", title= "Probability of Project Making a Loss") +
+                                                shape = 16, colour = 'firebrick3') +
+                                geom_segment(x = x.height, xend = x.height, y = -10, yend = 10, alpha = 0.75, size = 0.3) +
+                                geom_point(data = ticks, aes(x= xs, y= ys), shape = "|", size = 2.5) + 
+                                geom_point(data = minor.ticks, aes(x= xs, y= ys), shape = "|", size = 1.5) + 
+                                geom_point(data = minor.ticks %>% filter(ys == 0),
+                                           aes(x= xs, y= ys), shape = "|", size = 5.5) +
+                                scale_y_continuous(breaks = seq(-10, 10, by = 2)) +
+                                labs(y="", x="", title= "Profitability Score for Project") +
                                 xlim(0,1) +
                                 theme(axis.text.y = element_blank(),
                                       plot.title = element_text(size=18, face='plain'),
                                       axis.title.y = element_text(size = 16),
                                       axis.title.x = element_text(size=16),
-                                      axis.text = element_text(size = 16),
+                                      axis.text = element_text(size = 12),
                                       legend.text = element_text(size = 12),
                                       legend.title = element_text(size = 12),
                                       panel.background = element_rect(fill = "white"),
@@ -180,6 +192,7 @@ shinyServer(
                                       axis.ticks.y=element_blank()) +
                                 # annotate("text", x = 1.3, y = 20000, label = "Final Spend = Initial Quote", colour='red', size=4)+
                                 scale_colour_brewer(palette = 'GnBu', direction = -1) +
+                                geom_text(data = prof.labels, aes(xx,yy, label = text), hjust = "inward", size = 4.7) +
                                 coord_flip()
                         
                         # s$layers = c(geom_segment(), s$layers)

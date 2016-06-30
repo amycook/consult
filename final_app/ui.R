@@ -107,26 +107,39 @@ shinyUI(fluidPage(
                                         "Senior Technical" = "Senior Technical",
                                         "Mid Technical" = "Mid Technical")),
                        
-                       sliderInput(
-                               'pc.pro', '% Hours by Main Employee:', 
-                               min=0, max=100, value=50, step=.5, round=0),
+                       
 
-                       sliderInput("no.user", "Team Size:",
-                                   min=1, max=6, value=1, step=1, round=0
+                       selectInput("timespan", "Timespan (days):",
+                                   list("1 day - 3 wks" = "1d-3wk", 
+                                        "3 wks - 2.5 months" = "3wk-2.5m", 
+                                        "2.5 - 9 months" = "2.5m-9m",
+                                        "9 months - 1.5 yrs" = "9m-1.5y",
+                                        "1.5 -3 years" = "1.5y-3y",
+                                        "More than 3 years" = ">3y")
+                       ),
+                       
+                       selectInput("inv.mlsto", "Approximate Fee:",
+                                   list("$100 - $600" = "100-600", 
+                                        "$600 - $2,500" = "600-2.5k", 
+                                        "$2,500 - $8,000" = "2.5k-8k",
+                                        "$8,000 - $60,000" = "9m-1.5y",
+                                        "$60,000 - $1.8m" = "60k-1.8m")
                        )
+                       
                             
                        ),
                 
                 
                 column(3,
                        
-                       sliderInput("timespan", "Timespan (days):",
-                                   min=0, max=1000, value=60, step=20, round=0
+                       sliderInput("no.user", "Team Size:",
+                                   min=1, max=6, value=1, step=1, round=0
                        ),
                        
-                       sliderInput("inv.mlsto", "Approximate Fee:",
-                                   min=500, max=250000, value=20000, step=500, round=2
-                                   ),
+                       sliderInput(
+                               'pc.pro', '% Hours by Main Employee:', 
+                               min=0, max=100, value=50, step=.5, round=0),
+                       
                        
                        submitButton(text="Calculate")
                        

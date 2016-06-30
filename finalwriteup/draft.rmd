@@ -1324,7 +1324,15 @@ The simple Logistic Regression blend and simple averaging of the individual mode
 Trials of different methods of blending model results demonstrated that again, the simplest methods worked best with the data. In this case, averaging the results of the best three single models (Logistic Regression, Random Forests, and Boosted Trees) or taking a Logistic Regression of the three models outperformed more complex Boosted Trees, Random Forests, and Logistic Regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
 It was plausible that simple blending models would perform better than complex methods because the data was not big enough for complex models to learn intricate patterns. This was observed in the single method models (previous chapter) when Logistic Regression performed as well as Random Forests and Boosted Trees. The literature does not extensively cover blended machine learning methods however their success in the 2009 Netflix competition generated some publications. The Netflix data set comprised of almost 3,000,000 observations, so the size of the data could have enabled the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed almost as well as blending results using Logistic Regression. It was expected that Logistic Regression would have an advantage over model averaging due to its ability to weight the prediction variables while maintaining a simple model structure. 
 
-The Logistic Regression blending model did indeed weight predictions from the original models differently. If the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the model prediciting a loss making job increased by 37.4%. Similarly when probability predictions from the Random Forests model increased by 0.1, the odds of the blended model predicting a loss increased by 25.8%. On the other hand, for the same increase in the original Boosted Tree model, the odds of the blended Logistic Regression model predicting a loss increased by only 2.6%. This contrasted with the alternative simple model that averaged the probabilities from each original model (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and three complex blended models.
+The Logistic Regression blending model did indeed weight predictions from the original models differently. A summary of the resulting coefficients from an example blended Logistic Regression model is shown in the table below.
+
+| Model Results as Variable | Coefficient (Log Odds) | Odds  | Increase in Variable Input | Increases in Odds |
+|---------------------------|------------------------|-------|----------------------------|-------------------|
+| Logistic Regression       | 1.7223                 | 5.60  | 0.1                        | 56%               |
+| Random Forest             | 1.4753                 | 4.37  | 0.1                        | 43.7%             |
+| Boosted Trees             | 2.7943                 | 16.35 | 0.1                        | 163.5%            |
+
+As shown in the table, if the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the model prediciting a loss-making job increased by 56.0%. The weightings contrasted the other simple model that averaged the original probabilities (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and three complex blended models.
 
 ## Profit Analysis
 
@@ -1695,38 +1703,46 @@ The detailed analysis of rejected project characteristics gave insight into the 
 
 Alternative strategies exist for how to deal with projects that are marked with a probability of loss greater than `r best.t`. For example, contracts for these projects could be changed to hourly rate contracts without exception. This means that each hour booked on the project will definitely be charged to the client for each stage of the project. Another example would be to increase fixed fees for projects above the threshold by a nominal percentage. However, this method seems less practical as the case study projects above `r best.t` would need to increase fees by 46% in order to generate a 15% profit. A proposed fee increase of that magnitude may not be as palatable as an hourly rate contract depending on the project and client. Contracts could be adjusted in many other creative ways to reduce risk in high probability projects. The threshold of `r best.t` was optimised based on the accept/reject strategy but different courses of actions could be developed for specific clients or project sizes via similar analyses of threshold scenarios.    
 
-To conclude, because of the promising AUC results, it is logical that the models would translate into financial benefits for the company. The `r (best.mean-100)`% improvement in profits looks reasonable, and may be high enough to trigger further cost-benefit analyses before finally introducing the model into business decisons. Further analyses are recommended before implementation of the model and are described in the section below.
+To conclude, because of the promising AUC results, it was logical that the models translated into financial benefits for the company. The `r (best.mean-100)`% improvement in profits looks reasonable, and may be high enough to trigger further cost-benefit analyses before finally introducing the model into business decisons. Development of the user interface as well as some further data analyses are recommended before implementation of the model and are described in the 'User Interface and Engagement' and 'Limitations and Future Work' sections below.
 
 
 ### User Interface and Engagement
 
-* Highlighted as a major problem in previosu cost estimation studies
-    * need to (1) communicate results usefully (2) trust
-* User actions will vary, options listed in previous section: reject project, adjust contract structure
-    * Communicate confidence
-    * future work: probability: bayesian?
-    * simple yes/no, easy, or on a scale of probability 0.6 to 1, but output is not statistically driven. score driven by machine learning algorithms.
-    * future work: which is preferable user chooses
-    
+Industry's lack of uptake of cost estimation models was marked as a significant issue in the literature [@Akintoye2000]. Decision makers did not sufficiently trust the model output which seemed disconnected to their experiences. In many studies, case-based reasoning had more traction than more accurate models because users' could justify the output. Clearly this is an important aspect of the study to address. The user interface should do two things well: 
 
-* Shiny App: engage user trust by two strategies
-    * nearest neighbours
-    * model output
+* Communicate the model results practically and clearly
+* Create trust via a connection to the user's experiences
 
-    
-Another limitation for these types of algorithms in general, as identified in the literature, is user uptake of the models and a lack of trust in the output [@Akintoye2000]. It was for this reason the case study only tested models that provided insight into variable relationships (ensemble trees and logistic regression) as opposed to neural networks and SVM's that operate as 'black box' predictors. It is envisioned that a future user interface for this algorithm would display variable relationships such as this partial dependency plot produced by a boosted tree model. It displays the probability of a loss-making job vs. the team size: 
+A prototype user interface was developed using the Shiny package in R where a strategy was developed for how the input options and results would be communicated [@shiny]. 
 
-![](images/boosted tree/partial_dep_plots/no_users.png) 
+![](images/app/front_page.png) 
 
-Running a nearest-neighbour algorithm concurrently with the probability algorithm could provide a cross check of the algorithm's results and engage the user's past experiences in similar projects. This could work by presenting a graphical summary of the 4 or 5 most-similar past projects to the new project being assessed by the manager. Memories of how these similar projects played out would be triggered as well as communication with other manager's that led the similar projects. This would allow the user to connect specific past experience with the probability model output. Further development and testing is required to assess how much users trust the algorithm output and how trustworthiness may be improved.
+The manager selects the charactersitics that describe their new job in the top panel. Then once the 'Calculate' button is clicked, the blended Logistic Regression model works behind the scenes to generate a probability score between 0 and 1 where 1 represents a loss-making job. This output is not intuitive to understand for a manager because the probability score does not represent a statistical probability, rather a score the algorithm generated using its own measures. The optimal threshold dictated that scores below 0.6 should be classified as profitable jobs and scores above 0.6 are loss-making. The scores were re-scaled to a more intuitive numbering system where scores between 0 and 0.6 were scaled between 0 and 10, and scores higher than 0.6 were scaled between 0 and -10. The shaded confidence interval was calculated from the distributed spread of probability outputs from the 100 models calculated in the Profit Curve Analysis. The 100 models gave 100 probability outputs for each project, and the 95% confidence interval for these outputs was calculated. A typical spread for the 95% confidence interval is shaded in the graphic which is relative to the 'bin' that the score fell into (i.e. 6-8). This provides an intuitive feel for the results the model's uncertainty.
 
-![](images/app/NN_wharf.png) 
+This graphic is an initial suggestion for how to communicate model results to industry. Many variations are possible which could depend on how the business wants to act on the output; for example whether they plan to reject risky projects outright or adjust the fee structure. Additional methods built on top of the current model may be able to produce statistical probabilities instead of probability scores. This may be achieved using bayesian methods such as bayesian additive regression trees, however it is uncertain whether this would improve practical effectiveness.
+
+Two strategies were adopted to facilitate user trust in the model's output: illustration of the model structure and a nearest neighbour graph. Algorithms were originally selected that could reveal their predictive structure by either variable importance and/or variable relationships. The first tab in the application displays several variable dependency plots extracted from a typical boosted tree model. Understanding the plot would require some training. The y-axis represents the probability a project will be loss-making after taking into account average effects from variables other than the x-axis variable.
+
+![](images/app/team_size_dep.png) 
+![](images/app/timespan_dep.png) 
+
+Secondly, the nearest neighbour algorithm is automatically run with the predictive model and its results are displayed in the second main tab. The aim was to provide the user with a cross check of the algorithm's results by finding projects with the most similar features to the one currently being assessed. This triggers memories from the user's past experiences on similar projects and promotes communication with other managers who delivered the 'nearest neighbours'. Some screen shots of the nearest neigbhour graphic are presented below.
+
+![](images/app/NN_top.png) 
+![](images/app/NN_emp.png) 
+![](images/app/NN_client.png) 
+
+Tables detailing specific details of the most similar projects are also provided below the chart:
+
+![](images/app/NN_table_top.png) 
+![](images/app/NN_table.png)
 
 
+The similar projects are calculated using a different method from the blended algorithm but it is important to have a form of cross-checking and engage the user's own experiences. Further development and testing is required to assess how intuitive the results are for users to interpret, how much users trust the algorithm output given the variable plots and nearest neighbour charts, and finally how trustworthiness may be further improved.
 
 ## Limitations and Future Work
 
-The improvements in profit sound promising, however it is important to consider possible limitations in the data and implementation process, which in turn motivates future research. These include how accurately users of the algorithm would be capable of guessing input values before onset of a project and successful user uptake of the model, which was identified as a problem in the literature.
+The `r (best.mean-100)`% improvements in profit sound promising, however it is important to consider possible limitations in the data and implementation process, which in turn motivates future research. These include how accurately users of the algorithm would be capable of guessing input values before onset of a project and successful user uptake of the model, which was identified as a problem in the literature.
 
 First, succesfully estimating project variables is critical in translating this research into tangible business benefits. The research data was obtained from the company's records of *completed* projects and initial expected values of variables were not documented. For example, if a project lasted 2 years and it was initially expected to take 1.5 years, the only data the company retains is that it lasted two years. This begs the question, how well could a user predict the variables before beginning a project? Uncertainty has been managed by binning variables such as 'total amount invoiced' and 'timespan' to 5 or 6 broad categories (i.e. "1 day - 3 weeks", "3 weeks - 2.5 months", etc). However, two remaining categories: team size and percent of project completed by a professional level employees were left as continuous variables. It would be interesting to test how well business managers could guess these four variables at the start of a project. 
 
