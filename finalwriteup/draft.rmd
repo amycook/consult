@@ -3,9 +3,9 @@ title: "draft 1"
 author: "Amy Cook"
 date: "Tuesday, July 07, 2015"
 output:
-  html_document: default
   word_document:
     reference_docx: mystyles.docx
+  html_document: default
 bibliography: Library.bib
 ---
 
@@ -24,6 +24,7 @@ library('party')
 library('randomForest')
 library('RColorBrewer')
 library('pwr')
+library('scales')
 
 
 # detect OS
@@ -220,7 +221,7 @@ For the reasons explained above, the aim of this research is as follows:
 
 **General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. 
 
-The project outcomes are intended to assist the business in  predicting project costs before project engagement and other business analyses such as client analysis. Several statistical and machine learning techniques will be tested, compared and refined.
+The project outcomes are intended to assist the business in  predicting project costs before project engagement. Several statistical and machine learning techniques will be tested, compared and refined.
 
 
 **Hypothesis 1**
@@ -859,7 +860,7 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
 results.core = readRDS("reg_lm_core.rds")
 # n.samples(data = results.core$diff)
 
-results.A2 = readRDS("report_data/reg_lm.rds")
+results.A2 = readRDS("reg_lm.rds")
 results.A2 <- dplyr::filter(results.A2, diff>-15)
 # n.samples(data = results.A2$diff)
 
@@ -896,10 +897,10 @@ A student t-test indicates the difference is not significantly above 0 which is 
 ## Random Forest
 
 ```{r load_rf_results}
-results.rf.core = readRDS("report_data/reg_rf_core.rds")
+results.rf.core = readRDS("reg_rf_core.rds")
 # n.samples(data = results.rf.core$diff)
 
-results.rf2 = readRDS("report_data/reg_rf.rds")
+results.rf2 = readRDS("reg_rf.rds")
 # n.samples(data = results.rf2$diff)
 
 ```
@@ -1027,7 +1028,7 @@ ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) +
                          "log" = "Logistic Regression",
                          "naiive" = "Naiive Bayes", "rf" = "Random Forest"))
         
-        
+
         
 ```
 
@@ -1137,7 +1138,7 @@ The cForest highlighted the results from the Logistic Regression and Boosted Tre
 
 ```{r}
 
-log.varimp = readRDS("report_data/logblend.rds")
+log.varimp = readRDS("logblend.rds")
 
 log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
 colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
@@ -1181,7 +1182,7 @@ Single variables that were not also in interaction terms:
 
 ```{r}
 
-rf.varimp = readRDS("report_data/rfblend.rds")
+rf.varimp = readRDS("rfblend.rds")
 rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
 rf.varimp = add_rownames(rf.varimp)
 rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
@@ -1203,7 +1204,7 @@ Permutation importance by randomForest rated all three prediction models as most
 
 ```{r}
 
-boost.varimp = readRDS("report_data/boostblend.rds")
+boost.varimp = readRDS("boostblend.rds")
 boost.varimp = add_rownames(boost.varimp)
 # order levels
 boost.varimp$rowname <- factor(boost.varimp$rowname,
@@ -1236,7 +1237,7 @@ Random Forests and Boosted Trees passively interact explanatory variables, but f
 
 Only three of the model blending techniques used the 8 variables determined above. These were FWLS, randomForest, and Boosted Trees. The remaining 3 techniques used only the predictions of the three individual models. All six methods were compared against the original logistic regression model. Initially 100 train/test runs were performed for each blending method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
 
-```{r, fig.height=8}
+```{r blend_violin, fig.height=8}
 
 auc.list <- readRDS("report_data/blend_auc2.rds")
 means = lapply(auc.list, mean) %>% unlist
@@ -1289,8 +1290,7 @@ index = c(2:3)
 pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
 for(i in seq_along(index)){
         pvals$p_value[i] = t.test(auc.150[[1]], auc.150[[index[i]]])$p.value %>%
-                format(digits = 2) %>% as.numeric
-}
+                format(digits = 2) %>% as.numeric }
 
 signif = pvals %>% filter(p_value<0.05) %>% .$method
 auc.150 = melt(auc.150)
@@ -1312,6 +1312,7 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
                           name = "Mean AUC significantly \ngreater than Original \nLogistic Regression") +
         scale_colour_manual(values = c('navajowhite','sienna1'),
                           name = "Mean AUC significantly \ngreater than Original \nLogistic Regression")
+
 
 
 ```
@@ -1343,7 +1344,7 @@ The models output a 'probability' between 0 and 1 that each project will be a lo
 ```{r power_profit_curve}
 
 # How to achieve statistical power of 0.8?
-finance.plot = readRDS("report_data/plot_finance.rds" )
+finance.plot = readRDS("plot_finance.rds" )
 fin.summary.1 = finance.plot %>% group_by(threshold, method) %>% 
         summarise_each(funs(mean_profit_ratio = round(mean(.), 1), 
                             sd_prof_ratio = round(sd(.), 1)),
@@ -1386,7 +1387,7 @@ The plot below illustrates the results of each model at each threshold with a li
 
 ```{r profit_curve, fig.depth = 10}
 
-finance.plot = readRDS("report_data/plot_finance_100_4.rds" )
+finance.plot = readRDS("plot_finance_100_4.rds" )
 finance.plot$method <- factor(finance.plot$method, 
                                     levels=c("average", "simp.log","simp.boost",
                                              "comp.boost","comp.rf", "FWLS","orig.log",
@@ -1444,7 +1445,7 @@ best.fin <- best.fin %>% mutate(lower_bound_95CI = (mean_profit_ratio - 1.96*sd_
 best.fin <- best.fin %>% mutate(upper_bound_95CI = (mean_profit_ratio + 1.96*sd_prof_ratio)%>% round(1))
 
 kable(best.fin)
-# saveRDS(best.fin, "report_data/best_fin.rds")
+# saveRDS(best.fin, "best_fin.rds")
 
 best.mean = best.fin %>% filter(method == "simp.log") %>% .$mean_profit_ratio
 best.sd = best.fin %>% filter(method == "simp.log") %>% .$sd_prof_ratio
@@ -1498,7 +1499,7 @@ ggplot(finance.plot %>% filter(method == "simp.log"),
 
 ```{r load_winner_results}
 
-simp.l <- readRDS("report_data/finance_average_model.rds")
+simp.l <- readRDS("finance_average_model.rds")
 
 ```
 
@@ -1523,7 +1524,7 @@ It is not clear why simple linear models and the averaging model outperformed en
 To investigate method performance further, confusion matrix statistics were scrutinised. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss-making projects. If the project was predicted correctly as loss-making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
 
 ```{r TP_plot}
-conf.plot <- readRDS("report_data/conf_plot.rds")
+conf.plot <- readRDS("conf_plot.rds")
 
 #if model.pred = loss, this is TP
 conf.plot$model.pred <- ifelse(conf.plot$actual == "loss" & 
@@ -1562,7 +1563,7 @@ A summary of predicted results on actual profitable jobs is shown below at each 
 
 ```{r TN_plot}
 
-conf.plot <- readRDS("report_data/conf_plot.rds")
+conf.plot <- readRDS("conf_plot.rds")
 
 #if model.pred = loss, this is TP
 conf.plot$model.pred <- ifelse(conf.plot$actual == "profit" & 
@@ -1607,7 +1608,7 @@ The profit curves and TP/FP rates give a good indication of overall performance 
 All below plots and comments summarise results from one Simple Blended Logistic Regression Model. The results from this model were chosen because it represented the mean for improvement in profits output by this blending method. The plot below illustrates how the ratio of profitable to unprofitable jobs compare in the full project population vs. the rejected projects.
 
 ```{r}
-reject.plot <- readRDS('report_data/reject_plot.rds')
+reject.plot <- readRDS('reject_plot.rds')
 
 ggplot(reject.plot, aes(x = f.rpdol)) +
         geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +
@@ -1770,7 +1771,29 @@ need to build a pipeline of cleaning - only 11 variables now, not too hard
 
 # Conclusion
 
-The aim of this project was to predict the profitability of projects for consulting businesses using their internal CRM data. Specifically, a statistical or machine learning model was created based on historical project data. The second aim was to test whether the model would have a positive impact on the overall profitability of a case study business. These research aims were fulfilled and the prediction model was refined to a binary classification problem of whether a project would be profitable or loss-making. This suited the limited data size best which was also highly complex. After testing several machine-learning and statistical models, a blended model of logistic regression, random forests, and boosted tree models predicted project profitability best. When applied to improving overall profitability of the business, the blended model which simply averaged the raw probability results from the three aforementioned models outperformed the individual models as well as the logistic regression blended  model. Final results showed the model could improve profitability of the business by between `r (-1.96*best.sd + best.mean) %>% round(1)`% and `r (1.96*best.sd + best.mean) %>% round(1)`% (the 95% confidence interval) by rejecting projects that have a 'probability' of being a loss-making job over `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
+**General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. 
+
+The project outcomes are intended to assist the business in  predicting project costs before project engagement. Several statistical and machine learning techniques will be tested, compared and refined.
+
+
+**Hypothesis 1**
+A statistical or machine learning model based on historical project data can predict the profitability of a new project.
+
+**Hypothesis 2**
+The predictive model built from Hypothesis 1 can be shown to have a positive impact on the bottom line of the case study business.
+
+
+
+The objectives of this research consisted of a general aim and two research hypotheses, all of which have been fulfilled and tested. The findings made a significant contribution to the present body of literature and highlighted areas of future work that would refine the outcomes. 
+
+The general aim was to use statistical techniques to model the profitability of projects for a case study consulting business using their internal CRM data. This was rigorously completed by approaching the prediction of 'profitability' in two ways: as a regression problem predicting the degree of profitablility and as a binary classification problem predicting simply profit or loss. Several statistical and machine learning approaches were applied to both problems including naive bayes, bayesian networks, linear regression, random forests, gradient boosted trees and multiple methods of blending the individual models. 
+
+Hypothesis 1 stated a statistical or machine learning model based on the CRM data could predict the profitability of a new project. Testing this hypothesis revealed that the degree of profitability (the regression problem) could not be accurately predicted but whether a job would be profitable or not (binary classification) could be predicted to a level significantly better than random assignment (AUC = 0.76). This was achieved by 3 individual methods while various techniques that blended the individual methods improved results further (AUC = 0.77). It is likely the simpler task of binary classification suited the complex yet small data set better.
+
+Lastly, hypothesis 2 stated the best predictive model developed from hypothesis 1 could be shown to improve the overall profitability (bottom l ine) of the case study business. This theory was tested on a range of predictive models because their AUC scores were not directly linked to profitability once the models were applied to a business scenario.The models output a probability, so a business scenario was tested where a probability threshold was chosen, and if a project was scored below the threshold it was accepted while projects above the threshold were rejected. If a project was accepted, the profits and losses were summed while if a project was rejected the profits were forfeited. If a model performed perfectly, all losses  
+
+
+After testing several machine-learning and statistical models, a blended model of logistic regression, random forests, and boosted tree models predicted project profitability best. When applied to improving overall profitability of the business, the blended model which simply averaged the raw probability results from the three aforementioned models outperformed the individual models as well as the logistic regression blended  model. Final results showed the model could improve profitability of the business by between `r (-1.96*best.sd + best.mean) %>% round(1)`% and `r (1.96*best.sd + best.mean) %>% round(1)`% (the 95% confidence interval) by rejecting projects that have a 'probability' of being a loss-making job over `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
 
 These results make a significant contribution to literature in this area as they provide a clear framework for how a business can realise tangible profit improvements using a set of algorithms and project data that is passively collected by businesses. Previous studies verified algorithms' prediction accuracy in cost estimation but stopped short of how the algorithms could be implemented in every day decision making and the affect on budgets. Additionally, this research tested ensemble tree methods and furthermore blended models on the problem of cost estimation. Past research had largely experimented with regression models and to some extent neural networks and case based reasoning. The advantage of ensemble tree methods is that they provide insight into the model's reasoning while having comparable predictive power to neural networks. Having said that, a limitation to the study was that there was not sufficient data to utilise the strength of ensemble tree methods and logistic regression performed simiarly. However, the final highest performing model was a blend of regression and two ensemble tree methods. 
 
