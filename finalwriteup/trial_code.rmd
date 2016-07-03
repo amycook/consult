@@ -122,12 +122,12 @@ ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
 
 3
 
-```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 ANOVA models- core variables only") +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 ANOVA models \nCore Variables Only") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
@@ -135,12 +135,12 @@ results.core %>% ggplot(., aes(x =diff, y = ..density..))+
 
 4
 
-```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 ANOVA models - all variables sampled") +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 ANOVA models \nAll Variables Sampled") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
@@ -148,12 +148,12 @@ results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+
 
 5
 
-```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models- core variables only") +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models \nCore Variables Only") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
@@ -161,12 +161,12 @@ results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+
 
 6
 
-```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models - all variables sampled") +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models \nAll Variables Sampled") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
@@ -174,12 +174,12 @@ results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+
 
 7
 
-```{r, echo = FALSE, fig.cap = c("Distribution of RMSE's of 'return per dollar' from 100 randomForest models built on random subsamples of the variables")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of RMSE's of 'return per dollar' from 100 randomForest models built on random subsamples of the variables")}
 
 #plot histogram of RMSE's
 results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "RMSE", title = "Density Plot of RMSE for 100 randomForest models - Variables Randomly Sampled") +
+        labs(x = "RMSE", title = "Density Plot of RMSE for 100 randomForest models \nVariables Randomly Sampled") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 ```
@@ -510,7 +510,7 @@ ggplot(simp.l2, aes(x = prob.bin)) +
 
 ```
 
-```{r TP_plot, fig.cap = c("True positive and false negative rates for each blended method using a typical model from each - displayed as a bar graph.")}
+```{r TP_plot, fig.height = 5, fig.cap = c("True positive and false negative rates for each blended method using a typical model from each - displayed as a bar graph.")}
 conf.plot <- readRDS("conf_plot.rds")
 
 #if model.pred = loss, this is TP
@@ -526,7 +526,7 @@ ggplot(conf.plot %>% filter(actual == "loss"),
         geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
         scale_fill_manual(values = c('red2','dodgerblue2'),
                           labels = c("FN: predicted as profit", "TP: predicted as loss"),
-                          name = "Confusion \nMatrix Reference") +
+                          name = "Confusion Matrix Reference") +
         labs(x = "Method (Original or Blended)", y = "Percent of All Loss-Making Projects (%)",
              title = "Breakdown of True Positives and False Negatives for Loss-Making Jobs") +
         scale_x_discrete(labels = c("average" = "Simple Av",
@@ -538,11 +538,12 @@ ggplot(conf.plot %>% filter(actual == "loss"),
                                       "comp.boost"= "Complex BT",
                                       "comp.rf"= "Complex RF",
                                       "FWLS" = "FWLS")) +
-        theme(axis.text.x=element_text(angle=30, hjust=1))
+        theme(axis.text.x=element_text(angle=30, hjust=1),
+              legend.position = "bottom")
 
 ```
 
-```{r TN_plot, fig.cap = c("True negative and false positive rates for each blended method using a typical model from each - displayed as a bar graph.")}
+```{r TN_plot, fig.height = 5, fig.cap = c("True negative and false positive rates for each blended method using a typical model from each - displayed as a bar graph.")}
 
 conf.plot <- readRDS("conf_plot.rds")
 
@@ -562,7 +563,7 @@ ggplot(conf.plot %>% filter(actual == "profit"),
         geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
         scale_fill_manual(values = c('dodgerblue2','red2'),
                           labels = c("TN: predicted as profit", "FP: predicted as loss"),
-                          name = "Confusion \nMatrix Reference") +
+                          name = "Confusion Matrix Reference") +
         labs(x = "Method (Original or Blended)", y = "Percent of All Profitable Projects (%)",
              title = "Breakdown of True Negatives and False Positives for Profitable Jobs") +
         scale_x_discrete(labels = c("average" = "Simple Av",
@@ -574,7 +575,8 @@ ggplot(conf.plot %>% filter(actual == "profit"),
                                       "comp.boost"= "Complex BT",
                                       "comp.rf"= "Complex RF",
                                       "FWLS" = "FWLS")) +
-        theme(axis.text.x=element_text(angle=30, hjust=1))
+        theme(axis.text.x=element_text(angle=30, hjust=1),
+              legend.position = "bottom")
 
 ```
 
@@ -591,12 +593,13 @@ ggplot(reject.plot, aes(x = f.rpdol)) +
         scale_y_continuous(labels = scales::percent) +
         labs(x = "Project Performance", 
              y = "Relative Frequency",
-             title = "Ratio of Profitable vs. Loss-Making Projects")
+             title = "Ratio of Profitable vs. Loss-Making Projects") +
+        theme(panel.background = element_rect(fill = 'gray95'))
 
 ```
 
 
-```{r, fig.cap = c("Proportion of the absolute value of profits and losses from profitable and loss-making jobs in the rejected projects only. Colours are alternated between different jobs to indicate profit/loss magnitude. Predictions were from a typical simple Logistic Regression.")}
+```{r, fig.height = 5, fig.cap = c("Proportion of the absolute value of profits and losses from profitable and loss-making jobs in the rejected projects only. Colours are alternated between different jobs to indicate profit/loss magnitude. Predictions were from a typical simple Logistic Regression.")}
 ggplot(reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))), 
              aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
         geom_bar(stat = "identity") + 
@@ -624,7 +627,8 @@ ggplot(reject.plot,
                                        "reject"= "Rejected Projects Only"))) +
         labs(x = "% of Hours Completed by Professional Level Employee", 
              y = "Density",
-             title = "Density of Percentage of Hours by Professional Level Employees") 
+             title = "Density of Percentage of Hours by Professional Level Employees") +
+        theme(panel.background = element_rect(fill = 'gray95'))
 ```
 
 
@@ -639,7 +643,8 @@ ggplot(reject.plot,
         labs(x = "Timespan", 
              y = "Relative Frequency",
              title = "Relative Frequency of Project Timespans") + 
-        theme(axis.text.x=element_text(angle=30, hjust=1))
+        theme(axis.text.x=element_text(angle=30, hjust=1),
+              panel.background = element_rect(fill = 'gray95'))
 
 ```
 
@@ -655,7 +660,8 @@ ggplot(reject.plot,
         labs(x = "Return per Dollar", 
              y = "Density",
              title = "Density Plots of Return per Dollar") +
-        scale_x_continuous(labels = scales::dollar)
+        scale_x_continuous(labels = scales::dollar) +
+        theme(panel.background = element_rect(fill = 'gray95'))
 ```  
 
 
