@@ -3,44 +3,659 @@ title: "trials"
 author: "Amy Cook"
 date: "June 16, 2016"
 output: word_document
+bibliography: Library.bib
+
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('party')
+library('randomForest')
+library('RColorBrewer')
+library('pwr')
+library('scales')
+
+
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
+}
+
+opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
-$effort = \alpha*size^{\beta}$  
-$\alpha = productivity \ coefficient$  
-$\beta = economies \ of\ scale\ coefficient$  
-$size = estimated \ lines \ of \ code$
+```{r load_rf_results}
+results.rf.core = readRDS("reg_rf_core.rds")
+# n.samples(data = results.rf.core$diff)
 
-$$
-\begin{aligned}
- effort &= \alpha*size^{\beta} \\
- \alpha &= productivity \ coefficient \\
- \beta &= economies \ of\ scale\ coefficient \\
- size &= estimated \ lines \ of \ code
-\end{aligned}
-$$
+results.rf2 = readRDS("reg_rf.rds")
+# n.samples(data = results.rf2$diff)
+
+```
+
+```{r}
+#load results from 150 iterations
+auc.150 = readRDS("blend_auc150.rds")
+
+```
+
+```{r insert_data}
+# load function for determining number of required samples for 0.8 power
+n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
+        if(type.calc == "one.sample"){
+              d.calc = abs(mean(data))/sd(data)
+              pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                   power =.8, type = c(type.calc), 
+                                   alternative = alt)
+              return(ceiling(pow_pow$n))  
+        }
+        
+        if(type.calc == 'two.sample'){
+                d.calc = abs(mean(data[[1]])-mean(data[[2]]))/
+                        (sqrt((sd(data[[1]])^2+sd(data[[2]])^2)/2))
+                pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05,
+                                   power =.8, type = c(type.calc), 
+                                   alternative = 'two.sided')
+                return(ceiling(pow_pow$n)) 
+        }
+        
+}
+
+results.core = readRDS("reg_lm_core.rds")
+# n.samples(data = results.core$diff)
+
+results.A2 = readRDS("reg_lm.rds")
+results.A2 <- dplyr::filter(results.A2, diff>-15)
+# n.samples(data = results.A2$diff)
 
 
-* $project\ profit = total\ invoiced\ amount - cost\ from\ recorded\ employee\ hours$
-* $return\ per\ dollar = \frac{project\ profit}{cost\ from\ hours}$
+```
 
-* total amount invoiced * percent of job by professional level employee
-* total amount invoiced * client id
-* project category * number of employees on the job
+1
 
-| Variable Description                                                 | ANOVA | RF | CF |
-|----------------------------------------------------------------------|-------|----|----|
-| % of Hours Completed by a Professional-level Employee                | x     | x  | x  |
-| Timespan                                                             | x     | x  | x  |
-| Number of Employees on Project                                       | x     | x  | x  |
-| Amount Invoiced for Project                                          | x     | x  | x  |
-| Business Category of Client                                          | x     | x  | x  |
-| Project Category                                                     | x     |    | x  |
-| Total Amount Invoiced from the Client - Past Jobs                    |       | x  |    |
-| Discipline                                                           | x     |    |    |
-| Position of Main Project Employee - new variable from ANOVA findings | x     |    |    |
-| % of Hours by Main Project Employee                                  |       |    | x  |
-| Billing Type (requested by case study company)                       |       |    |    |
+
+```{r, echo=FALSE, fig.height=4.7, fig.cap = c("P-values of an ANOVA regression's F-statistics used to interpret variable importance")}
+
+plot.pvals = readRDS("AOV_varimp_plot.rds")
+
+ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
+        theme(axis.text.x = element_text(angle = 45, hjust = 1),
+              panel.background = element_rect(fill = 'grey95')) +
+        geom_hline(yintercept = 0.05, colour = 'red', linetype = 2) +
+        scale_y_continuous(breaks = c(0, 0.05, .25, .5, .75, 1)) +
+        labs(y = "P-value of F-statistic", x = "Independent Variables",
+             title = "Summary of variable F-statistic P-values from ANOVA models")
+
+
+```
+
+2
+
+
+```{r, echo = FALSE, fig.height = 4.5, fig.cap = c("Variable importance output from a cForest built from 15 core variables")}
+
+cfor.varimp = readRDS("cfor_varimp.rds")
+# how did pc.director sneak in there?
+cfor.varimp = cfor.varimp %>% filter(! var == "pc.director")
+
+ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_bar(stat='identity') +
+        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance Rankings of Complete Variables") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+```
+
+3
+
+```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+
+#plot histogram to show differences
+results.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
+        geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 ANOVA models- core variables only") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+
+```
+
+4
+
+```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+
+#plot histogram to show differences
+results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
+        geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 ANOVA models - all variables sampled") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+
+```
+
+5
+
+```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+
+#plot histogram to show differences
+results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
+        geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models- core variables only") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+
+```
+
+6
+
+```{r, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+
+#plot histogram to show differences
+results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
+        geom_histogram() + geom_density() +
+        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models - all variables sampled") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+
+```
+
+7
+
+```{r, echo = FALSE, fig.cap = c("Distribution of RMSE's of 'return per dollar' from 100 randomForest models built on random subsamples of the variables")}
+
+#plot histogram of RMSE's
+results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+ 
+        geom_histogram() + geom_density() +
+        labs(x = "RMSE", title = "Density Plot of RMSE for 100 randomForest models - Variables Randomly Sampled") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+```
+
+8
+
+```{r, fig.cap = c("Distribution of 'return per dollar' for all projects")}
+if(.Platform$OS.type == 'windows'){
+        all8a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv' )
+} else{
+        all8a<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all8a.csv')
+}
+ggplot(all8a, aes(x = return.pdol, y = ..density..)) + 
+        geom_histogram() + geom_density() +
+        labs(x = "Return per Dollar ($)", title = "Density Plot of Return per Dollar - All Projects") +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+```
+
+9
+
+```{r reduced_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Subsets of the data were used for Logistic Regression and randomForests in order to provide datasets without missing values.")}
+
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
+
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(reduc.totAUC[[2]], reduc.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+reduc.totAUC = melt(reduc.totAUC)
+reduc.totAUC$sigdiff = ifelse(reduc.totAUC$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different from boosted trees") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different from boosted trees") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom")
+        
+
+        
+```
+
+
+```{r mice_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
+
+mice.totAUC <- readRDS("mice_df_auc.rds")
+
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(mice.totAUC[[2]], mice.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+mice.totAUC = melt(mice.totAUC)
+mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
+
+ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different from boosted trees") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Significantly different from boosted trees") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of each Method - Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom")
+```
+
+```{r all_violin, fig.height = 4.6, fig.cap = c("Combined violin plots comparing AUC results for each method predicting profit/loss using subsets of data vs. the full imputed data set.")}
+
+reduc.totAUC$Data_Source = "Original"
+mice.totAUC$Data_Source = "Imputed"
+combine.micer <- rbind(reduc.totAUC, mice.totAUC)
+
+combine.micer$Data_Source <- factor(combine.micer$Data_Source, 
+                                    levels=c("Original", "Imputed"))
+
+
+ggplot(combine.micer, aes(x= factor(L1), y= value)) +
+        geom_violin(aes(fill = Data_Source, colour = Data_Source)) +
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+
+        # stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c('sienna1','navajowhite'),
+                          name = "Data Source") +
+        scale_colour_manual(values = c('sienna1','navajowhite'),
+                          name = "Data Source") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "Comparison of Original Data vs. Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naiive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom")
+        
+        
+```
+
+```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a cForest blended model. The results from the three best performing models were added as explanatory variables.")}
+
+cfor.varimp = readRDS("cfor_blend_varimp.rds")
+
+ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1),
+              panel.background = element_rect(fill = 'gray95')) + 
+        geom_bar(stat='identity') + 
+        labs(title = "Cforest Variable Importance: Blended Model",
+             x = "Variable", y = "Variable Importance Score")
+
+
+```
+
+```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a randomForest blended model. The results from the three best performing models were added as explanatory variables.")}
+
+rf.varimp = readRDS("rfblend.rds")
+rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
+rf.varimp = add_rownames(rf.varimp)
+rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
+# order levels
+rf.varimp$rowname <- factor(rf.varimp$rowname,
+                               levels= rf.varimp$rowname)
+
+#plot p values
+ggplot(data=rf.varimp, aes(x=rowname, y=MeanDecreaseAccuracy)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1),
+              panel.background = element_rect(fill = 'gray95')) +
+        geom_bar(stat='identity') +
+        labs(title = "randomForest Variable Importance: Blended Model")
+
+```
+
+```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a Boosted Tree blended model. The results from the three best performing models were added as explanatory variables")}
+
+boost.varimp = readRDS("boostblend.rds")
+boost.varimp = add_rownames(boost.varimp)
+# order levels
+boost.varimp$rowname <- factor(boost.varimp$rowname,
+                               levels= boost.varimp$rowname)
+
+#plot p values
+ggplot(data=boost.varimp, aes(x=rowname, y=rel.inf)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1),
+              panel.background = element_rect(fill = 'gray95')) +
+        geom_bar(stat='identity') +
+        labs(title = "Boosted Trees Variable Importance: Blended Model")
+
+```
+
+```{r blend_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.")}
+
+auc.list <- readRDS("blend_auc2.rds")
+means = lapply(auc.list, mean) %>% unlist
+greater = means[means> means["orig.log"]] %>% names
+auc.melt = melt(auc.list)
+auc.melt$greater = ifelse(auc.melt$L1 %in% greater, TRUE, FALSE)
+
+
+ggplot(auc.melt, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = greater, colour = greater)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 Blended Models of each Method") +
+        scale_x_discrete(labels = c("boost" = "BT Blend", 
+                         "log" = "FWLS", 
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR", 
+                         "rf" = "RF Blend",
+                         "simp.boost" = "Simple BT Blend",
+                         "simp.log" = "Simple LR Blend")) +
+        scale_fill_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC greater than Original Logistic Regression") +
+        scale_colour_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC greater than Original Logistic Regression") +
+        theme(legend.position = "bottom")
+
+```
+
+```{r, fig.height = 5.5, fig.cap = c("Violin plot illustrating the distribution of AUC values from the best three blending methods when predicting profit/loss. 150 models were built for each method to achieve a statistical power of 0.8.")}
+
+index = c(2:3)
+pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]], auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric }
+
+signif = pvals %>% filter(p_value<0.05) %>% .$method
+auc.150 = melt(auc.150)
+auc.150$signif = ifelse(auc.150$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(auc.150, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = signif, colour = signif)) + 
+        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
+        stat_summary(fun.y = "mean", geom="point", colour = "gray60", shape =3) +
+        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 150 Blended Models of Best Methods") +
+        scale_x_discrete(labels = c( 
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR",
+                         "simp.log" = "Simple LR Blend")) +
+        scale_fill_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC significantly greater than Original Logistic Regression") +
+        scale_colour_manual(values = c('navajowhite','sienna1'),
+                          name = "Mean AUC significantly greater than Original Logistic Regression") +
+        theme(legend.position = "bottom") 
+
+
+
+```
+
+```{r profit_curve, fig.height = 6, fig.cap = c("Profit Curves summarising results from 100 models of 9 methods: 3 simple blends, 3 complex blends, and the original 3 best methods.")}
+
+finance.plot = readRDS("plot_finance_100_4.rds" )
+finance.plot$method <- factor(finance.plot$method, 
+                                    levels=c("average", "simp.log","simp.boost",
+                                             "comp.boost","comp.rf", "FWLS","orig.log",
+                                             "orig.rf","orig.boost"))
+
+ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) + 
+        # geom_point(alpha = 0.005, shape = 16, size = 1) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) +
+        stat_summary(fun.y = mean, 
+                     fun.ymin = function(x) mean(x) - 1.96*sd(x),
+                     fun.ymax = function(x) mean(x) + 1.96*sd(x),
+                     fill = "gray", geom= "ribbon", alpha = 0.7, colour = NA) +
+        stat_summary(fun.y = mean, geom="line") +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) +  
+        theme(legend.position = "none",
+              panel.background = element_rect(fill = 'gray95')) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Profit Curve for Blended and Individual Models") + 
+        facet_wrap(~method, 
+                   labeller = labeller( method = c("average" = "Simple Average Blend",
+                                       "orig.boost"= "Orig. Boosted Trees",
+                                       "orig.log" = "Orig. Logistic Regression",
+                                       "orig.rf" = "Orig. Random Forest",
+                                       "simp.log" = "Simple Log. Reg. Blend",
+                                       "simp.boost" = "Simple Boosted Tree Blend",
+                                       "comp.boost"= "Complex Boosted Tree Blend",
+                                       "comp.rf"= "Complex randomForest Blend",
+                                       "FWLS" = "FWLS"
+                                       )))
+
+```
+
+```{r av_profit_curve, fig.height = 4.5, fig.cap = c("Profit Curve of the best performing method: the simple Logistic Regression Blended Method")}
+
+ggplot(finance.plot %>% filter(method == "simp.log"), 
+       aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        geom_point(alpha = 0.1, shape = 16) +
+        stat_summary(fun.y = mean, 
+                     fun.ymin = function(x) mean(x) - 1.96*sd(x),
+                     fun.ymax = function(x) mean(x) + 1.96*sd(x),
+                     fill = "gray", geom= "ribbon", alpha = 0.7, colour = NA) +
+        stat_summary(fun.y = mean, geom="line") +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        theme(legend.position = "none", 
+              panel.background = element_rect(fill = 'grey95')) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Profit Curve for Simple Logistic Regression Blended Model")
+
+```
+
+
+```{r, fig.height = 5.5, fig.cap = c("Distribution of projects according to the probability outputs from a typical simple Logistic Regression blended model. A bargraph of counts and relative profits are shown.")}
+
+reject.plot <- readRDS('reject_plot.rds')
+
+profs <- reject.plot  %>% .$balance.mlsto %>% abs %>% sum
+simp.l2 <- reject.plot %>% filter(compare == 'full') %>% select(simp.log, balance.mlsto, inv.mlsto.log)
+# simp.l2 <- mutate(simp.l2, invoiced.ratio = exp(inv.mlsto.log)/sum(exp(inv.mlsto.log))) 
+simp.l2$profit.ratio <- ifelse(simp.l2$balance.mlsto>0, simp.l2$balance.mlsto/profs,
+                              simp.l2$balance.mlsto/profs)
+simp.l2 <- rbind(simp.l2,simp.l2)
+simp.l2$faceter <- c(rep("hist", 2364), rep("profs",2364))
+simp.l2$prob.bin <- cut(simp.l2$simp.log, seq(0,1,by = 0.05), labels = seq(.05,1,by = 0.05))
+
+
+ggplot(simp.l2, aes(x = prob.bin)) + 
+        facet_grid(faceter~., scales = "free_y",
+                   labeller = labeller(faceter = c("hist" = "Count of Projects",
+                                       "profs"= "Relative Profits/Losses"
+                                       ))) +
+        geom_bar(data = simp.l2 %>% filter(faceter == "hist")) + 
+        geom_bar(data = simp.l2 %>% filter(faceter == "profs"),
+                 aes(x = prob.bin, y = profit.ratio), stat = "identity") +
+        # geom_bar(data = simp.l2 %>% filter(faceter == "inv"),
+                 # aes(x = prob.bin, y = invoiced.ratio), stat = "identity") +
+        labs(x = "Probability Score", 
+             y = "",
+             title = "Distribution of Project Counts and Project Profits Against Probability") +
+        geom_vline(xintercept = 10.5, colour = hcl(h = 15, l = 65, c = 100), linetype = 1,
+                   alpha = 0.8) +
+        theme(panel.background = element_rect(fill = 'gray95'))
+
+
+
+```
+
+```{r TP_plot, fig.cap = c("True positive and false negative rates for each blended method using a typical model from each - displayed as a bar graph.")}
+conf.plot <- readRDS("conf_plot.rds")
+
+#if model.pred = loss, this is TP
+conf.plot$model.pred <- ifelse(conf.plot$actual == "loss" & 
+                                       conf.plot$model.pred == "loss", "TP", "FN")
+# reorder levels in method to suit TP 
+conf.plot$method <- factor(conf.plot$method, 
+                           levels= conf.plot %>% filter(actual == "loss", model.pred == "TP") %>%
+                                   arrange(desc(pc)) %>% .$method)
+
+ggplot(conf.plot %>% filter(actual == "loss"), 
+       aes(x = method, y = pc, fill = model.pred)) +
+        geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
+        scale_fill_manual(values = c('red2','dodgerblue2'),
+                          labels = c("FN: predicted as profit", "TP: predicted as loss"),
+                          name = "Confusion \nMatrix Reference") +
+        labs(x = "Method (Original or Blended)", y = "Percent of All Loss-Making Projects (%)",
+             title = "Breakdown of True Positives and False Negatives for Loss-Making Jobs") +
+        scale_x_discrete(labels = c("average" = "Simple Av",
+                                      "orig.boost"= "Orig. BT",
+                                      "orig.log" = "Orig. LR",
+                                      "orig.rf" = "Orig. RF",
+                                      "simp.log" = "Simple LR",
+                                      "simp.boost" = "Simple BT",
+                                      "comp.boost"= "Complex BT",
+                                      "comp.rf"= "Complex RF",
+                                      "FWLS" = "FWLS")) +
+        theme(axis.text.x=element_text(angle=30, hjust=1))
+
+```
+
+```{r TN_plot, fig.cap = c("True negative and false positive rates for each blended method using a typical model from each - displayed as a bar graph.")}
+
+conf.plot <- readRDS("conf_plot.rds")
+
+#if model.pred = loss, this is TP
+conf.plot$model.pred <- ifelse(conf.plot$actual == "profit" & 
+                                       conf.plot$model.pred == "profit", "TN", "FP")
+# reorder levels in method to suit TP 
+conf.plot$method <- factor(conf.plot$method, 
+                           levels= conf.plot %>% filter(actual == "profit", model.pred == "TN") %>%
+                                   arrange(desc(pc)) %>% .$method)
+
+conf.plot$model.pred <- factor(conf.plot$model.pred, 
+                           levels= c("TN","FP"))
+
+ggplot(conf.plot %>% filter(actual == "profit"), 
+       aes(x = method, y = pc, fill = model.pred)) +
+        geom_bar(stat = "identity", position = "stack", alpha = 0.7) +
+        scale_fill_manual(values = c('dodgerblue2','red2'),
+                          labels = c("TN: predicted as profit", "FP: predicted as loss"),
+                          name = "Confusion \nMatrix Reference") +
+        labs(x = "Method (Original or Blended)", y = "Percent of All Profitable Projects (%)",
+             title = "Breakdown of True Negatives and False Positives for Profitable Jobs") +
+        scale_x_discrete(labels = c("average" = "Simple Av",
+                                      "orig.boost"= "Orig. BT",
+                                      "orig.log" = "Orig. LR",
+                                      "orig.rf" = "Orig. RF",
+                                      "simp.log" = "Simple LR",
+                                      "simp.boost" = "Simple BT",
+                                      "comp.boost"= "Complex BT",
+                                      "comp.rf"= "Complex RF",
+                                      "FWLS" = "FWLS")) +
+        theme(axis.text.x=element_text(angle=30, hjust=1))
+
+```
+
+
+```{r, fig.cap = c("Proportion of profitable and loss-making jobs in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
+reject.plot <- readRDS('reject_plot.rds')
+
+ggplot(reject.plot, aes(x = f.rpdol)) +
+        geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) + 
+        scale_y_continuous(labels = scales::percent) +
+        labs(x = "Project Performance", 
+             y = "Relative Frequency",
+             title = "Ratio of Profitable vs. Loss-Making Projects")
+
+```
+
+
+```{r, fig.cap = c("Proportion of the absolute value of profits and losses from profitable and loss-making jobs in the rejected projects only. Colours are alternated between different jobs to indicate profit/loss magnitude. Predictions were from a typical simple Logistic Regression.")}
+ggplot(reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))), 
+             aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
+        geom_bar(stat = "identity") + 
+        theme(legend.position="none") +
+        scale_fill_manual(values = rep(c('dodgerblue4', 'darkolivegreen1'), 59)) + 
+        scale_y_continuous(labels = scales::dollar) +
+        labs(x = "Project Performance", 
+             y = "Cumulative Profits/Losses",
+             title = "Magnitude of Profits/Losses from Rejected Projects") +
+        geom_text(data = NULL, x = .5, y = 720000, size = 3, 
+                  colour = "gray60", hjust = 0,
+                  label = "Alternate Colours \nIndicate Different \nProjects")
+
+
+```
+
+
+```{r, fig.cap = c("Distribution of the percentage of hours completed by a professional level employee in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
+ggplot(reject.plot, 
+             aes(x = pc.pro)) +
+        geom_density() + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "% of Hours Completed by Professional Level Employee", 
+             y = "Density",
+             title = "Density of Percentage of Hours by Professional Level Employees") 
+```
+
+
+```{r, fig.cap = c("Proportion of each timespan category for projects in the full data set vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
+ggplot(reject.plot, 
+             aes(x = b.timespan.cbrt)) +
+        geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "Timespan", 
+             y = "Relative Frequency",
+             title = "Relative Frequency of Project Timespans") + 
+        theme(axis.text.x=element_text(angle=30, hjust=1))
+
+```
+
+
+```{r, fig.cap = c("Distribution of 'return per dollar' in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
+ggplot(reject.plot, 
+             aes(x = return.pdol)) +
+        geom_density() + 
+        facet_wrap(~compare,
+                   labeller = labeller(compare = 
+                                        c("full" = "All Projects",
+                                       "reject"= "Rejected Projects Only"))) +
+        labs(x = "Return per Dollar", 
+             y = "Density",
+             title = "Density Plots of Return per Dollar") +
+        scale_x_continuous(labels = scales::dollar)
+```  
+
+
