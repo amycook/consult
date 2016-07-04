@@ -94,7 +94,7 @@ plot.pvals = readRDS("AOV_varimp_plot.rds")
 
 ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
         theme(axis.text.x = element_text(angle = 45, hjust = 1),
-              panel.background = element_rect(fill = 'grey95')) +
+              panel.background = element_rect(fill = 'gray95')) +
         geom_hline(yintercept = 0.05, colour = 'red', linetype = 2) +
         scale_y_continuous(breaks = c(0, 0.05, .25, .5, .75, 1)) +
         labs(y = "P-value of F-statistic", x = "Independent Variables",
@@ -113,7 +113,8 @@ cfor.varimp = readRDS("cfor_varimp.rds")
 cfor.varimp = cfor.varimp %>% filter(! var == "pc.director")
 
 ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
-        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1),
+              panel.background = element_rect(fill = 'gray95')) +
         geom_bar(stat='identity') +
         labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance Rankings of Complete Variables") +
         theme(panel.background = element_rect(fill = 'gray95'))
@@ -431,8 +432,8 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
                      fun.ymax = function(x) mean(x) + 1.96*sd(x),
                      fill = "gray", geom= "ribbon", alpha = 0.7, colour = NA) +
         stat_summary(fun.y = mean, geom="line") +
-        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
-        scale_x_continuous(breaks = seq(0,1, by = .1)) +  
+        scale_y_continuous(breaks = seq(0,110, by = 20)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .2)) +  
         theme(legend.position = "none",
               panel.background = element_rect(fill = 'gray95')) +
         labs(x = "Probability Threshold", 
@@ -467,7 +468,8 @@ ggplot(finance.plot %>% filter(method == "simp.log"),
         scale_y_continuous(breaks = seq(0,110, by = 10)) + 
         scale_x_continuous(breaks = seq(0,1, by = .1)) + 
         theme(legend.position = "none", 
-              panel.background = element_rect(fill = 'grey95')) +
+              panel.background = element_rect(fill = 'grey95'),
+              panel.grid.minor = element_blank()) +
         labs(x = "Probability Threshold", 
              y = "Ratio of Model Profit to Historical Profit (%)",
              title = "Profit Curve for Simple Logistic Regression Blended Model")
