@@ -593,6 +593,15 @@ profit.15 = costs*.15
 ```
 
 
+```{r}
+
+wot <- each.fold(methods = c("log", "rf", "boost"), df.assem = all10mice, x.folds.assem = 5,
+                 iterations = 100, seed = 200)
+
+saveRDS(wot, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+
+
+```
 
 
 

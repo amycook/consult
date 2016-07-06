@@ -362,5 +362,170 @@ iter.auc <- function(mult =2, x.folds.iter = 5,
 
 # dontknow = map(saveit, function(x) spread(x, iteration, pred))
 
+# new function for saving each individual results from 5-fold cross validation and performing
+# profit curve calc on each of the folds
+
+#each curve.fold will create 5 profit curves for the method. one method tackled at a time.
+curve.fold <- function(df.pred = all10mice, method = "log", list.folds = folds){
+        
+
+        #create NULL dataframe with row names from threshold values
+        prof.curvs = data.frame('threshold' = seq(0, 1, by = .05))
+        
+        
+        #define formula
+        if(method %in% c('log','rf')){
+                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+        } 
+        
+        if(method == 'boost') {
+                #no JD.Second
+                formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+        }
+        
+        #loop over each fold, and compile predictions
+        for (j in 1:length(list.folds)) {
+                
+                #turn predictors and response into 'ordered' variables for roc() to work
+                test<- df.pred[list.folds[[j]],]
+                levels(test$f.rpdol) <- c('profit', 'loss')
+                test$f.rpdol <- ordered(test$f.rpdol)
+                
+                if(method %in% 'rf'){
+                        fit <- randomForest(as.formula(formula), data = df.pred[-list.folds[[j]],], 
+                                            mtry = 4, ntree = 1000)
+                        pred <- predict(fit, test, type = "prob")
+                        pred <- pred[,2]
+                        
+                }
+                
+                if(method %in% 'log'){
+                        fit<- glm(as.formula(formula), 
+                                  data = df.pred[-list.folds[[j]],], family = binomial())
+                        pred <- predict(fit, test,
+                                        type = "response")
+                } 
+                if(method %in% 'boost'){
+                        fit <- gbm(as.formula(formula), data = df.pred[-list.folds[[j]],],
+                                   distribution = "bernoulli", n.trees = 10000,
+                                   shrinkage = 0.001, interaction.depth = 5,
+                                   n.minobsinnode = 20)
+                        
+                        pred <- predict(fit, test, n.tree = 10000, type = "response")
+                }
+                
+                
+                
+                #you are here! joijn test with pred! make sure indices align!
+                all.subset = cbind(test, pred)
+                
+        
+                #create profit curve threshold values == a column of values
+                prof.col = rep(NA, length(prof.curvs$threshold))
+                for (p in seq_along(prof.curvs$threshold)) {
+                        
+                        # sum the balance.mlsto of all jobs that fall below the cut off threshold
+                        # this equals the total profits (or losses!) across all jobs that were completed
+                        # given that you reject any job over the threshold
+                        
+                        prof <- all.subset[all.subset[ ,'pred'] < prof.curvs$threshold[p], 'balance.mlsto']
+                        
+                        prof.col[p] = sum(prof)
+                        
+                }
+                
+                #now have complete prof.col for this fold
+                #want the ratio, so divide all numbers by the final number for threshold = 1
+                prof.col = (prof.col/prof.col[21]) %>% round(2)
+                
+                # cbind this column to temp.pred:
+                prof.curvs <- cbind(prof.curvs, prof.col)
+                names(prof.curvs)[j+1] = paste("PC",j,method, sep = "")
+                
+                #print j value
+                cat(j, " ")
+                
+        }
+        
+        return(prof.curvs)
+        
+}
+
+#each iteration will create 5 profit curves for each method.
+
+each.fold <- function(methods = c("log", "rf", "boost"), df.assem = all10mice, x.folds.assem = 5,
+                     iterations = 100, seed = 400){
+        
+        set.seed(seed)
+        
+        # merge df.assem with original all6 to get balance.mlsto
+        if(.Platform$OS.type == 'windows'){
+                all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        } else{
+                all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        }
+        #iOS
+        all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
+        all6$mlsto <- as.character(all6$mlsto)
+        df.assem = left_join(df.assem, all6)
+        
+        
+        #create f.rpdol
+        df.assem$f.rpdol <- as.factor(df.assem$b.rpdol)
+        levels(df.assem$f.rpdol)[levels(df.assem$f.rpdol) == "0"] <-"profit"
+        levels(df.assem$f.rpdol)[levels(df.assem$f.rpdol) == "1"] <-"loss"
+        
+        
+        joined = vector("list", iterations)
+        
+        for(n in 1:iterations){
+                
+                print(
+                        paste("n =", n, "of", iterations,"\n", sep = ' ') %>% cat()
+                )
+                
+                #set up 5 fold cv using caret function
+                folds <- createFolds(df.assem$f.rpdol, k = x.folds.assem, list = T, returnTrain = F)
+                #now have folds[[1]] through folds[[5]] list of rows to exclude
+                check <- Reduce(intersect, list(levels(df.assem[folds[[1]],]$majority.pos),
+                       levels(df.assem[folds[[2]],]$majority.pos),
+                       levels(df.assem[folds[[3]],]$majority.pos),
+                       levels(df.assem[folds[[4]],]$majority.pos),
+                       levels(df.assem[folds[[5]],]$majority.pos)))
+                
+                while(!identical(check ,levels(df.assem$majority.pos))){
+                        folds <- createFolds(df.assem$f.rpdol, k = x.folds.assem, list = T, returnTrain = F)
+                        #now have folds[[1]] through folds[[5]] list of rows to exclude
+                        check <- Reduce(intersect, list(levels(df.assem[folds[[1]],]$majority.pos),
+                                                        levels(df.assem[folds[[2]],]$majority.pos),
+                                                        levels(df.assem[folds[[3]],]$majority.pos),
+                                                        levels(df.assem[folds[[4]],]$majority.pos),
+                                                        levels(df.assem[folds[[5]],]$majority.pos)))
+                }
+                
+                #test that the levels in each of the folds are the same for majority.pos, else re-run
+                
+                #create empty vectors  - one for each method
+                for(i in seq_along(methods)){
+                        temp = curve.fold(df.pred = df.assem, method = methods[i], list.folds = folds)
+                        
+                        if(is.null(joined[[n]])){
+                                joined[[n]] = temp
+                        } else{
+                                joined[[n]] = full_join(joined[[n]], temp)
+                        }
+                        
+                }
+                
+        }
+        
+        return(joined)
+        
+}
+
+
+
+
+
 
 

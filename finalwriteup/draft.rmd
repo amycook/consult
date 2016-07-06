@@ -49,6 +49,25 @@ Date....................
 
 # Abstract
 
+* Abstracts allow readers to quickly decide whether the research is relevant to their own interests
+* get at your main argument quickly
+
+*explain the purpose, goal methods, leave out results?
+
+* why did you do the study?, what is the problem
+* is it a general problem or something specific
+* why is it important?
+* why should someone read your essay?
+* what is your main claim?
+
+* discuss variables and your approaches
+* describe evidence to support your claim
+* overview of most important sources
+
+* Results: answer , was hypothesis supported
+
+* implications of your work, meaning
+
 # Table of Contents
 
 # Table of Figures
@@ -135,7 +154,7 @@ The ramifications of unprofitable projects are multifold. Employee morale deteri
 
 The challenge for consultants to reduce budget blowouts, in terms of hours spent, is not easily solved. Complex projects always differ from one another - similar work may demand significantly different amounts of time. For example, an ad filmed in a remote location will cost significantly more than an ad filmed on an existing set, even though the effect of the final advertisement could be identical. Therefore, a constant fixed price to produce an advert is clearly inappropriate, but some kind of fixed price is often demanded by the client before a project is awarded. Charging clients by the hour is not competitive enough in many industries. Other consultancies are often willing to offer a fixed flat fee for the same work, luring the client with reduced financial risk on their part. 
 
-Another strategy to mitigate risk is to agree to track employee hours, and stop work once the fixed consulting fee has been depleted. Then, negotiate further fees, or variations, with the client. This approach may satisfactorily reduce a consultant’s financial risk, however, may cause friction between the client and the consultant and affect potential repeat custom. Especially if the project followed a predictable process but the hours inflated beyond expectation (a common situation), consultants may prefer to wear losses or endure marginable profits to preserve their client relationship. Consultants may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry above creating financial friction. Clearly, there is not a straightforward contractual solution to reducing the financial risk taken on by consultant's who offer fixed fees in complex projects. In many industries, the reality of fixed flat fee structures are unavoidable businesses conform to survive.
+Another strategy to mitigate risk is to agree to track employee hours, and stop work once the fixed consulting fee has been depleted. Then, negotiate further fees, or variations, with the client. This approach may satisfactorily reduce a consultant’s financial risk, however, may cause friction between the client and the consultant and affect potential repeat custom. Especially if the project followed a predictable process but the hours inflated beyond expectation (a common situation), consultants may prefer to wear losses or endure marginable profits to preserve their client relationship. Consultants may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry above creating financial friction. Clearly, there is not a straightforward contractual solution to reducing the financial risk taken on by consultant's who offer fixed fees in complex projects. In many industries, the reality of fixed flat fee structures are unavoidable and businesses conform to survive.
 
 **Current Practice:**
 
@@ -145,7 +164,7 @@ A survey by Moores and Edwards in 1992 of 54 software developing companies found
 
 **Cost Estimation and Human Nature**
 
-@Lovallo2003 tackled the psychology behind the high failure rates of executives in predicting costs of projects such as manufacturing plant construction, mergers and acquisitions, large infrastructure and software development. Their theory stems from Kahneman's work on decision-making that won him the nobel prize for economics in 2002. His research argues that a person's natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project. A manager optimistically sees challenges in a project as something that can be overcome by the team's high skill level, and downplays or ignores the risk of problems that are out of the team's control. It is for this reason that it does not matter if the project is broken down to the highest level of detail for cost prediction, all complex projects are at risk of encountering a multitude of problems that the manager could never foresee. Each problem has a low chance of occurring, but in combination the risk is much greater [@Lovallo2003]. 
+@Lovallo2003 tackled the psychology behind the high failure rates of executives in predicting costs of projects such as manufacturing plant construction, mergers and acquisitions, large infrastructure and software development. Their theory stems from Kahneman's work on decision-making that won him the Nobel Prize for economics in 2002. His research argues that a person's natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project. A manager optimistically sees challenges in a project as something that can be overcome by the team's high skill level, and downplays or ignores the risk of problems that are out of the team's control. It is for this reason that it does not matter if the project is broken down to the highest level of detail for cost prediction, all complex projects are at risk of encountering a multitude of problems that the manager could never foresee. Each problem has a low chance of occurring, but in combination the risk is much greater [@Lovallo2003]. 
 
 @Lovallo2003 call the practise of analysing a project based on project details and its unique complexities the 'inside view'. This contrasts with an 'outside view' where a subject is analysed by comparison to other subjects and disregarding specific subject details. For example, research has shown that if people make predictions about their skills after being exposed to an 'outside view' (a summary of other people's skills), their predictions are significantly more accurate. According to @Lovallo2003, this 'outside view' can be applied to complex projects, and stipulates that the details of the current project are ignored in favour of analysing outcomes of several similar projects. Mobilising the outside view in this way is called reference class forecasting [@Lovallo2003]. One method @Lovallo2003 recommend is to obtain correlation statistics from past similar projects - the correlation between the forecast cost and the actual cost. The correlation for the current project can then be estimated via a statistical model, which is then used to adjust the forecasted cost made by detailed analysis (the inside view) [@Flyvbjerg2011]. Managers rarely analyse data from similar projects even though it could significantly improve cost predictions [@Flyvbjerg2011]. This tendency led to a formalised introduction of 'outside view' methods into some institutions. 
 
