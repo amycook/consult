@@ -600,7 +600,11 @@ wot <- each.fold(methods = c("log", "rf", "boost"), df.assem = all10mice, x.fold
 
 saveRDS(wot, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
 
-
+if(.Platform$OS.type == 'windows'){
+        ind_folds <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+} else{
+        ind_folds <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+}
 ```
 
 
