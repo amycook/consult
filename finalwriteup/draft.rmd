@@ -52,22 +52,38 @@ Date....................
 
 * Abstracts allow readers to quickly decide whether the research is relevant to their own interests
 * get at your main argument quickly
+* explain the purpose, goal methods, and results
 
-*explain the purpose, goal methods, leave out results?
 
 * why did you do the study?, what is the problem
-* is it a general problem or something specific
+performing loss-making jobs for fixed fees is a major problem in the consulting, particularly in the competitive construction industry. 
+
 * why is it important?
+affects the porfitability of a company which impacts the careers, internal morale, and even viability of a company.
+
 * why should someone read your essay?
+learn if a company's passively collected data could help them avoid loss making jobs or tactfully enforce strictier contracts.
+
 * what is your main claim?
+improve profitability by 9% by avoiding ~4% of projects is a possible way to interpret the agorithm output. other ways are possible.
 
 * discuss variables and your approaches
+variables: main employee, % time by each type of employee, team size, client charactersitcs, project characteristics (size, type of work, length)
+approaches: complex data with mnay variables, thousands of data points. tried regression as well as machine learning algs: randomf roest and boosted trees, bayesian networks, naive bayes.
+
 * describe evidence to support your claim
+hundred of cross validated trials using the 5 methods, as well as 5 blending methods. obtained a 95% confidence interval for each method and simple logistic regression of three models outperformed the others, closely followed by simple averaging. the 95% confidence interval across all cross validated trials was __ to __ profit improvement.
+
 * overview of most important sources
 
+
 * Results: answer , was hypothesis supported
+hypothesis was supprted: CAN improve bottom line of business by mobilising their passively collected data into mL algorhtms.
 
 * implications of your work, meaning
+more work to be done on testing the user interface and user ailities further. could assist managers in making better decisions about which projects they should reject or develop a more careful contract structure to improve profits.
+
+
 
 # Table of Contents
 
