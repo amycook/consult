@@ -605,6 +605,26 @@ if(.Platform$OS.type == 'windows'){
 } else{
         ind_folds <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
 }
+
+
+#plot profit curves for each fold
+names(ind_folds) <- c(1:100)
+folds_plot <- bind_rows(ind_folds, .id = "id")
+folds_plot <- gather(folds_plot, key = iteration, value = profit, -threshold, - id)
+
+temp = gsub("([:0-9:])", "\\1~", folds_plot$iteration, ignore.case = TRUE) %>% strsplit(., "~")
+
+
+folds_plot$iteration = sapply(temp, function(x) x[1])
+folds_plot$method = sapply(temp, function(x) x[2])
+
+ggplot(folds_plot, aes(x = threshold, y = profit, colour = id)) +
+        facet_wrap(~method) +
+        geom_point()+
+        # geom_line(aes(group = id)) +
+        theme(legend.position = "none")
+
+
 ```
 
 
