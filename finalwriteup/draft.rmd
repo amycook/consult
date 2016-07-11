@@ -41,12 +41,7 @@ if(.Platform$OS.type == 'windows'){
 opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
 ```
 
-Originality Statement
-
-'I hereby declare that this submission .... look up QUT'
-
-Signed .................
-Date....................
+# Keywords
 
 # Abstract
 
@@ -84,57 +79,11 @@ hypothesis was supprted: CAN improve bottom line of business by mobilising their
 more work to be done on testing the user interface and user ailities further. could assist managers in making better decisions about which projects they should reject or develop a more careful contract structure to improve profits.
 
 
-
 # Table of Contents
 
-# Table of Figures
+# List of Figures
 
 # List of Tables
-
-# Acronyms
-
-**ANOVA** - Analysis of Variance. A statistical test that can be applied to find whether there is a significant difference between the means of more than two groups. 
-
-**B2B** - Business to Business. Commerce transactions between two businesses.
-
-**CBR** - Case based reasoning. A method of estimating by using the results of similar cases. 
-
-**CRM** - Customer Relationship Management. Refers to a common type of software used by businesses to record client and project details as well as employee timesheet records. Generally accessable to each employee in a company. 
-
-**DAG** - Directed acyclic graph. A graph consisting of vertices connected by edges, where each edge directs a vertex to another vertex. The arrangement of the edges is such that a vertex cannot follow a path that loops back to itself. 
-
-**IT** - Information technology. The use of computers for storing, retrieving and processing information. 
-
-**BIM** - Building Information Modelling. A digital representation of physical characteristics of an object or structure. 
-
-**ROC** - receiver Operating Characteristic. An ROC curve plots the performance of a binary classification algorithm its scoring threshold is varied.
-
-**AUC** - Area under the curve. In this project, the area refers to the area under an ROC curve. Areas greater than 0.5 indicate predictions performing better than random chance while an area of 1 indicates perfect predictions.
-
-**TP** - True positive. The case where a case marked 'positive' in a dataset is correctly predicted 'positive' by an algorithm. Generally, 'positive' is assigned to categories for which the use case needs to be alerted. 
-
-**FP** - False positive. A case marked 'negative' in a dataset is incorrectly predicted 'positive' by an algorithm.
-
-**TN** - True negative. A case marked 'negative' in a dataset is correctly predicted 'negative' by an algorithm.
-
-**FN** - False negative. A case marked 'positive' in a dataset is incorrectly predicted 'negative' by an algorithm.
-
-**TPR** - True positive rate. The proportion of positives that were correctly identified (true positives).
-
-**FPR** - False positive rate. The proportion of positives that were incorrectly identified (false positives).
-
-**DA** - Discriminant analysis. Statistical analysis to predict a categorical response variable. 
-
-**CLV** - Customer Lifetime Value. Prediction of the profit a customer will bring over the course of a business' relationship with the customer.
-
-**IQR** - Interquartile range. A measurement of spread or variability for a continuous variable. When the data is ordered numerically and divided into four equally sized portions, the values that divide the portions are called quartiles (first, second, third and fourth quartiles). The first quartile has the highest value of the lowest quarter. The interquartile range is the third quartile value minus the first quartile.
-
-**ESS** - Error sum of squares. The sum of squared errors from a set of predictions.
-
-**RMSE** - Root mean squared error. The square root of the mean of the ESS.
-
-**FWLS** - Feature weighted linear stacking. A linear combination of model results which are interacted with original variables. This allows certain models to be weighted heavier for certain values of the original features.
-
 
 # Acknowledgements
 
@@ -142,18 +91,84 @@ more work to be done on testing the user interface and user ailities further. co
 
 Cook, A., Wu, P., & Mengersen, K. (2015, September). Machine Learning and Visual Analytics for Consulting Business Decision Support. In Big Data Visual Analytics (BDVA), 2015 (pp. 1-2). IEEE. 
 
+
+# Statement of Original Authorship
+
+The work contained in this thesis has not been previously submitted to meet requirements for an award at this or any other higher education institution. To the best of my knowledge and belief, the thesis contains no material previously published or written by another person except where due reference is made.
+
+Signed .................
+Date....................
+
+
+
+# Acronyms
+
+**ANOVA** - Analysis of Variance. A statistical test that can be applied to find whether there is a significant difference between the means of more than two groups. 
+
+**AUC** - Area under the curve. In this project, the area refers to the area under an ROC curve. Areas greater than 0.5 indicate predictions performing better than random chance while an area of 1 indicates perfect predictions.
+
+**B2B** - Business to Business. Commerce transactions between two businesses.
+
+**BIM** - Building Information Modelling. A digital representation of physical characteristics of an object or structure. 
+
+**CLV** - Customer Lifetime Value. Prediction of the profit a customer will bring over the course of a business' relationship with the customer.
+
+**CBR** - Case based reasoning. A method of estimating by using the results of similar cases. 
+
+**CRM** - Customer Relationship Management. Refers to a common type of software used by businesses to record client and project details as well as employee timesheet records. Generally accessable to each employee in a company. 
+
+**DA** - Discriminant analysis. Statistical analysis to predict a categorical response variable. 
+
+**DAG** - Directed acyclic graph. A graph consisting of vertices connected by edges, where each edge directs a vertex to another vertex. The arrangement of the edges is such that a vertex cannot follow a path that loops back to itself. 
+**ESS** - Error sum of squares. The sum of squared errors from a set of predictions.
+
+**FP** - False positive. A case marked 'negative' in a dataset is incorrectly predicted 'positive' by an algorithm.
+
+**FPR** - False positive rate. The proportion of positives that were incorrectly identified (false positives).
+
+**FN** - False negative. A case marked 'positive' in a dataset is incorrectly predicted 'negative' by an algorithm.
+
+**FWLS** - Feature weighted linear stacking. A linear combination of model results which are interacted with original variables. This allows certain models to be weighted heavier for certain values of the original features.
+
+**IT** - Information technology. The use of computers for storing, retrieving and processing information. 
+
+**IQR** - Interquartile range. A measurement of spread or variability for a continuous variable. When the data is ordered numerically and divided into four equally sized portions, the values that divide the portions are called quartiles (first, second, third and fourth quartiles). The first quartile has the highest value of the lowest quarter. The interquartile range is the third quartile value minus the first quartile.
+
+**RMSE** - Root mean squared error. The square root of the mean of the ESS.
+
+**ROC** - receiver Operating Characteristic. An ROC curve plots the performance of a binary classification algorithm its scoring threshold is varied.
+
+**TN** - True negative. A case marked 'negative' in a dataset is correctly predicted 'negative' by an algorithm.
+
+**TP** - True positive. The case where a case marked 'positive' in a dataset is correctly predicted 'positive' by an algorithm. Generally, 'positive' is assigned to categories for which the use case needs to be alerted. 
+
+**TPR** - True positive rate. The proportion of positives that were correctly identified (true positives).
+
+
+
 # Chapter 1: Introduction
 
-Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the individual is attempting the task for the first time. These errors are trivial in everyday activities, but they have more meaning for businesses that sell their time as their chief revenue. 
+Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the task is new and difficult. These errors are trivial in everyday activities, but for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being. 
+ 
+Consulting businesses give expert advice to other professionals in exchange for a fee based on the amount of time their consultanting staff spend on the project. The deliverable 'expert advice' is generally in the form of a document or a package of documents. A document could range from a 5 page report written by a single person to a sequence of hundreds of drawings assembled by a team of 10 over many years. Despite the range of possible deliverables, before any project commences, the client and consultant must agree on a fee, or at least a fee structure. The fee structure can be as creative as the engaged parties wish, but in fact tend to fit a few common models. A couple of simple examples are:
 
-Consulting businesses give expert advice to other professionals, in exchange for a fee for the amount of time a consultant spent on the problem. The delivery of 'expert advice' is generally in the form of a document (which could be anything from a report to hundreds of drawings) and can range from an hours advice to thousands of hours work. Before a project commences, the client and consultant must agree on a fee for the expert advice, or at least a fee structure. The nature of how a fee is formulated can be as creative as the engaged parties wish, however a couple of simple examples are as follows: the client agrees to pay for the consultants time by the hour until the task is complete, or the consultant provides a fixed fee to complete the project in full, regardless of their hours spent. Both contracts assign financial risk to one party which must then mitigate the risk to ensure profitability.
+1. The client agrees to pay for the consultants' time by the hour until the task is complete (referred to as hourly rate) or 
+2. the consultant offers a fixed fee to complete the project in full, regardless of time spent (referred to as fixed price or fixed fee). 
 
-This thesis focuses on the risk taken by a consulting company when agreeing to a fixed fee. Clients commonly collect fixed quotes from several consultants before settling with one or negotiating further so fees must be competitive. The way a consulting manager calculates their fixed fee varies from industry to industry and even company to company. Typically a consulting manager has experience in the type of project they are quoting and can use a combination of intuition, rules of thumb (such as a fraction of the entire project cost), and comparison to past projects. Such methods can result in a range of profit margins which ultimately depend on how well the manager predicts the amount of time a project demands. 
+In each of these contract models, financial risk is assigned to one of the parties. In model 1, the client must pay for an unknown quantity of consultants' billable hours and in model 2 the consultants must complete the project for a fixed price while not knowing how much of their own time will be spent.
 
-This thesis examines the problem of cost prediction via a case study on a company's internal project performance data for the previous twelve years. Statistical models based on historical project data were tested for their ability to predict profitability of projects using characteristics available at the beginning of a project. Furthermore, the potential for a model's predictions to improve a company's bottom line is investigated. This could be achieved with a strategy for how the model's predictions should change managers' fee proposals for risky projects. Due to the commercially sensitive nature of the data used, the source is not disclosed in this dissertation. Variables have also been renamed to ensure confidentiality is maintained, however, no such obfuscation has been applied in the methods used – which are presented with integrity.
+This thesis focuses on the risk taken by a consulting company when offering a fixed fee. Clients commonly seek fixed price quotes from several consultants before selecting one or negotiating further. Quoted fees must be competitive. 
+
+The way a consulting manager calculates a fixed price varies from industry to industry and even company to company. Typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb (such as a set fraction of the entire client budget for a large project). Such qualitative methods can result in profit margins which ultimately depend on the skill (or luck) the manager has in predicting the amount of time a project demands. 
+
+This thesis focuses on a single case study consulting company in the construction industry that has persevered through many fixed price projects that resulted in losses. A source of insight into the loss-making projects was identified - twelve years of passively collected data that described each project in terms of their clients, invoice history, employee hours and technical details. Was it possible to find trends in what makes a project loss-making and can these characteristics be identified before a fixed price is offered? Can these trends be modelled into a predictive algorithm, and if so, how could the outcomes be integrated into business decisions? Finally, if the predictive outcomes were integrated into decision-making, would they deinitely improve the business' bottom line? These questions are explored in depth and answered over the course of this dissertation.
+
+Due to the commercially sensitive nature of the data used, the source is not disclosed. Variables have been de-identified to ensure confidentiality is maintained.
 
 
 # Chapter 2: Problem Description
+
+“It’s tough to make predictions, especially about the future” - Source Unknown
 
 In this chapter the research motivations are explained along with the goals of the project and the specific research hypotheses. Finally the contributions of this body of work are outlined along with the structure of the thesis.
 
@@ -161,23 +176,32 @@ In this chapter the research motivations are explained along with the goals of t
 
 **Problem Description:**
 
-Project managers have struggled with forecasting project costs accurately for decades, across many industries. A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% [@Flyvbjerg2007]. A study across 1471 IT projects showed that 27% of projects ran over budget, and one in 6 of those projects were more than 200% over budget on average [@Flyvbjerg2011]. These statistics cast a concerning light on projects' hidden financial stories which can cause job losses, ruin private businesses, and shrink government balance sheets. 
+Project managers across many industries have always struggled with forecasting project costs. A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by an average of 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% [@Flyvbjerg2007]. A study across 1471 IT projects showed that 27% of projects ran over budget, and one in 6 of those projects were more than 200% over budget [@Flyvbjerg2011]. These statistics describe destructive conditions that can result in job losses, business bankruptcies, and government budget blow outs. 
 
-Although complex projects are more likely to run over budget, they reflect the complexities and priveleges of modern society - from major infrastructure, to housing, websites, and movies. All have functional and/or statutory requirements which are defined by a client, and are discharged through contracts to companies via a financially competitive process. Consulting companies who complete portions of these complex projects accept the financial risk that is contractually transferred to them. More specifically, the risk of the project owner is often transferred to their sub-consultant by mandating fixed flat fee structures to complete a given amount of work. The subconsultant commits to completing their role in a project for a nominated price, regardless of whether the work takes less or more time than initially anticipated. For privately owned businesses, mitigating this risk would increase the chances of the business surviving as well as growing and succeeding.
+Smaller consulting companies in competitive industries, such as the construction industry, experience similar difficulties in forecasting their project costs. They must offer appealing fixed prices in order to remain competitive and win projects. However, when these projects go over budget it negatively impacts the business in many ways. Employee morale deteriorates and employees may view themselves incompetent if they are responsible for the project's delivery. Employees also experience elevated stress attempting to complete underestimated projects within a disappearing budget and may compromise quality of work in exchange for speed. This is unfortunate if the only issue with the project was an under-estimated fee. Unprofitable projects also limit a business financially, hindering investment into marketing, training, and business development. The financial risk taken on fixed price projects may also discourage businesses from taking other, more calculated risks, such as expanding the business into a new area. Clearly, improving the prediction of project profitability would improve business growth and staff morale.
 
-The ramifications of unprofitable projects are multifold. Employee morale deteriorates and employees may view themselves incompetent if they are responsible for the project's delivery. Employees also experience elevated stress attempting to complete underestimated projects within a disappearing budget and may compromise quality of work in exchange for speed. This experience is unfortunate if in reality, the project fee was under-estimated. Unprofitable projects also limit a business' ability to invest money into marketing, training, and business development which would foster growth. The financial risk taken on fixed flat fee projects may also discourage businesses from taking other, more calculated risks, such as expanding the business into a new area. Logically, improving the prediction of project profitability could positively affect business growth opportunities and staff morale.
+**A Wicked Problem**
 
-**Why It's Not Easily Solvable:**
+The challenge for consultants to reduce budget blowouts, in terms of hours spent, is not easily solved. Complex projects always differ from one another - even similar work may end up demanding significantly different amounts of time. Even though this is known, a fixed price is often demanded by clients before a project is awarded. If an hourly rate fee structure is proposed, clients in many industries can simply turn to another consultant willing to take the financial risks involved with fixed price contracts **(...ref...)**. 
 
-The challenge for consultants to reduce budget blowouts, in terms of hours spent, is not easily solved. Complex projects always differ from one another - similar work may demand significantly different amounts of time. For example, an ad filmed in a remote location will cost significantly more than an ad filmed on an existing set, even though the effect of the final advertisement could be identical. Therefore, a constant fixed price to produce an advert is clearly inappropriate, but some kind of fixed price is often demanded by the client before a project is awarded. Charging clients by the hour is not competitive enough in many industries. Other consultancies are often willing to offer a fixed flat fee for the same work, luring the client with reduced financial risk on their part. 
+A compromise between hourly rate and fixed price fee structures is to track employee hours, and stop work once the fixed consulting fee has been exhausted. Then, negotiate further fees, or variations, with the client. This can either be the consultant's internal strategy or a strategy agreed upon by the client and consultant beforehand. If this strategy is proposed to the client before the project is awarded, it is likely the client would again turn to another consultant who is willing to offer a fixed price. If this approach is the consultant's internal strategy, their financial risk may satisfactorily be reduced. However, this behaviour may cause friction between the client and the consultant and reduce the potential for repeat business. If the project followed a predictable process but the hours inflated beyond expectation (a common situation), consultants may prefer to wear losses or endure marginable profits to preserve their client relationship. They may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry above creating financial friction. Clearly, there is not a straightforward contractual solution to reducing the financial risk taken on by consultant's who offer fixed prices in complex projects. In many industries, the reality of fixed price fee structures are unavoidable and businesses conform to survive.
 
-Another strategy to mitigate risk is to agree to track employee hours, and stop work once the fixed consulting fee has been depleted. Then, negotiate further fees, or variations, with the client. This approach may satisfactorily reduce a consultant’s financial risk, however, may cause friction between the client and the consultant and affect potential repeat custom. Especially if the project followed a predictable process but the hours inflated beyond expectation (a common situation), consultants may prefer to wear losses or endure marginable profits to preserve their client relationship. Consultants may believe it is in their best interest to maintain a reliable, trustworthy reputation in their industry above creating financial friction. Clearly, there is not a straightforward contractual solution to reducing the financial risk taken on by consultant's who offer fixed fees in complex projects. In many industries, the reality of fixed flat fee structures are unavoidable and businesses conform to survive.
+**Current Fixed Price Estimation Methods:**
 
-**Current Practice:**
+It has been established that estimating fixed price fees in consulting is a difficult task with unfortunate consequences if the price is estimated too conservatively. Thie project aims to mobilise a consultant's historic data describing profitable and loss-making jobs in order to improve their fixed price setting practices. But what is the current method for estimating fixed prices or project costs? Is past data currently used in other cost estimation practises and to what degree of success? 
+ 
+Unfortunately, limited research is available that docuemnts the methods industry uses to estimate costs or fixed price fees for complex-projects. However, two surveys are available: one from 2000 that covers construction project cost estimation, the other is from 1992 and focuses on IT project effort estimation (which can be likened to fixed price estimation for consultants). The construction cost estimation study by @Akintoye2000 surveyed 84 UK construction contractors, ranging from small to medium to large, about their estimating practices. They found that the main method was breaking the project into detailed parts and summing up the cost of each item. The next two most popular methods were 'comparison with similar projects based on documented facts', and 'comparison with similar projects based on personal experience'. These can all be classified as experience based models [@Akintoye2000].
 
-Limited research is available on complex-project cost estimation techniques performed by industry. However, two surveys are available from 2000: one on construction projects, the other on IT projects. The construction cost estimation study by @Akintoye2000 surveyed 84 UK construction contractors, ranging from small to medium to large, about their estimating practices. They found that the main method for cost estimation was breaking the project into detailed parts and adding up the cost of each item. The next two most popular methods were 'comparison with similar projects based on documented facts', and 'comparison with similar projects based on personal experience'. These can all be classified as experience based models [@Akintoye2000].
+A survey by Moores and Edwards of 54 software developing companies found that detailed project planning tools were used by most companies as opposed to cost estimation tools, suggesting that projects were priced based on an analysis of a detailed breakdown of tasks within a project. In the same survey, 91% of software companies cited cost estimation as a problem.
 
-A survey by Moores and Edwards in 1992 of 54 software developing companies found that detailed project planning tools were used by most companies as opposed to cost estimation tools, suggesting that projects were priced based on an analysis of a detailed breakdown of tasks within a project. In the same survey, 91% of software companies cited cost estimation as a problem. Although recent literature is limited,  cost estimation was identified as a problem and it was hypothesised that inexperience and lack of time were chief contributors [@Akintoye2000].
+Both surveys indicated cost and effort estimation were performed via a detailed breakdown of the tasks required to complete the project. Analysis of past project data was alluded to (comparison of similar projects) but a rigorous data analysis process was not common. Therefore it is worth investigating if a predictive model based on past data could improve the fixed price setting practice.
+
+
+
+**you are here**
+
+
+ 
 
 **Cost Estimation and Human Nature**
 
