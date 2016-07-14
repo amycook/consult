@@ -1,0 +1,44 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('party')
+library('randomForest')
+library('RColorBrewer')
+library('pwr')
+library('scales')
+
+
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
+}
+
+opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+
+$odds = e^{\ln\  odds}$
+
+
+
+
