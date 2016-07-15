@@ -39,6 +39,15 @@ opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo 
 
 $odds = e^{\ln\  odds}$
 
-
+| Date    | Hours | Charge Amount (\$)| Cost Amount (\$)| Created By | Discipline | Job No. | Reconciled | Scope       |
+|---------|-------|---------------|-------------|------------|------------|---------|------------|-------------|
+| 2014/09/01 | 4     | 640           | 400         | P12        | Civil      | 1.2.300 | Yes        | Concept     |
+| 2014/09/03 | 4.5   | 720           | 450         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/03 | 2     | 480           | 320         | P34        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/08 | 7     | 1120          | 700         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/09 | 1     | 160           | 100         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/15 | 3     | 390           | 240         | P3         | Structural | 1.2.400 | Yes        | Site        |
+| ...     | ...   | ...           | ...         | ...        | ...        |         | ...        | ...         |\
+\\
 
 
