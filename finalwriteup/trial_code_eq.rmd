@@ -50,4 +50,24 @@ $odds = e^{\ln\  odds}$
 | ...     | ...   | ...           | ...         | ...        | ...        |         | ...        | ...         |\
 \\
 
+$Overall\ Profit = Revenue\ from\ Project\ Invoices\ - (Employee + Business\ Costs)$
 
+$f(x) = \beta_{0} + \sum_{j = 1}^{p} X_{j} \beta_{j}$
+
+$RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
+
+
+where $X_{j}$ is simply something
+
+$X_{1}$, include the terms $X_{2} = X_1^2$ and $X_{3} = X_1^3$ to build a third degree polynomial. Interactions between explanatory variables can be modelled by including a terms such as $X_5 = X_4*X_1$ 
+
+$\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
+
+$$
+\begin{aligned}
+e^{\log(odds)} &= e^{\log\left(\frac{p}{1-p}\right)} \\ 
+&= e^{-\log\left(\frac{1-p}{p}\right)} \\ 
+&= e^{-\log\left(\frac{1}{p} - 1\right)} \\ 
+&= 1 - \frac{1}{p}
+\end{aligned}
+$$

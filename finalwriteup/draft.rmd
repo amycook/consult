@@ -133,6 +133,8 @@ more work to be done on testing the user interface and user ailities further. co
 
 # Acknowledgements
 
+- don't mention bligh tanner!
+
 # Publications
 
 Cook, A., Wu, P., & Mengersen, K. (2015, September). Machine Learning and Visual Analytics for Consulting Business Decision Support. In Big Data Visual Analytics (BDVA), 2015 (pp. 1-2). IEEE. 
@@ -150,9 +152,9 @@ Date....................
 
 # Chapter 1: Introduction
 
-Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the task is new and difficult. These errors are trivial in everyday activities, but for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being. 
+Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the task is new and difficult. These errors are trivial in everyday activities, but for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being. Furthermore,  
  
-Consulting businesses give expert advice to other professionals in exchange for a fee based on the amount of time their consultanting staff spend on the project. The deliverable 'expert advice' is generally in the form of a document or a package of documents. A document could range from a 5 page report written by a single person to a sequence of hundreds of drawings assembled by a team of 10 over many years. Despite the range of possible deliverables, before any project commences, the client and consultant must agree on a fee, or at least a fee structure. The fee structure can be as creative as the engaged parties wish, but in fact tend to fit a few common models. A couple of simple examples are:
+Consulting businesses give expert advice to other professionals in exchange for a fee based on the amount of time their consultanting staff spend on the project. The deliverable 'expert advice' is generally in the form of a document or a package of documents. A document could range from a 5 page report written by a single person to a sequence of hundreds of drawings assembled by a team of 10 over many years. Despite the range of possible deliverables, before any project commences, the client and consultant must agree on a fee, or at least a fee structure. The fee structure can be as creative as the engaged parties wish, but in fact tend to fit a few common models. A couple of examples are:
 
 1. The client agrees to pay for the consultants' time by the hour until the task is complete (referred to as hourly rate) or 
 2. the consultant offers a fixed fee to complete the project in full, regardless of time spent (referred to as fixed price or fixed fee). 
@@ -274,7 +276,7 @@ The case study provides an opportunity to test whether passively collected CRM d
 
 The most obvious limitation is that the work focuses on a single company in a specific industry, which limits the application of conclusions to a broader range of companies. This can be overcome by first determining the optimum method and variables for this case and then testing them on future case study companies.
 
-Another limitation is the type of unavailable data. Information on overall costs of construction projects was scarce. This is relevant because managers sometimes price jobs based on the budget for the entire project, of which the consultant is a minor part. For example, engineers may moderate their fee by 1% of the entire project cost. In the future, it would be beneficial for managers to record the expected total project cost at the beginning of a project versus the concluding completed cost. Another piece of data not recorded was the external factors influencing the fixed price quote including known competition from similar firms.
+Another limitation is the type of unavailable data. Information on overall costs of construction projects was scarce. This is relevant because managers sometimes price jobs based on the budget for the entire project, of which the consultant is a minor part. For example, engineers may moderate their fee by 1% of the entire project cost. Another piece of data not recorded was the external factors influencing the fixed price quote including known competition from similar firms.
 
 The database also excludes detailed technical information about each project. Such details are found in the preliminary drawings describing the project (square meterage, number of storeys), as well as project summary documents provided by the client to enable a quote. However, this level of information actually contradicts the purpose of the 'outside view', the intention of which is to present similar projects without being over-influenced by finer details. Given the lack of detailed information describing the physical size of projects, it was not reasonable for an algorithm to predict the numeric fee. Instead, it was more logical to predict the profitability of a project i.e. return per dollar. This measure represents the ratio of the amount invoiced to business costs, and can easily be compared between projects of different sizes.
 
@@ -293,10 +295,12 @@ For the reasons explained above, the aim of this research is as follows:
 The project outcomes are intended to assist the business in predicting project profitability before engagement. Several statistical and machine learning techniques were tested, compared and refined.
 
 **Hypothesis 1**
-A statistical or machine learning model based on historical project data can predict the profitability of a new project.
+A statistical or machine learning model based on historical project data can predict the profitability of a new project with greater accuracy than a baseline predictor. A baseline predictor for this project is one that predicts the average of a numeric response variable for all cases or, if the response variable is categorical, randomly assigned categories for each case, where the proportion of assigned categories matches the true categorical proportions.
 
 **Hypothesis 2**
-The predictive model built from Hypothesis 1 can be shown to have a positive impact on the bottom line of the case study business.
+The predictive model built from Hypothesis 1 can be shown to have a positive impact on the overall profit earned by the case study business. The overall profit is represented by the following equation:
+
+$Overall\ Profit = Revenue\ from\ Project\ Invoices\ - (Employee + Business\ Costs)$
 
 
 ## Thesis Contributions
@@ -305,25 +309,19 @@ In comparison to previous studies, this project advances the body of work on cos
 
 In past research, cost estimation datasets generally consisted of dozens of projects from a range of a companys and even countries. This thesis case study only had access to the company's internal data but this contained over 2,000 past jobs - far more than the usual cost estimation study and with many more variables. Furthermore, the problem of cost estimation is applied to a consulting company in the construction industry which differs from other studies in the construction industry that estimate actual construction costs. Consulting in the construction industry can be likened more to software development effort estimation although the nature of the work differs considerably.
 
-In addition to addressing cost estimation with a different kind of dataset, ensemble tree methods are applied which have been minimally tested on this problem. To date, Linear Regression, Neural Networks, Case Based Reasoning, and Support Vector Machines (SVM's) have been used to predict cost/effort even though ensemble tree methods can perform as well as Neural Networks in some cases and generally outperform Linear Regression (**ref**). Another benefit of ensemble trees is the output types available, such as partial dependency plots and variable importance plots that provide insight into the model's calculations. This contrasts Neural Networks and SVM's which are 'black-box' predictors. Providing insight to a user is a major benefit as past research has demonstrated issues with user trust and uptake of models, even if the models predicted well. It is anticipated that using internal data will also improve trust and create tangible meaning for the user. Blending multiple machine learning and statistical models has also not yet been applied to the cost estimation problem and may improve predictions.
+In addition to addressing cost estimation with a different kind of dataset, ensemble tree methods are applied which have been minimally tested on this problem. Ensemble tree methods combine hundreds or thousands of decision trees to make predictions. A single decision tree is a non-parametric machine-learned model built by progressively determining the best binary split to partition the data according to the response variable. For further explanation of the method behind decision trees and ensemble three excellent sources are @Hastie2009, @Elith2008, and @Breiman2005. To date, Linear Regression, Neural Networks, Case Based Reasoning, and Support Vector Machines (SVM's) have been used to predict cost/effort even though ensemble tree methods can perform as well as Neural Networks in some cases and generally outperform Linear Regression (**ref**). Another benefit of ensemble trees is the output types available, such as partial dependency plots and variable importance plots that provide insight into the model's calculations. This contrasts Neural Networks and SVM's which are 'black-box' predictors. Providing insight to a user is a major benefit as past research has demonstrated issues with user trust and uptake of models, even if the models predicted well. It is anticipated that using internal data will also improve trust and create tangible meaning for the user. Blending multiple machine learning and statistical models has also not yet been applied to the cost estimation problem and may improve predictions.
 
 Finally, this study propels the predictive model one step further than other studies by analysing bottom-line profit improvements that could result from the research. A few possibile ways to integrate model results into business decision-making scenarios are presented, and where possible, final profit increases are evaluated. This kind of thought experiment is designed to present a clear case for industry when evaluating if and how to adopt cost estimation models. 
 
 ## Thesis Structure
 
-The next chapter, Chapter 3 is a thorough review of the literature to date that relates to this thesis. This covers work solving the cost-estimation problem, studies on statistical and machine-learning models in business applications, and a review of effective statistical and machine learning methods. 
+The next chapter, Chapter 3 is a thorough review of the literature to date that relates to this thesis. This covers work solving the cost-estimation problem, studies on statistical and machine-learning models in business applications, and a review of potential statistical and machine learning methods. 
 
 Chapter 4 describes the method followed throughout the research process. It includes first how the data was obtained, the lengthy cleaning process, followed by variable importance analysis, variable selection, trials of selected predictive algorithms and problem constructs. The cost estimation problem was attempted first as a regression problem predicting return per dollar, followed by a simpler binary classification problem predicting profit or loss. Once the best methods were selected, they were blended in numerous ways, using both simple averaging techniques and sophisticated machine-learning algorithms. These were compared against individual models and the best constructs were selected. Finally the impact of the algorithm on the overall profits of the case study company was analysed via decision making scenarios. Further applications were also considered.
 
-The research outlined in the method were divided into four stages, each of which was assigned a chapter containing the results and discussion of that portion: 
+The research outlined in the method were divided into four stages, each of which was assigned a chapter containing the results and discussion of that portion. Chapter 5 describes the variable selection process. Chapter 6 and 7 cover the results of the two ways of framing the cost estimation problem: using regression models and binary classification models. Chapter 8 shows the outcomes of model blending, then Chapter 9  extends the predictive analyses into an overall profit analysis, as well as describing research limitations and future work.
 
-* Chapter 5: Variable Selection
-* Chapter 6: Regression Models
-* Chapter 7: Binary Classification Models
-* Chapter 8: Model blending,
-* Chapter 9: Extended Analysis including overall profit analysis, research limitations and future work
-
-The results section in each of the chapters listed above presents key charts and tables that progressively answer the research question: can a statistical or machine learning model based on a company's internal historical project data predict the profitability of a new project and have a positive impact on the bottom line of the business? Then, a discussion finalises each chapter, where the results are examined more deeply and analysed in a broader context. The nature of the results are also debated in terms of how surprising they were, their impact on the research hypotheses and limitations as well as suggested future work. The final chapter, the Conclusion, summarises the findings of the project, how the research answered the hypotheses and how the work could be viably applied in industry.
+The results section in each of the chapters listed above presents key charts and tables that progressively answer the research hypotheses: can a statistical or machine learning model based on a company's internal historical project data predict the profitability of a new project better than a baseline model? And would these predictions have a positive impact on the overall profits earned by the business? Then, a discussion finalises each chapter, where the results are examined more deeply and analysed in a broader context. The nature of the results are also debated in terms of how surprising they were, their impact on the research hypotheses and limitations as well as suggested future work. The final chapter, the Conclusion, summarises the findings of the project, how the research answered the hypotheses and how the work could be viably applied in industry.
 
 # Chapter 3: Literature Review 
 
@@ -437,31 +435,66 @@ As stated, the aim of this project is to use statistical and machine learning te
 
 ### Linear Regression
 
-Linear Regression is one of the simplest and most popular statistical prediction methods [@Hastie2009]. An equation for a line is learned, which is defined by a constant and a coefficient multiplied by the value of each variable. The coefficients are chosen to minimise the residual sum of squares (least squared) [@Hastie2009]. The reason for this method's popularity is that it is simple, provides stable predictions, and can be adapted for categorical variables [@Seng2010]. The integration of categorical variables is called Analysis of Variance (ANOVA) Linear Regression, and the algorithm compares group mean variances within the categorical variables. 
+Linear Regression is one of the simplest and most popular statistical prediction methods. An equation for a line is learned, which is defined by a constant and coefficients multiplied by each explanatory variable which are assumed to be independent. This can be mathematically represented by the equation below:
 
-There are several drawbacks to Linear Regression. For example assumptions must be made about the structure of the data. Predictor variables are assumed to be linearly related to the response variable and the variables to be normally distributed. Many real world phenomena do not correspond to these assumptions which can make it difficult, sometimes impossible, to produce useful results [@Hastie2009][@Putler2012]. Furthermore, response variables must be continuous numeric variables and if two or more predictor variables are correlated, the values of their coefficients are highly unstable. On the other hand, correlated variables do not impact the predictive accuracy of the model. A final drawback is that the variable coefficients cannot be used to compare variable importance unless the variables have all been standardised to one another (i.e. scaled to the same mean and standard deviation) [@Putler2012]. This limits the amount of insight that can be drawn from a Linear Regression model.
+$f(x) = \beta_{0} + \sum_{j = 1}^{p} X_{j} \beta_{j}$
+
+[@Hastie2009]
+
+where $X_{j}$ represents the jth input variable, $\beta_{j}$ is the coefficient or parameter being solved for, and $\beta_{0}$ is the y-intercept. The most popular method to find the coefficients is to minimise the residual sum of squares (ordinary least squared method). The residuals represent the Y distance of each point from the line (predicted values), and the residual sum of squares is the sum of the squared value of each point's residual. It can be represented by the equation below:
+
+$RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
+[@Hastie2009] 
+
+The reason for this method's popularity is that it is simple, provides stable predictions, and can be adapted for categorical variables [@Seng2010]. The integration of categorical variables is called Analysis of Variance (ANOVA) Linear Regression, and the algorithm compares group mean variances within the categorical variables.
+
+If structured correctly, linear regression results can show the importance of the explanatory variables. The variables must be standardised to one another (i.e. scaled to the same mean and standard deviation), and then the coefficients (the slopes) indicate how *much* a variable changes with the response variable. This relationship can then be compared against the other explanatory variables [@Putler2012]. However, if two or more predictor variables are correlated, the values of their coefficients are unstable. More specifically, this means that if the a model has two correlated variables, and is re-run with a slightly different set of data, the coefficients for the two variables may be quite different because the assumption of independent variables is not true. On the other hand, correlated variables do not impact the predictive accuracy of the model [@Putler2012].
+
+**http://stats.stackexchange.com/questions/65912/precise-meaning-of-and-comparison-between-influential-point-high-leverage-point**
+
+In linear regression, no assumptions are made about the distributions of the explanatory variables or response variable. Skewed explanatory variable distributions are acceptable but it is generally better to normalise them by, for example, taking the logarithm or square root of the variable. The reason for this is that the more extreme values from the skewed distribution may create high leverage points and influence the slope (variable coeffiecients) too strongly [@Chatterjee1986]. The distribution of the residuals on the other hand, should always be Gaussian with a mean of 0. This is because if modeled well, the regression equation should follow the shape of the data [@Hastie2009].
+
+Unfortunately many real world world phenomena do not have linear relationships which can make it difficult to produce accurate results using this method [@Breiman2001b]. There are methods to overcome this limitation such as including polynomial terms and interaction terms. For example, in the linear equation, as well as $X_{1}$, include the terms $X_{2} = X_1^2$ and $X_{3} = X_1^3$ to build a third degree polynomial. Interactions between explanatory variables can be modelled by including a term such as $X_5$ where $X_5 = X_4*X_1$. This versatility is advantageous, however it can be challenging to know which non-linear terms of which variables to include. Sometimes data cannot be closely modelled by any equation and this is where other non-linear non-parametric methods can outperform linear regression.
 
 Despite the limitations of Linear Regression models, they have widespread business applications due to their simplicity and ease of application. Regression is used to predict risk in the finance and insurance industries, predict who to target in marketing exercises, and predict consumption spending in the field of economics [@Harrell2013]. Its simplicity and success in other applications make Linear Regression a good starting point for analysis and can serve as a performance benchmark against complex models.
 
-
 ### Logistic Regression
 
-The method behind Linear Regression can be adapted to the prediction of a binary response variable (1 or 0). A linear equation is fit to the log of the odds of the binary response variable against each of the explanatory variables. The response variable (log odds) in the linear equation can then be translated back to odds by taking the inverse log, i.e. the exponential:
+The ordinary least squared regression method described in the previous section cannot be applied to binary classification problems, where the objective is to predict a probability of an event occurring. Probability is a continuous response variable, however predictions from a linear regression would not be bound by 0 and 1. Instead, predicted values could reach further along the line outputting probabilities greater than 1 and less than 0 which is difficult to interpret. Also, residuals from linear regression should be normally distributed, but this is not possible when the response variable consists of only two values (**refappstate**). 
 
-$odds = e^{\ln\  odds}$
+Nevertheless, the theory behind Linear Regression can be adapted to the prediction of probabilities pertaining to a binary response variable (1 or 0). First, a sigmoid function is assumed as the functional form of the probabilties against variable X. This is because it is pragmatic and works well: sigmoid functions can be bound by 0 and 1, and a logit transformation of the probability results in a linear relationship between the log odds and X. Refer to the equation below where *p* represents probability:
 
-Finally the odds is converted to probability by the following equation:
+$\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
+
+[@Macdonald1975]
+
+Because of the linear relationship, an equation can be fit to the log odds of the binary response variable against each of the explanatory variables using linear regression. Then, the linear equation describing the log odds can be transformed back to probability by taking the inverse log, i.e. the exponential and rearranging:
+
+http://www.appstate.edu/~whiteheadjc/service/logit/intro.htm
+https://en.wikipedia.org/wiki/Logit
+
+$$
+\begin{aligned}
+e^{\log(odds)} &= e^{\log\left(\frac{p}{1-p}\right)} \\ 
+&= e^{-\log\left(\frac{1-p}{p}\right)} \\ 
+&= e^{-\log\left(\frac{1}{p} - 1\right)} \\ 
+&= 1 - \frac{1}{p}
+\end{aligned}
+$$
+
+
+
 
 $probability = \frac{odds}{1 + odds}$ 
 
 [@Lowry2016]
 
-This translates the original log odds response variable to a probability S curve bounded by 0 and 1. An example of this translation is graphically shown below:
+This results in a sigmoidal function bound by 0 and 1 for the probability of the binary response variable against X. The sigmoidal function has been fit to the log odds in the data. This transformation is visualised graphically below:
 
 ![Plot of log odds vs. an 'x' variable and probability vs. the 'x' variable. To convert log odds to probability, an exponential transformation is first made followed by the transformation from odds to probability [@Lowry2016].](images/lit_review/logreg.JPG) 
  
 
-The result of this linear fit and logistic translation is a model that predicts the probability (between 0 and 1) that an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Similar pros and cons exist for Logistic Regression as Linear Regression, and it can be used as a benchmark to compare other binary predictive models for the same reasons. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survival/death [@Moore1989]. 
+The result of this linear fit and non linear transformation is a model that predicts the probability (between 0 and 1) that an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Similar pros and cons exist for Logistic Regression as Linear Regression, however the interpretation of the linear coefficients is more complex in logistic regression. A coefficient represents the change in the log odds of the response variable for each unit increase in an explanatory variable. Therefore, taking the exponential of the coefficient is the change in odds of the response variable. If the change in odds was 2, then if the explanatory variable increased by 1, the response variable event would be twice as likely to occur. Similarly to linear regression, logistic regression is a good  benchmark to compare other binary predictive models due to its simplicity and speed. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survival/death [@Moore1989]. 
 
 ### Naive Bayes
 
@@ -523,7 +556,7 @@ Ravi Kumar and Ravi [@Kumar2007] performed a detailed review of statistical and 
 
 When comparing Neural Networks to ensemble trees, Ravi Kumar and Ravi [@Kumar2007] found that Neural Networks and ensemble trees were both capable of out-performing the other, depending on the context.
 
-Their study also assessed ensemble techniques, which refers to combinations of two completely different algorithms, and found they can often outperform individual methods. For example, combining the contrasting advantages of Neural Networks and decision trees is a worthwhile ensemble technique. @Tsai2009's study combined these two methods after trialing each one. They were run successively with the Neural Network running first because it had a higher rate of prediction accuracy. Then, to resolve the notorious lack of explanatory qualities, decision trees were employed. The 81% of cases that were correctly predicted by the Neural Network were used to generate decision trees, and in turn useful decision rules [@Tsai2009]. This strategy is a promising way to benefit from the strengths of well performing complementary techniques.
+Their study also assessed ensemble techniques, which refers to combinations of two completely different algorithms, and found they can often outperform individual methods. For example, combining the contrasting advantages of Neural Networks and decision trees is a worthwhile ensemble technique. @Tsai2009's study combined these two methods after trialing each one. They were run successively with the Neural Network running first because it had a higher rate of prediction accuracy. Then, to resolve the notorious lack of explanatory qualities, decision trees were employed. The 81% of cases that were correctly predicted by the Neural Network were used to generate decision trees, and in turn decision rules that could be understood by decision makers [@Tsai2009]. This strategy is a promising way to benefit from the strengths of well performing complementary techniques.
 
 ### Employee Churn Case Study
  
@@ -558,7 +591,7 @@ Once the data was extracted from the CRM, an employee from the case study compan
 
 ## Cleaning and Variable Engineering
 
-The data contained a rich source of project information and a lengthy process of cleaning the data was required. Then, potentially useful variables were engineered which could be tested alongside original variables. The three initial datasets described:
+The data contained a rich source of project information and a lengthy process of cleaning the data was required. Then, potentially meaningful variables were engineered which could be tested alongside original variables. The three initial datasets described:
 
 * Invoicing records: dated invoiced amounts for each project and whether the invoice had been paid or alternatively, written off.
 
@@ -746,8 +779,6 @@ This means the problem could be framed as either a regression or binary classifi
 
 ## Model Comparison
 
-**you are here** 
- 
 To compare the models, the root mean squared error (RMSE) statistic was used for regression models and the area under the receiver operating characteristic (ROC) curve (AUC) statistic was used to measure binary classification. 
 
 An ROC graph visualises the curve from which an AUC score is calculated. Its two axes are the false positive rate (FPR) on the x-axis and true positive rate (TPR) on the y-axis. In this problem a 'positive' is a loss-making job so a TP is a case when the model predicts a job will be loss making, and it did indeed lose money. A false positive (FP) is when the model predicts a job will be loss making but in reality it was profitable. These values are calculated as follows:
@@ -767,7 +798,7 @@ To plot the curve in an ROC, a series of points and their coordinates must first
 ![An ROC defined by data points calculated from 5 probability thresholds [@Provost2013]](images/method/ROC2.JPG) 
 
 
-For binary classification, AUC is a more useful statistic than classification accuracy when output is available as a probability which can be applied to the problem. This is pertinent when it is useful to rank the outcomes and trial probability thresholds that will optimise the rates of true positives and true negatives [@Huang2005]. Note the 'probability' outputs from the models are not true statistical probabilities, but a score the model has assigned to a case using its own measure of certainty. 
+For binary classification, AUC is a more meaningful statistic than classification accuracy when the output is a probability which can be applied to the problem. The AUC indicates model performance across many thresholds while classification accuracy represents a single threshold. The AUC statistic is therefore useful in problems where cases can be ranked and a cut-off threshold that will optimise the rates of true positives and true negatives can be found [@Huang2005]. Note the 'probability' outputs from the models are not true statistical probabilities, but a score the model has assigned to a case using its own measure of certainty. 
 
 In order to compare which models performed significantly better than others, an adequate sample size of results statistics is required. Multiple models could be made by using different data in the training vs. testing sets, each providing a resulting test statistic (RMSE or AUC). 5 fold cross validation was used, which created 5 models, then the division of 5 folds was repeated using a different random seed to create another set of 5 training/testing data sets. Initially, 20 models of each method were created in this fashion. Then a two-sample power calculation was run using the two sets of 20 results to determine the sample size to achieve a statistical power of 0.8. Once the number of required samples was determined, more models were built via 5 fold cross validation to obtain additional results statistics. The highest performing models were advanced to the next stage where various methods of combining, or blending, methods were tested.
 
