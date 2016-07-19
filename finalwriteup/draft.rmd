@@ -38,7 +38,7 @@ if(.Platform$OS.type == 'windows'){
         opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
 }
 
-opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE, warning = FALSE)
 ```
 
 # Keywords
@@ -374,7 +374,7 @@ Case based reasoning (CBR) is a systematic method of expert judgment, where the 
 
 A study by @Kim2004 compared CBR to Neural Networks and Linear Regression in construction cost estimation. For CBR, the ESTEEM software package algorithmically calculated the similarity of variables, weighted the variables using gradient descent, and deduced the cost using the most similar cases (the specific method for this last step was not explained). The discussion compared mean absolute error rates of the three methods and showed that CBR was more accurate than Regression, but less accurate than Neural Networks in estimating cost. Despite Neural Networks outperforming CBR, CBR maintained advantages over Neural Networks which have been referenced in other studies as well.
 
-Advantages of CBR include algorithmic efficiency as well as user engagement. In @Kim2004's study, it was noted that CBR models were simple to update with new data in comparison to Neural Networks, which must be slowly re-trained and re-tuned. New cases also did not need to have every variable complete which can occur often in real, messy data. Neural Networks on the other hand require complete data. Another advantage of CBR is the ability for users to review chosen similar cases and make sense of the prediction, as opposed to Neural Networks [@Kim2004][@Elfaki2014][@Kumar2007]. One disadvantage is that accuracy can be highly dependent on the number of selected cases [@Elfaki2014]. Overall, CBR may provide prediction accuracies between regression and Neural Networks but the results can be justified by the user - a valuable asset.
+Advantages of CBR include algorithmic efficiency as well as user engagement. In @Kim2004's study, it was noted that CBR models were simple to update with new data in comparison to Neural Networks, which must be slowly re-trained and re-tuned. New cases also did not need to have every variable complete which can occur often in 'real world' data. Neural Networks on the other hand require complete data. Another advantage of CBR is the ability for users to review chosen similar cases and make sense of the prediction, as opposed to Neural Networks [@Kim2004][@Elfaki2014][@Kumar2007]. One disadvantage is that accuracy can be highly dependent on the number of selected cases [@Elfaki2014]. Overall, CBR may provide prediction accuracies between regression and Neural Networks but the results can be justified by the user - a valuable asset.
 
 CBR that is performed manually through personal experience, without the assistance of algorithms, was the second most popular method for construction estimation in @Akintoye2000's survey in the UK. This indicates it is quite an intuitive method that allows decision makers to cross check their detailed cost estimates, although an algorithmic version of CBR has not found success in industry. 
 
@@ -431,7 +431,7 @@ There is a need for research on algorithmic models that predict effort (and not 
 
 ### Introduction
 
-As stated, the aim of this project is to use statistical and machine learning techniques to model the profitability of projects. Several techniques will be tested and this section reviews a range of predictive algorithms that have been successfully applied to real, messy data. These vary from simple methods such as Linear Regression to complex, deep learning Neural Networks. The review of methods applied to the construction and IT industry highlighted the use of Linear Regression, Neural Networks, SVM's and in one case Boosted Trees for prediction, however research on other business problems utilised a wider range of methods. These include Naive Bayes, Random Forests, and machine learned Bayesian Networks. The following section presents each method's advantages and disadvantanges and an example of a successful application. 
+As stated, the aim of this project is to use statistical and machine learning techniques to model the profitability of projects. Several techniques will be tested and this section reviews a range of predictive algorithms that have been successfully applied to business and social data. These vary from simple methods such as Linear Regression to complex, deep learning Neural Networks. The review of methods applied to the construction and IT industry highlighted the use of Linear Regression, Neural Networks, SVM's and in one case Boosted Trees for prediction, however research on other business problems utilised a wider range of methods. These include Naive Bayes, Random Forests, and machine learned Bayesian Networks. The following section presents each method's advantages and disadvantanges and an example of a successful application. 
 
 ### Linear Regression
 
@@ -449,8 +449,6 @@ $RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
 The reason for this method's popularity is that it is simple, provides stable predictions, and can be adapted for categorical variables [@Seng2010]. The integration of categorical variables is called Analysis of Variance (ANOVA) Linear Regression, and the algorithm compares group mean variances within the categorical variables.
 
 If structured correctly, linear regression results can show the importance of the explanatory variables. The variables must be standardised to one another (i.e. scaled to the same mean and standard deviation), and then the coefficients (the slopes) indicate how *much* a variable changes with the response variable. This relationship can then be compared against the other explanatory variables [@Putler2012]. However, if two or more predictor variables are correlated, the values of their coefficients are unstable. More specifically, this means that if the a model has two correlated variables, and is re-run with a slightly different set of data, the coefficients for the two variables may be quite different because the assumption of independent variables is not true. On the other hand, correlated variables do not impact the predictive accuracy of the model [@Putler2012].
-
-**http://stats.stackexchange.com/questions/65912/precise-meaning-of-and-comparison-between-influential-point-high-leverage-point**
 
 In linear regression, no assumptions are made about the distributions of the explanatory variables or response variable. Skewed explanatory variable distributions are acceptable but it is generally better to normalise them by, for example, taking the logarithm or square root of the variable. The reason for this is that the more extreme values from the skewed distribution may create high leverage points and influence the slope (variable coeffiecients) too strongly [@Chatterjee1986]. The distribution of the residuals on the other hand, should always be Gaussian with a mean of 0. This is because if modeled well, the regression equation should follow the shape of the data [@Hastie2009].
 
@@ -470,55 +468,128 @@ $\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
 
 Because of the linear relationship, an equation can be fit to the log odds of the binary response variable against each of the explanatory variables using linear regression. Then, the linear equation describing the log odds can be transformed back to probability by taking the inverse log, i.e. the exponential and rearranging:
 
-http://www.appstate.edu/~whiteheadjc/service/logit/intro.htm
-https://en.wikipedia.org/wiki/Logit
 
 $$
 \begin{aligned}
-e^{\log(odds)} &= e^{\log\left(\frac{p}{1-p}\right)} \\ 
-&= e^{-\log\left(\frac{1-p}{p}\right)} \\ 
-&= e^{-\log\left(\frac{1}{p} - 1\right)} \\ 
-&= 1 - \frac{1}{p}
+\log(odds) &= \beta_0 + X_1\beta_1 \\ 
+\log\left(\frac{p}{1-p}\right) &= \beta_0 + X_1\beta_1 \\ 
+-\log\left(\frac{1-p}{p}\right) &= \beta_0 + X_1\beta_1 \\ 
+-\log\left(\frac{1}{p} - 1\right) &= \beta_0 + X_1\beta_1 \\ 
+\log\left(\frac{1}{p} - 1\right) &= -\beta_0 - X_1\beta_1 \\ 
+\exp\left(\log\left(\frac{1}{p} - 1\right)\right) &= \exp(-\beta_0 - X_1\beta_1) \\ 
+\frac{1}{p} - 1 &= \exp(-\beta_0 - X_1\beta_1) \\ 
+\frac{1}{p} &= 1 + \exp(-\beta_0 - X_1\beta_1) \\ 
+p &= \frac{1}{1 + \exp(-\beta_0 - X_1\beta_1)}
 \end{aligned}
 $$
 
+[@Macdonald1975]
 
-
-
-$probability = \frac{odds}{1 + odds}$ 
-
-[@Lowry2016]
-
-This results in a sigmoidal function bound by 0 and 1 for the probability of the binary response variable against X. The sigmoidal function has been fit to the log odds in the data. This transformation is visualised graphically below:
+The result in a sigmoidal function bound by 0 and 1 that describes the probability of the binary response variable against X. The sigmoidal function originates from a linear fit of the log odds in the data. This transformation is visualised graphically below:
 
 ![Plot of log odds vs. an 'x' variable and probability vs. the 'x' variable. To convert log odds to probability, an exponential transformation is first made followed by the transformation from odds to probability [@Lowry2016].](images/lit_review/logreg.JPG) 
  
 
-The result of this linear fit and non linear transformation is a model that predicts the probability (between 0 and 1) that an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Similar pros and cons exist for Logistic Regression as Linear Regression, however the interpretation of the linear coefficients is more complex in logistic regression. A coefficient represents the change in the log odds of the response variable for each unit increase in an explanatory variable. Therefore, taking the exponential of the coefficient is the change in odds of the response variable. If the change in odds was 2, then if the explanatory variable increased by 1, the response variable event would be twice as likely to occur. Similarly to linear regression, logistic regression is a good  benchmark to compare other binary predictive models due to its simplicity and speed. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survival/death [@Moore1989]. 
+The result of this linear fit and non linear transformation is a model that predicts the probability (between 0 and 1) that an input case will result in a 0 or 1 (i.e. success or failure) [@Moore1989]. Further tests must then be done to determine at what probability threshold a case would be predicted as 0 vs. 1. This would depend on the purpose of the predictive model, but an example would be the threshold that results in the highest number of correctly predicted 0's and 1's. 
+
+If two variables are being used to predict a binary response variable, the linear equation for the log odds can be transformed into a linear boundary in the two variables' feature space. First, a probability threshold must be chosen; say this threshold is 0.5. The linear equation for log odds can then be rearranged as follows:
+
+$$
+\begin{aligned} 
+\log(odds) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log\left(\frac{p}{1-p}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log\left(\frac{0.5}{0.5}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log\(1) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+0 &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+X_2\beta_2 &= -\beta_0 - X_1\beta_1 \\ 
+X_2 &= -\frac{\beta_0}{beta_2} - X_1\frac{\beta_1}{\beta_2} \\ 
+\end{aligned}
+$$
+
+This results in an equation for a line in the $X_2$ vs. $X_1$ feature space, where points are classified in the response variable according to whether they fall above or below the line (above or below the threshold). An example of what this looks like graphically is shown below:
+
+```{r log_reg_decboundary, fig.cap = c("Example Bivariate Decision Boundary for Probabability Threshold = 0.5")}
+set.seed(1234)
+
+X1 <- rnorm(20, 1, 2)
+X2 <- rnorm(20)
+
+y <- sign(-1 - 2 * X1 + 4 * X2 )
+
+y[ y == -1] <- 0
+
+df <- cbind.data.frame( y, X1, X2)
+
+mdl <- glm( y ~ . , data = df , family=binomial)
+
+slope <- coef(mdl)[2]/(-coef(mdl)[3])
+intercept <- coef(mdl)[1]/(-coef(mdl)[3]) 
+
+ggplot(df, aes(x = X1, y = X2, colour = y %>% as.factor)) +
+        geom_point(size = 2) +
+        geom_abline(slope = slope, intercept = intercept, colour = "darkgray", size = 0.8) +
+        theme(legend.position = "none") +
+        labs(title = "Logistic Regression Decision Boundary in Bivariate Space")
+
+```
+
+
+Similar pros and cons exist for Logistic Regression as Linear Regression, however the interpretation of the linear coefficients is more complex in Logistic Regression. A coefficient represents the change in the log odds of the response variable for each unit increase in an explanatory variable. Therefore, taking the exponential of the coefficient is the change in odds of the response variable. If the change in odds was 2, then if the explanatory variable increased by 1, the response variable event would be twice as likely to occur. Similarly to Linear Regression, Logistic Regression is a good  benchmark to compare other binary predictive models due to its simplicity and speed. Many business problems have binary response variables, such as yes/no, male/female, buy/do not buy, success/failure, or survival/death [@Moore1989]. 
 
 ### Naive Bayes
 
-The Naive Bayes method works by making conditional independence assumptions about the explanatory variables in order to simplify probability calculations for the response variable (the response variable must be categorical). More specifically, it is assumed that each variable is conditionally independent given the response class, without considering other predictor variables. Mathematically this means that each variable's probability contribution can be calculated by looking at the probability of a response class given a single variable's value. The probability of each response class can therefore be calculated for each explanatory variable. These are then combined for each possible response class using Bayes theorem, and the class with the highest probability is chosen [@Provost2013]. 
+The Naive Bayes method works by making conditional independence assumptions about the explanatory variables in order to simplify probability calculations for the response variable (the response variable must be categorical). To demonstrate the simplified calculation, consider a problem where Y is the response variable, and there are two explanatory variables, $X_1$ and $X_2$. If conditional independence is *not* assumed, the probability of $X_1$ and $X_2$ given Y is as follows:
 
-The advantages of this method are that the conditional independence assumption enables very fast calculations and predictions. The method can perform well in real world tasks because the assumption of independence does not significantly damage predictions. If multiple variables are actually related, the variables separately still direct the prediction in the correct direction. The correlated variables will double or triple their emphasis on the predicted response variable, however this does not necessarily impact classification accuracy because the final step is to choose the class with the *highest* probability [@Provost2013]. This is fine for ranking but the output probabilities are not accurate statistical probabilities [@Caruana2006]. Another disadvantage is that the distribution of the numeric variable must be assumed (often Gaussian) which the data may not fit into neatly [@Caruana2006]. 
+$p(X_1 X_2|Y) = p(X_1|Y) \cdot p(X_2|X_1 Y)$
+
+If conditional independence is assumed, the equation becomes:
+
+$p(X_1 X_2|Y) = p(X_1|Y) \cdot p(X_2|Y)$
+
+Therefore, if conditional independence is assumed, each variable's probability contribution can be calculated by looking at the probability of a variable's value given the response class only. This simplification can be favourably integrated into Bayes Theorem which is shown below:
+
+$p(A|B) = \frac{p(B|A) \cdot p(A)}{p(B)}$
+
+Say the probability of 'yes' or 'no' (in a binary reponse variable Y) given the explanatory variables $X_1$ and $X_2$ is being sought. The equation above could be rewritten for both possible response categories:
+
+$p(yes|X_1 X_2) = \frac{p(X_1 X_2|yes) \cdot p(yes)}{p(X_1 X_2)}$
+
+$p(no|X_1 X_2) = \frac{p(X_1 X_2|no) \cdot p(no)}{p(X_1 X_2)}$
+
+The aim is to find which category has a higher probability, so to simplify calcualtions, the denominator can be dropped. Because it is the same for both equations, the denominator does not affect the final ratio of probability of 'yes' to probability of 'no'. Integrating the assumption of conditional independence, the equations can be written as follows:
+
+$p(yes|X_1 X_2) = p(X_1|yes) \cdot p(X_2|yes) \cdot p(yes)$
+
+$p(no|X_1 X_2) = p(X_1|no) \cdot p(X_2|no) \cdot p(no)$
+
+
+These equations are simple to compute given the data, and the class with the highest probability is chosen [@Provost2013]. 
+
+The advantages of this method are that the conditional independence assumption enables very fast calculations and predictions. The method can perform well in real world tasks because the assumption of independence does not significantly damage predictions. If multiple variables are actually related, the variables separately still direct the prediction in the correct direction. The correlated variables will double or triple their emphasis on the predicted response variable, however this does not necessarily impact classification accuracy because the final step is to choose the class with the *highest* probability [@Provost2013]. This is fine for ranking but the output probabilities are not accurate statistical probabilities [@Caruana2006]. Another disadvantage is that the distribution of the numeric variable must be assumed (often Gaussian) in order to calculate the liklihood terms which the data may not fit into neatly [@Caruana2006]. 
+
+The Gaussian probability densities of two response classes can be visualised on a bivariate feature space. The two normal distrubtions represent the probability of each class given values of the two explanatory variables (x and y axes):
+
+![Plot of Gaussian probability density distributions of two response classes given two explanatory variables (represented by the x and y axes) [@Bulatov2010].](images/lit_review/NB_boundary2.JPG) 
+
+Where the density functions intersect becomes the decision boundary between the two classes.
 
 One real world success story for this classifier hinged on its ability to be refined incrementally with each piece of new data, as opposed to re-calibrating the entire model. Naive Bayes was used in a complex spam detection system where new spam emails or toxic text themes could be quickly added to the filtering model. Although the example is quite different to cost estimation, the Naive Bayes method generally provides a good benchmark to compare against more complex models that should outperform it [@Caruana2006].
 
 
 ### Decision Trees/ Ensemble Trees
 
-Decision trees are one of the simplest and most intuitive machine learning methods. There are several brands of basic decision tree algorithms including ID3, C4.5, CART, and CHAID with CART and C4.5 being the most popular [@Kabra2011]. Ravi Kumar and Ravi [@Kumar2007] recommended the CART algorithm as it is capable of solving both classification and regression problems whereas the remaining decision trees solve classification problems only. Single decision trees tend to overfit the data and provide low predictive accuracy but on the other hand create intuitive rules that a decision maker can follow in real-life scenarios. In addition, their results do not depend heavily on the skill of the data analyst [@Kabra2011][@Putler2012].
+Decision trees are one of the simplest and most intuitive machine learning methods. There are several brands of basic decision tree algorithms including ID3, C4.5, CART, and CHAID with CART and C4.5 being the most popular [@Kabra2011]. Ravi Kumar and Ravi [@Kumar2007] recommended the CART algorithm as it is capable of solving both classification and regression problems whereas the remaining decision trees solve classification problems only. Single decision trees tend to overfit the data and provide low predictive accuracy but on the other hand create intuitive rules that a decision maker can follow in real-life scenarios [@Kabra2011][@Putler2012].
 
-To combat the problems of low predictive accuracy and instability, ensemble tree methods were pioneered in the 1990's with success [@Breiman1996]. Three examples of these methods are boostrap aggregating (bagging), boosting, and Random Forests. Bagging creates multiple trees by sampling a different training data set (*with* replacement) for each tree and then combining tree results [@Breiman1996]. Random forests is an advanced form of bagging and builds on the idea of training multiple trees from the same data by sampling bootstrapped training sets with replacement. However, when creating each tree, a random subset of attributes (variables) is considered at each split. The reduced subset of attributes is resampled for each split in the tree. This allows dominant variables to be suppressed for a fraction of the splits, allowing the algorithm to explore signals in weaker variables. It also prevents the trees from becoming too correlated [@Breiman2001a]. The boosted decision tree approach applies gradient descent theory to a series of decision trees. The trees are limited to a certain depth to maintain simplicity, and each tree models the residuals (or errors) of the preceding tree. The limited depth of each tree prevents overfitting at each stage and the combined result of up to thousands of trees is very powerful [@Elith2008]. The three methods of combining hundreds or thousands of trees turn decision trees into high performing, stable predictors. 
+To combat the problems of low predictive accuracy and instability, ensemble tree methods were pioneered in the 1990's [@Breiman1996]. Three examples of these methods are boostrap aggregating (bagging), boosting, and Random Forests. Bagging creates multiple trees by sampling a different training data set (*with* replacement) for each tree and then combining tree results [@Breiman1996]. Random forests is an advanced form of bagging and builds on the idea of training multiple trees from the same data by sampling bootstrapped training sets with replacement. However, when creating each tree, a random subset of attributes (variables) is considered at each split. The reduced subset of attributes is resampled for each split in the tree. This allows dominant variables to be suppressed for a fraction of the splits, allowing the algorithm to explore signals in weaker variables. It also prevents the trees from becoming too correlated [@Breiman2001a]. The boosted decision tree approach applies gradient descent theory to a series of decision trees. The trees are limited to a certain depth to maintain simplicity, and each tree models the residuals (or errors) of the preceding tree. The limited depth of each tree prevents overfitting at each stage and the combined result of up to thousands of trees is very powerful [@Elith2008]. The three methods of combining hundreds or thousands of trees turn decision trees into high performing, stable predictors. 
 
 Ensemble decision trees have a different foundation to traditional prediction methods such as regression. For this reason, there are some advantages and disadvantages. Decision trees use a progression of binary splits which means the data is first split by one variable at a certain value into two subsets. Then each subset is split by another variable and so on in order to partition the response variable values into groups with similar values. The aim of each split is to achieve the most 'pure' split of the response values in a greedy fashion. If this process is visualised graphically, it is clear that non-linear relationships can be captured.
 
 ![Graphical illustration of non-linear splits derived from a decision tree with two variables [@Jeevan2015].](images/lit_review/dec_tree.JPG) 
 
 
-In contrast to Linear Regression, the predictor variables do not need to be transformed as no assumptions need to be made about the data's statistical distributions [@Louppe2014][@Radenkovic2010]. Other advantages are that ensemble tree methods are faster than SVM's and Neural Networks but performing just as well and even provide insights such as variable importance and variable relationships [@Sealfon2012]. Random forests in particular have the benefit of being unaffected by noise in the data and has the capacity to handle a large number of variables [@Sealfon2012]. Caruana [@Caruana2006] tested Boosted Trees, Random Forests, Neural Networks, SVM's, Logistic Regression and Naive Bayes on 11 binary classification problems and found that Boosted Trees performed best, followed by Random Forests. This demonstrates how ensemble tree methods are capable of competing with high level machine learning algorithms.  
+Similarly to Linear Regression, the predictor variables do not need to be transformed as no assumptions need to be made about the data's statistical distributions [@Louppe2014][@Radenkovic2010]. However, it is often wise to transform skewed distributions to achieve more even segmentation. Other advantages are that ensemble tree methods are faster than SVM's and Neural Networks but perform just as well and even provide insights such as variable importance and variable relationships [@Sealfon2012]. Random forests in particular have the benefit of being unaffected by noise in the data and has the capacity to handle a large number of variables [@Sealfon2012]. Caruana [@Caruana2006] tested Boosted Trees, Random Forests, Neural Networks, SVM's, Logistic Regression and Naive Bayes on 11 binary classification problems and found that Boosted Trees performed best, followed by Random Forests. This demonstrates how ensemble tree methods are capable of competing with high level machine learning algorithms.  
 
-Although ensemble trees have numerous advantages it is understand their limitations. Trees are not built on a probabilistic framework, and therefore their results can not be provided in this framework. For example, statistical confidence intervals for predictions are not available for standard ensemble methods [@Louppe2014]. This may or may not be required depending on the nature of the problem. Also, variable importance tables provided by Random Forests and Boosted Trees can be biased towards variables with many categories and another type of ensemble method, conditional forests, should be used [@Radenkovic2010]. The methods can also be prone to overfitting if not tuned carefully [@Louppe2014][@Caruana2006].
+Although ensemble trees have numerous advantages it is just as important to understand their limitations. Trees are not built on a probabilistic framework, and therefore their results can not be provided in this framework. For example, statistical confidence intervals for predictions are not available for standard ensemble methods [@Louppe2014]. This will be addressed again in the summary for this section. Also, variable importance tables provided by Random Forests and Boosted Trees can be biased towards variables with many categories and another type of ensemble method, conditional forests, should be used [@Radenkovic2010]. The methods can also be prone to overfitting if not tuned carefully [@Louppe2014][@Caruana2006].
 
 ### Bayesian Networks
 
@@ -541,9 +612,13 @@ The concept can be adapted to nonlinear boundaries by performing kernel transfor
 
 ### Summary
 
-This section reviewed the advantages and disadvantages of statistical and machine learning techniques that have been successfully applied to business problems. These included Linear Regression, Logistic Regression, Naive Bayes, decision trees and ensemble trees, Bayesian Networks, Neural Networks, and SVM's. Linear/Logistic Regression and Naive Bayes are computationally very fast with a simple concept that make broad assumptions about the data, but work well as baseline models against which to compare complex models. In certain cases these simpler models are significantly outperformed by complex models however it is important to compare both. Neural networks and SVM's are excellent machine learning predictors but are slow black box algorithms and are not appropriate for the effort estimation problem. 
+This section reviewed the advantages and disadvantages of statistical and machine learning techniques that have been successfully applied to business problems. These included Linear Regression, Logistic Regression, Naive Bayes, decision trees and ensemble trees, Bayesian Networks, Neural Networks, and SVM's. Linear/Logistic Regression and Naive Bayes are computationally very fast with a simple concept that make some parametric assumptions about the variable relationships, but work well as baseline models against which to compare complex models. In certain cases these simpler models are significantly outperformed by complex models however it is important to compare both. Neural networks and SVM's are excellent machine learning predictors but are slow black box algorithms and are not appropriate for the effort estimation problem. 
 
-Ensemble tree methods are capable of performing as well as Neural Networks and SVM's and make no assumptions about the structure of the data, but provide insights into the model such as variable importance and variable relationships. Bayesian networks are excellent for visually presenting the structure and reasoning behind the predictive model, however are very slow to train and have generally been excluded from the machine learning literature in comparison to the other methods. This may be due to low awareness of learned Bayesian Networks or lower performance. In conclusion, simple models such as linear/Logistic Regression and Naive Bayes are good baseline models to implement, while ensemble tree methods and Bayesian Networks may handle messy 'real world' data better than the simpler models while providing insight to decision makers.
+Ensemble tree methods are capable of performing as well as Neural Networks and SVM's and make no assumptions about the structure of the data, but provide insights into the model such as variable importance and variable relationships. Bayesian networks are excellent for visually presenting the structure and reasoning behind the predictive model, however are very slow to train and have generally been excluded from the machine learning literature in comparison to the other methods. This may be due to low awareness of learned Bayesian Networks or lower performance. 
+
+None of the methods output statistical uncertainty or a confidence interval associated with each prediction. Understanding uncertainty should always be sought in decision making be it from a confidence interval or sensitivity testing. One way to achieve this would be to build hundreds of models using the same method but based on different training divisions of the data. This would produce a range of results for each case, and a statistical confidence interval or classification probability can be calculated for each prediction. Another way for a decision maker to get a feel for uncertainty is to perform sensitivity testing on a prediction. This means the user would run a case through a model several times, each time altering one of the explanatory variable to test the degree of variation in the model predictions. Both strategies would give an idea of the certainty with which a model is predicting a response value or category.
+
+In conclusion, simple models such as Linear/Logistic Regression and Naive Bayes are good baseline models to implement, while ensemble tree methods and Bayesian Networks may handle bigger unstructured data better than the simpler models while providing insight to decision makers.
 
 
 ## Review of Statistical and Machine Learning Applications to Business Problems
@@ -697,7 +772,9 @@ After variable engineering, the contribution of each variable to the predictive 
 
 ### Outlier Deletion
 
-Case study projects with extreme 'return per dollar' values were likely the result of special scenarios which the model is not intended to predict. For example, many projects appeared wildly profitable but on closer inspection these were all very small jobs. After discussion with the case study company, it was concluded that for those outliers, the small jobs most likely required so little time that busy employees did not bother writing down their hours for that job. Outliers were initially defined as 'return per dollar' values sitting outside 1.5 x the interquartile range (IQR) from the upper and lower quartiles. This rule was initially practised by Tukey, the inventor of the box plot [@Tukey1977]. All outlier projects determined by this method were reviewed with an employee from the case study company and based on their domain knowledge and assessment of the outlier cases, reasonable cut-off values for the range of return per dollar values were determined. In summary, projects with 'return per dollar' values greater than 3 were removed and one project with a very low 'return per dollar' was removed because it contained incorrect invoiced amounts.
+Case study projects with extreme 'return per dollar' values were likely the result of special scenarios which the model is not intended to predict. For example, many projects appeared wildly profitable but on closer inspection these were very small jobs. Outliers were initially defined as 'return per dollar' values sitting outside 1.5 x the interquartile range (IQR) from the upper and lower quartiles. This rule was initially practised by Tukey, the inventor of the box plot [@Tukey1977]. All outlier projects determined by this method were reviewed with an employee from the case study company. It was concluded that outliers that were small jobs most likely required so little time that busy employees did not bother writing down their hours for that job. Other bigger outlier projects had unrealistically low hours logged against them which could have been the result of data entry errors or errors from when the data was transferred across databases. Based on the employee's domain knowledge and assessment of the outlier cases, reasonable cut-off values for the range of return per dollar values were determined. In summary, projects with 'return per dollar' values greater than 3 were removed and one project with a very low 'return per dollar' was removed because it contained incorrect invoiced amounts. 
+
+26 of the 36 outlier cases with a high 'return per dollar' were small projects worth less than \$4,000. This may indicate small projects are not suitable to predict due to timesheet entry habits on these projects, however after outlier deletion, 1,159 projects below \$4,000 remained in the dataset. The prediction model would therefore still be applicable to small projects under \$4,000. 
 
 ### Variable Selection Methods
 
@@ -817,7 +894,7 @@ The final imputed dataset was fed into a Boosted Tree algorithm and if similar p
 
 ## Model Blending
 
-Several research groups involved in the high profile data science competition, Netflix Prize, developed sophisticated methods of model stacking, otherwise known as ensemble methods or model blending [@Sill2009]. In this document, the term 'blending' will be used to avoid confusion with ensemble tree methods. The idea behind model blending is to combine predictions from several models derived from different methods that have different theoretical foundations. In this way, the strengths of each method can be combined. Historically, in statistics this was called model averaging and since the 1990's research has shown that averaging results from different methods provides better predictive accuracy than any single model [@Madigan1994]. New methods of model blending were developed for the Netflix Prize that applied sophisticated machine learning techniques to big, messy data. The prize-winning solution was a complex blend of sub-blends which interacted results of individual models with the original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incremental improvements in predictive accuracy, but the computational cost of all the complex layers did not justify the benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project just a single layer of blending was trialed.
+Several research groups involved in the high profile data science competition, Netflix Prize, developed sophisticated methods of model stacking, otherwise known as ensemble methods or model blending [@Sill2009]. In this document, the term 'blending' will be used to avoid confusion with ensemble tree methods. The idea behind model blending is to combine predictions from several models derived from different methods that have different theoretical foundations. In this way, the strengths of each method can be combined. Historically, in statistics this was called model averaging and since the 1990's research has shown that averaging results from different methods provides better predictive accuracy than any single model [@Madigan1994]. New methods of model blending were developed for the Netflix Prize that applied sophisticated machine learning techniques to big socially generated data. The prize-winning solution was a complex blend of sub-blends which interacted results of individual models with the original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incremental improvements in predictive accuracy, but the computational cost of all the complex layers did not justify the benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project just a single layer of blending was trialed.
 
 Six blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, a Boosted Tree model using individual model results only, feature weighted linear stacking (FWLS), Random Forests, and Boosted Trees. The first three models are simply the average, weighted average of the three individual model predictions. The last three methods take advantage of potentially meaningful interactions between an individual model's predictions and meta-features. For example, if the Boosted Tree model predicted profitability better than the other models for projects in the "Water" discipline, the blending model would take advantage of this interaction. Boosted tree predictions would be weighted higher than the other model predictions for Water projects. 
 
@@ -976,7 +1053,7 @@ The variable importance results from the three types of models: ANOVA regression
 
 This was not necessarily expected, particularly between ANOVA and the ensemble tree methods as ANOVA measures linear relationships in contrast to non-linear ensemble trees. Random forests favour variables that are numeric or have many categories and this held true for the analysis. The 6 highest-ranked variables were numeric with one categorical variable, Business category of client, which had 28 categories. The two lowest ranking variables had only 4 categories. It was expected that cForests would rank the categorical variables with only 4 categories more fairly. This was the case with Discipline and it received a mid-level ranking. Business category of the client and Broad business type however, were ranked similarly to randomForests. 
 
-The qualities of the higher ranked variables were not surprising, and were generally centered around who did how much of the work internally, general client characteristics, project timespan, and project category. It was expected that Billing Type would play a more important role in predicting profitability as it describes the structure of the incoming fees. For this reason, and with advice from the case study business, the Billing Type was kept in the model.
+The qualities of the higher ranked variables were not surprising, and were generally centered around who did how much of the work internally, client characteristics, project timespan, and project category. It was expected that Billing Type would play a more important role in predicting profitability as it describes the structure of the incoming fees. For this reason, and with advice from the case study business, the Billing Type was kept in the model.
 
 For construction projects and IT software projects, the literature indicated size was the most important variable predicting effort. Size could mean size of a building or function point (level of functionality of the software) [@Shepperd1996][@Finnie1997][@Pai2013]. In this case study, profitability is the dependent variable, not total effort and the size variable plays a different role. Instead of contributing to predicting the total effort, it is describing whether the size of a project correlates with how profitable the project is. The closest estimate of size in this case study is the invoiced amount variable which did rank as very important. The exact invoiced amount is difficult to guess before a project begins, and is part of the problem this study is addressing. Therefore, the invoiced amount was binned into categories that a manager could much more confidently choose as an estimate. The other variables indicated as important in this study  (including the number of employees on a project, client business type and percent of hours by certain types of employees) have not been strongly represented in the literature to date. This is because the variables were easily calculated from internal CRM data but would not be easily obtained externally from projects across many companies or regions.
 

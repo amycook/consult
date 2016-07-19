@@ -64,10 +64,21 @@ $X_{1}$, include the terms $X_{2} = X_1^2$ and $X_{3} = X_1^3$ to build a third 
 $\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
 
 $$
-\begin{aligned}
-e^{\log(odds)} &= e^{\log\left(\frac{p}{1-p}\right)} \\ 
-&= e^{-\log\left(\frac{1-p}{p}\right)} \\ 
-&= e^{-\log\left(\frac{1}{p} - 1\right)} \\ 
-&= 1 - \frac{1}{p}
+\begin{aligned} 
+\log(odds) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log\left(\frac{p}{1-p}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log\left(\frac{0.5}{0.5}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+\log(1) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+0 &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
+X_2\beta_2 &= -\beta_0 - X_1\beta_1 \\ 
+X_2 &= -\frac{\beta_0}{\nbeta_2} - X_1\frac{\beta_1}{\beta_2} \\ 
 \end{aligned}
 $$
+
+$p(X_1 X_2|Y) = p(X_1|Y) \cdot p(X_2|X_1 Y)$
+
+If conditional independence is assumed, the equation becomes:
+
+$p(yes|X_1 X_2) = p(X_1|yes) \cdot p(X_2|yes) \cdot p(yes)$
+
+![Plot of Gaussian probability density distributions of two response classes given x and y explanatory values [@Bulatov2010].](images/lit_review/NB_boundary2.JPG) 
