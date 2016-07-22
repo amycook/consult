@@ -81,4 +81,8 @@ If conditional independence is assumed, the equation becomes:
 
 $p(yes|X_1 X_2) = p(X_1|yes) \cdot p(X_2|yes) \cdot p(yes)$
 
-![Plot of Gaussian probability density distributions of two response classes given x and y explanatory values [@Bulatov2010].](images/lit_review/NB_boundary2.JPG) 
+$\boldsymbol{w} \cdot \boldsymbol{x} + \beta_0 = 0$
+
+where $\boldsymbol{w}$ and $\boldsymbol{x}$ are vectors with lengths corresponding to the number of explanatory variables. For two variables, $\boldsymbol{w}$ would be $w\begin{pmatrix}\beta_1 \\ \beta_2\end{pmatrix}$ and $\boldsymbol{w}$ would be $x\begin{pmatrix}X_1 \\ X_2\end{pmatrix}$. Expanding the dot product of these two vectors gives the equation for a line:
+
+$\beta_1 X_1 + \beta_2 X_2 + \beta_0 = 0$
