@@ -85,4 +85,16 @@ $\boldsymbol{w} \cdot \boldsymbol{x} + \beta_0 = 0$
 
 where $\boldsymbol{w}$ and $\boldsymbol{x}$ are vectors with lengths corresponding to the number of explanatory variables. For two variables, $\boldsymbol{w}$ would be $\begin{pmatrix}\beta_1 \\ \beta_2\end{pmatrix}$ and $\boldsymbol{w}$ would be $\begin{pmatrix}X_1 \\ X_2\end{pmatrix}$. Expanding the dot product of these two vectors gives the equation for a line:
 
-$\beta_1 X_1 + \beta_2 X_2 + \beta_0 = 0$
+$RMSE =  \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - y_t)^2}{n}}$
+
+Where 
+
+$$
+\begin{aligned}
+n &= \textrm{number of data points} \\
+\widehat{y} &= \textrm{predicted values of the response variable} \\
+y &= \textrm{observed values of the response variable} \\
+\end{aligned}
+$$
+
+
