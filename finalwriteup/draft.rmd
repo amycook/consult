@@ -1006,11 +1006,25 @@ In order to compare which models performed significantly better than others, an 
 
 All methods except gradient Boosted Trees and Naive Bayes could not handle missing data. Therefore, preliminary runs of each method used subsets of the data which had complete data. It was possible that if missing data was imputed, predictions from the models that were limited by missing data could improve. Also, a complete data set allows for complete sets of predictions from each method, and these predictions could then be blended to further improve results. The procedure behind model blending is addressed further in the next section. The imputed data set was compared to gradient Boosted Tree results since Boosted Trees can handle missing values and should perform equally well with imputed data. 
 
-The MICE Random Forest method was chosen for imputation because it has been proven to work well with complex data sets [@Shah2014]. It first performs a standard Random Forest imputation of missing values which are treated as initial 'place holders'. Random forest imputation is a complex process which works by first doing a rough imputation of the missing values. Then a ten-tree forest is run to calculate proximities between all cases. Proximities between two cases represent the number of trees in a forest where the two cases were assigned to the same end node in a tree. Once proximities are calculated, missing values for a variable (say variable 'm') are filled by an average of the other complete 'm' values weighted by the proximity of the case representing each 'm' value.
+The MICE Random Forest method was chosen for imputation because it has been proven to work well with complex data sets [@Shah2014]. It first performs a standard Random Forest imputation of missing values in the full dataset which are treated as initial 'place holders'. The Random Forest imputation process will be explained in more detail later in this section. Next, the imputations for one variable are deleted and the remaining full variables are used to impute the missing values from the single variable. Random Forest is again used for the imputation. This is repeated for each variable and their initial 'place-holder' imputations are replaced by an imputation targeted at the single variable. This cycle is programmed to repeat five times for the full set of variables when using the 'mice' package, but can be increased [@Azur2011; @mice]. 
 
-After the initial Random Forest imputation is complete, the MICE process continues. The imputations for one variable are deleted and the remaining full variables are used to impute the missing values from the single variable again using Random Forest imputation. This is repeated for each variable and their 'place-holder' imputations are replaced by an imputation targeted at the single variable. This cycle is repeated five times by default [@Azur2011]. 
+Random forest imputation is a complex process which works by first doing a rough imputation of the missing values (using averages and majority votes). Then a ten-tree forest is run to calculate proximities between all cases. Proximity between two cases is a measure of similarity and represents the number of trees in a forest where the two cases were assigned to the same end node in a tree. For each tree, the points can be run down the tree from the training or OOB sample. It can be represented by the equation below:
 
-The final imputed dataset was fed into a Boosted Tree algorithm and if similar predictive results were obtained using Boosted Trees imputed data and unimputed data, the imputed data must be reasonable. The imputed dataset was then trialed on the remaining methods and compared to un-imputed trials.
+$Px_{i,j}  = \frac{1}{10}\ \sum_{n = 1}^{10} I(E_{n,i} = E_{n,j})$
+
+Where 
+
+$$
+\begin{aligned}
+I(\cdot)\  \textrm{is the indicator function} \\
+Px_{i,j} = \textrm{proximity between datapoints}\ i\  \textrm{and}\ j \\
+E_{n,i} = \textrm{is the end node that case}\ i\ \textrm{falls into in tree}\ n
+\end{aligned}
+$$
+
+Once proximities are calculated for each pair of datapoints, missing values for a variable (say variable 'm') are filled. This is done for each datapoint by averaging the other complete 'm' values weighted by the proximity of the case representing each 'm' value to the current point.
+
+The final imputed dataset, which was created using the mice package and Random Forest imputation, was fed into a Boosted Tree algorithm. If similar predictive results were obtained using Boosted Trees imputed data and unimputed data, the imputed data must be reasonable. The imputed dataset was then trialed on the remaining methods and compared to un-imputed trials.
 
 
 ## Model Blending
@@ -1019,19 +1033,59 @@ Several research groups involved in the high profile data science competition, N
 
 New methods of model blending were developed for the Netflix Prize that applied sophisticated machine learning techniques to big socially generated data. The prize-winning solution was a complex blend of sub-blends which interacted results of individual models with the original variables. When original variables are used in blending they are called meta-features [@Sill2009]. The multiple layers of blending gave incremental improvements in predictive accuracy, but the computational cost of all the complex layers did not justify the benefits for Netflix in practice and a simplified model was adopted. Therefore, in this project just a single layer of blending was trialed.
 
-Six blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a regression model using the individual model results only, a Boosted Tree model using individual model results only, feature weighted linear stacking (FWLS), Random Forests, and Boosted Trees. The first three models are simply the average, weighted average of the three individual model predictions. The last three methods take advantage of potentially meaningful interactions between an individual model's predictions and meta-features. For example, if the Boosted Tree model predicted profitability better than the other models for projects in the "Water" discipline, the blending model would take advantage of this interaction. Boosted tree predictions would be weighted higher than the other model predictions for Water projects. 
+Six blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a Logistic Regression model using the individual model results only, a Boosted Tree model using individual model results only, feature weighted linear stacking (FWLS), Random Forests, and Boosted Trees. Where possible, these methods shall be expressed as equations in an example problem with three original explanatory variables, $X_1$, $X_2$, $X_3$, and two full sets of predictions from individual predictive models, $M_1$ and $M_2$, with a response variable $Y$. Values in $M_1$ and $M_2$ are probabilities between 0 and 1.
 
-A simplified explanation of FWLS is as a Linear Regression where meta-features as well as model predictions from individual models are included as explanatory variables. Then, each meta-feature is interacted with each set of model results [@Sill2009]. A Linear Regression is performed to weight each term's contribution to the final predictive accuracy. Random Forests and Boosted Trees were also used to blend meta-features with output from the best models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node determined by one variable is conditional upon the preceding split which was based on another variable and so on. 
+The first two models are simply the average, and weighted average of the three individual model predictions.
 
-The five blended model types were built on training and testing data sets multiple times in a similar fashion to the individual models. A single training set for a blended model must be built from the test results of the individual models. Therefore, five-fold cross validation was performed using each individual model to create a full dataset as a compilation of test data results. The complete test data predictions were then added to the complete original dataset, and training and testing data could be partitioned to test the blended models. A maximum of five blended models were created from a complete set of test results (built from the individual models), then a new set of test results were created for the next five blended models. This ensured the blended models were trained on a thorough mix of the complete data set.
+Simple Average:
+
+$Y = \frac{1}{2} \cdot (M_1 + M_2)$
+
+Simple Logistic Regression:
+
+$Y = \beta_0 + \beta_1 M_1 + \beta_2 M_2$
+
+The third method builds Boosted Trees from the individual models, i.e. using $M_1$ and $M_2$ only to predict $Y$ in a Boosted Tree model. The last three methods take advantage of potentially meaningful interactions between the individual models' predictions and meta-features. For example, if the $M_1$ model predicted profitability better than $M_2$ for projects in category $a$ of $X_1$, the blending model would take advantage of this interaction. $M_1$ would be weighted higher than $M_2$ for projects where $X_1 = a$. 
+
+A simplified explanation of FWLS is as a Linear Regression where meta-features as well as model predictions from individual models are included as explanatory variables. Then, each meta-feature is interacted with each set of model results [@Sill2009]. A Logistic Regression is performed to weight each term's contribution to the final predictive accuracy and can be expressed for the example problem by the equation below:
+
+$$
+\begin{aligned} 
+Y &= \beta_0 + \beta_1 M_1 + \beta_2 M_2 + \beta_3 X_1 + \beta_4 X_2 + \beta_5 X_3 + \\
+\qquad \beta_6(M_1 \cdot X_1) + \beta_7(M_1 \cdot X_2) + \beta_8(M_1 \cdot X_3) +\\
+\qquad \beta_9(M_2 \cdot X_1) + \beta_10(M_2 \cdot X_2) + \beta_11(M_2 \cdot X_3)
+\end{aligned}
+$$
+
+Random Forests and Boosted Trees were also used to blend meta-features with output from the best models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node determined by one variable is conditional upon the preceding split which was based on another variable and so on. Random Forests and Boosted Tree models are difficult to express as equations, but for the example problem, $X_1$, $X_2$, $X_3$, $M_1$, and $M_2$ would all be included as explanatory variables to predict $Y$.  
+
+The six blended model types were built on training and testing data sets multiple times using the same procedure used with the individual models. A single training set for a blended model must be built from the test results of the individual models. Therefore, five-fold cross validation was performed using each individual model to create a full dataset as a compilation of test data results. The complete test data predictions were then added to the complete original dataset, and training and testing data could be partitioned to test the blended models. A maximum of five blended models were created from a complete set of test results (built from the individual models), then a new set of test results were created for the next five blended models. This ensured the blended models were trained on a thorough mix of the complete data set.
 
 20 models of each blending method were initially created. Then, a two-sample power calculation was performed to calculate the number of samples required to achieve statistical power of 0.8. The specified number of models was then developed so that the highest performing blended model could be tested against the others for statistical significance. The next step was to assess the blended models' performance in terms of improving overall profits for the company. This analysis differed from accuracy in predicting profitability, so several blended models as well as individual models were carried forward for this analysis.
 
 ## Profit Curve
 
-Although predictive power of the final model was important, for the method to be integrated into a company's decisions, the effect on a business' bottom line was examined. This was done using a profit curve - a chart that plots the amount of profit the company earns on the y-axis vs. the probability threshold on the x-axis. 
+Although predictive power of the final model was important, for the method to be integrated into a company's decisions, the effect on a business' bottom line was examined. This was done using a profit curve - a chart that plots the change in profit the company earns on the y-axis vs. the probability threshold on the x-axis. 
 
-A simple approach was taken for this analysis, where projects with a probability to be a loss-making job greater than the threshold were rejected entirely. Therefore all profits and losses from jobs above the threshold were discounted. If the threshold was zero, all jobs were rejected and the profit would be $0. If the threshold was 1.0, all jobs were accepted and the profit would be the same as the profit the company actually experienced since the data is a sample of historic projects. The aim was to find the optimal threshold point where saying 'no' to a job above that level would result in higher profits, because jobs that were likely to make a loss were being rejected. This chart will clarify what percentage of profit increase the company could expect by integrating the algorithm into decision making. It also provides a clear way to implement the algorithm and promote industry uptake of the research.
+A simple approach was taken for this analysis, where projects with a probability to be a loss-making job greater than the threshold were rejected entirely. Therefore all profits and losses from jobs above the threshold were discounted. An equation defining the change in profit as a percentage of the original profit using threshold rejection is shown below:
+
+$\Delta\ Overall\ Profit\ \textrm{(%)} = \frac{\sum_{p = 1}^{N} I(Pr_p < threshold) \cdot Profit_p}{\sum_{p = 1}^{N} Profit_p} \cdot100$
+
+Where 
+
+$$
+\begin{aligned}
+I(\cdot) &= \textrm{the indicator function} \\
+N\ &= \textrm{the number of individual projects that are being included in the analysis} \\
+Pr_{p} &= \textrm{probability output from the algorithm for project}\ p \textrm{. Values are}\\
+& \qquad \textrm{betweeen 0 and 1 where 1 is loss making)} \\
+threshold &= \textrm{a chosen value between 0 and 1.}\ \Delta\ Overall\ Profit\ \textrm{is calculated for} \\
+& \qquad \textrm{several}\ threshold\ \textrm{values which defines the profit curve} \\
+Profit_p &= \textrm{profit for individual project}\ p
+\end{aligned}
+$$
+ 
+If the threshold was zero, all jobs were rejected and the profit would be $0. If the threshold was 1.0, all jobs were accepted and the profit would be the same as the profit the company actually experienced since the data is a sample of historic projects. The aim was to find the optimal threshold point where saying 'no' to a job above that level would result in higher profits, because jobs that were likely to make a loss were being rejected. This chart will clarify what percentage of profit increase the company could expect by integrating the algorithm into decision making. It also provides a clear way to implement the algorithm and promote industry uptake of the research.
 
 Finally, since a profit curve is made from a single training/testing instance of the data, the curve varies with different divisions of the data. Therefore, in order to understand the uncertainty around the profit curve and to determine which blended or individual model performed statistically better than others, a large sample size of curves was required. Again, 20 curves of each method were built and a power calculation was performed to achieve a power of 0.8. This determined the required sample size which was achieved by repeating 5-fold training/testing splits. This enabled the highest (optimal) threshold points of each curve to be statistically compared to one another. A 95% confidence interval could also be determined around the highest point on each curve. The final expected increase in profit and the percentage of projects to be rejected presented a clear scenario that the case study business managers could assess in terms of their business strategy.
 

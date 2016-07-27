@@ -77,24 +77,38 @@ $$
 
 $p(X_1 X_2|Y) = p(X_1|Y) \cdot p(X_2|X_1 Y)$
 
-If conditional independence is assumed, the equation becomes:
 
-$p(yes|X_1 X_2) = p(X_1|yes) \cdot p(X_2|yes) \cdot p(yes)$
+Simple Average:
 
-$\boldsymbol{w} \cdot \boldsymbol{x} + \beta_0 = 0$
+$Y = \frac{1}{2} \cdot (M_1 + M_2)$
 
-where $\boldsymbol{w}$ and $\boldsymbol{x}$ are vectors with lengths corresponding to the number of explanatory variables. For two variables, $\boldsymbol{w}$ would be $\begin{pmatrix}\beta_1 \\ \beta_2\end{pmatrix}$ and $\boldsymbol{w}$ would be $\begin{pmatrix}X_1 \\ X_2\end{pmatrix}$. Expanding the dot product of these two vectors gives the equation for a line:
+Simple Logistic Regression:
 
-$RMSE =  \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - y_t)^2}{n}}$
+$Y = \beta_0 + \beta_1 M_1 + \beta_2 M_2$
 
-Where 
+Six blending methods, ranging from simple to complex, were tested using predictions from the top performing individual models. These included simple averaging of the individual model results, building a Logistic Regression model using the individual model results only, a Boosted Tree model using individual model results only, feature weighted linear stacking (FWLS), Random Forests, and Boosted Trees. To explain further, these methods shall be expressed as equations in a problem with three original explanatory variables, $X_1$, $X_2$, $X_3$, and two full sets of predictions from individual predictive models, $M_1$ and $M_2$, with a response variable $Y$. Values in $M_1$ and $M_2$ are probabilities between 0 and 1.
+
+The first two models are simply the average, and weighted average of the three individual model predictions.
+
+Simple Average:
+
+$Y = \frac{1}{2} \cdot (M_1 + M_2)$
+
+Simple Logistic Regression:
+
+$Y = \beta_0 + \beta_1 M_1 + \beta_2 M_2$
+
+The third method builds Boosted Trees from the individual models, i.e. using $M_1$ and $M_2$ only to predict $Y$ in a Boosted Tree model. The last three methods take advantage of potentially meaningful interactions between the individual models' predictions and meta-features. For example, if the $M_1$ model predicted profitability better than $M_2$ for projects in category $a$ of $X_1$, the blending model would take advantage of this interaction. $M_1$ would be weighted higher than $M_2$ for projects where $X_1 = a$. 
+
+A simplified explanation of FWLS is as a Linear Regression where meta-features as well as model predictions from individual models are included as explanatory variables. Then, each meta-feature is interacted with each set of model results [@Sill2009]. A Logistic Regression is performed to weight each term's contribution to the final predictive accuracy and can be expressed for the example problem by the equation below:
 
 $$
-\begin{aligned}
-n &= \textrm{number of data points} \\
-\widehat{y} &= \textrm{predicted values of the response variable} \\
-y &= \textrm{observed values of the response variable} \\
+\begin{aligned} 
+Y &= \beta_0 + \beta_1 M_1 + \beta_2 M_2 + \beta_3 X_1 + \beta_4 X_2 + \beta_5 X_3 + \\
+\qquad \beta_6(M_1 \cdot X_1) + \beta_7(M_1 \cdot X_2) + \beta_8(M_1 \cdot X_3) +\\
+\qquad \beta_9(M_2 \cdot X_1) + \beta_10(M_2 \cdot X_2) + \beta_11(M_2 \cdot X_3)
 \end{aligned}
 $$
 
+Random Forests and Boosted Trees were also used to blend meta-features with output from the best models. Feature interaction is performed passively due to the nature of how trees are built. A split in a node determined by one variable is conditional upon the preceding split which was based on another variable and so on. Random Forests and Boosted Tree models are difficult to write as equations, but for the example problem, $X_1$, $X_2$, $X_3$, $M_1$, and $M_2$ would all be included as explanatory variables to predict $Y$.  
 
