@@ -63,23 +63,6 @@ $X_{1}$, include the terms $X_{2} = X_1^2$ and $X_{3} = X_1^3$ to build a third 
 
 $\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
 
-$$
-\begin{aligned} 
-\log(odds) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
-\log\left(\frac{p}{1-p}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
-\log\left(\frac{0.5}{0.5}\right) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
-\log(1) &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
-0 &= \beta_0 + X_1\beta_1 + X_2\beta_2 \\ 
-X_2\beta_2 &= -\beta_0 - X_1\beta_1 \\ 
-X_2 &= -\frac{\beta_0}{\nbeta_2} - X_1\frac{\beta_1}{\beta_2} \\ 
-\end{aligned}
-$$
+$p(ABCD) = p(C|ABD)\cdot p(A|BD) \cdot p(B|D) \cdot p(D)$
 
-$p(X_1 X_2|Y) = p(X_1|Y) \cdot p(X_2|X_1 Y)$
-
-
-$\boldsymbol{w} \cdot \boldsymbol{x} + \beta_0 = 0$
-
-where $\boldsymbol{w}$ and $\boldsymbol{x}$ are vectors with lengths corresponding to the number of explanatory variables. For two variables, $\boldsymbol{w}$ would be $\begin{pmatrix}\beta_1 \\ \beta_2\end{pmatrix}$ and $\boldsymbol{w}$ would be $\begin{pmatrix}X_1 \\ X_2\end{pmatrix}$ [@Fletcher2009]. Expanding the dot product of these two vectors gives the equation for a line:
-
-$\beta_1 X_1 + \beta_2 X_2 + \beta_0 = 0$
+$p(ABCD) = p(C|BD)\cdot p(A|B) \cdot p(B) \cdot p(D)$
