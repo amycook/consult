@@ -247,7 +247,7 @@ The most obvious limitation is that the work focuses on a single company in a sp
 
 Another limitation is the type of unavailable data. Information on overall costs of construction projects was scarce. This is relevant because managers sometimes price jobs based on the budget for the entire project, of which the consultant is a minor part. For example, engineers may moderate their fee by 1% of the entire project cost. Another piece of data not recorded was the external factors influencing the fixed price quote including known competition from similar firms.
 
-The database also excludes detailed technical information about each project. Such details are found in the preliminary drawings describing the project (square meterage, number of storeys), as well as project summary documents provided by the client to enable a quote. However, this level of information actually contradicts the purpose of the 'outside view', the intention of which is to present similar projects without being over-influenced by finer details. Given the lack of detailed information describing the physical size of projects, it was not reasonable for an algorithm to predict the numeric fee. Instead, it was more logical to predict the profitability of a project i.e. return per dollar. This measure represents the ratio of the amount invoiced to business costs, and can easily be compared between projects of different sizes.
+The database also excludes detailed technical information about each project. Such details are found in the preliminary drawings describing the project (square meterage, number of storeys), as well as project summary documents provided by the client to enable a quote. However, this level of information actually contradicts the purpose of the 'outside view', the intention of which is to present similar projects without being over-influenced by finer details. Given the lack of detailed information describing the physical size of projects, it was not reasonable for an algorithm to predict the numeric fee. Instead, it was more logical to predict the profitability of a project i.e. 'return per dollar'. This measure represents the ratio of the amount invoiced to business costs, and can easily be compared between projects of different sizes.
 
 Finally, employees enter all CRM data manually. Because the data is input by people, it is susceptible to some error. Many errors were detectable during data cleaning, however it is possible that a low number of undetectable human errors exist in the data and marginally influence predictions. 
 
@@ -278,7 +278,7 @@ In comparison to previous studies, this project advances the body of work on cos
 
 In past research, cost estimation data sets generally consisted of dozens of projects from a range of a companies and even countries. This thesis case study only had access to the company's internal data but this contained over 2,000 past jobs - far more than the usual cost estimation study and with many more variables. Furthermore, the problem of cost estimation is applied to a consulting company in the construction industry, which differs from other studies in the construction industry that estimate actual construction costs. Consulting in the construction industry can be likened more to software development effort estimation although the nature of the work differs considerably.
 
-In addition to addressing cost estimation with a different kind of data set, ensemble tree methods are applied which have been minimally tested on this problem. Ensemble tree methods combine hundreds or thousands of decision trees to make predictions. A single decision tree is a non-parametric machine-learned model built by progressively determining the best binary split to partition the data according to the response variable. For further explanation of the method behind decision trees and ensemble trees, three excellent sources are @Hastie2009, @Elith2008, and @Breiman2005. To date, Linear Regression, Neural Networks, Case Based Reasoning, and Support Vector Machines (SVM's) have been used to predict cost/effort even though ensemble tree methods can perform as well as Neural Networks and generally outperform Linear Regression [@Caruana2006]. Another benefit of ensemble trees is the output types available, such as partial dependency plots and variable importance plots that provide insight into the model's calculations. This contrasts Neural Networks and SVM's, which are 'black-box' predictors. Providing insight to a user is a major benefit as past research has demonstrated issues with user trust and uptake of models, even if the models predicted well. It is anticipated that using internal data will also improve trust and create tangible meaning for the user. Blending multiple machine learning and statistical models has also not yet been applied to the cost estimation problem and may improve predictions.
+In addition to addressing cost estimation with a different kind of data set, ensemble tree methods are applied which have been minimally tested on this problem. Ensemble tree methods combine hundreds or thousands of decision trees to make predictions. A single decision tree is a non-parametric machine-learned model built by progressively determining the best binary split to partition the data according to the response variable. For further explanation of the method behind decision trees and ensemble trees, three excellent sources are @Hastie2009, @Elith2008, and @Breiman2005. To date, Linear Regression, Neural Networks, Case Based Reasoning (CBR), and Support Vector Machines (SVM's) have been used to predict cost/effort even though ensemble tree methods can perform as well as Neural Networks and generally outperform Linear Regression [@Caruana2006]. Another benefit of ensemble trees is the output types available, such as partial dependency plots and variable importance plots that provide insight into the model's calculations. This contrasts Neural Networks and SVM's, which are 'black-box' predictors. Providing insight to a user is a major benefit as past research has demonstrated issues with user trust and uptake of models, even if the models predicted well. It is anticipated that using internal data will also improve trust and create tangible meaning for the user. Blending multiple machine learning and statistical models has also not yet been applied to the cost estimation problem and may improve predictions.
 
 Finally, this study propels the predictive model one step further than other studies by analysing bottom-line profit improvements that could result from the research. A few possible ways to integrate model results into business decision-making scenarios are presented, and where possible, final profit increases are evaluated. This kind of thought experiment is designed to present a clear case for industry when evaluating if and how to adopt cost estimation models. 
 
@@ -286,7 +286,7 @@ Finally, this study propels the predictive model one step further than other stu
 
 The next chapter, Chapter 3 is a thorough review of the literature to date that relates to this thesis. This covers work solving the cost-estimation problem, studies on statistical and machine-learning models in business applications, and a review of potential statistical and machine learning methods. 
 
-Chapter 4 describes the method followed throughout the research process. It includes first how the data was obtained, the lengthy cleaning process, followed by variable importance analysis, variable selection, trials of selected predictive algorithms and problem constructs. The cost estimation problem was attempted first as a regression problem predicting return per dollar, followed by a simpler binary classification problem predicting profit or loss. Once the best methods were selected, they were blended in numerous ways, using both simple averaging techniques and sophisticated machine-learning algorithms. These were compared against individual models and the best constructs were selected. Finally the impact of the algorithm on the overall profits of the case study company was analysed via decision-making scenarios. Further applications were also considered.
+Chapter 4 describes the method followed throughout the research process. It includes first how the data was obtained, the lengthy cleaning process, followed by variable importance analysis, variable selection, trials of selected predictive algorithms and problem constructs. The cost estimation problem was attempted first as a regression problem predicting 'return per dollar', followed by a simpler binary classification problem predicting profit or loss. Once the best methods were selected, they were blended in numerous ways, using both simple averaging techniques and sophisticated machine-learning algorithms. These were compared against individual models and the best constructs were selected. Finally the impact of the algorithm on the overall profits of the case study company was analysed via decision-making scenarios. Further applications were also considered.
 
 The research outlined in the method was divided into four stages, each of which was assigned a chapter containing the results and discussion of that portion. Chapter 5 describes the variable selection process. Chapter 6 and 7 cover the results of the two ways of framing the cost estimation problem: using regression models and binary classification models. Chapter 8 shows the outcomes of model blending, and then Chapter 9 extends the predictive analyses into an overall profit analysis, as well as describing research limitations and future work.
 
@@ -302,7 +302,7 @@ The practice of estimating fixed fees is usually represented by the terms 'cost 
 
 ### Cost Estimation in the Construction Industry
 
-Research in the construction industry has primarily focused on predicting the final building cost of construction. Some studies reported surveyed cost estimation practices while others tested new methods such as building information modeling (BIM) analysis, case based reasoning, and predictive algorithms. The cost estimation methods of detailed analysis (the 'inside view'), Case Based Reasoning, and predictive algorithms are reviewed in this section.
+Research in the construction industry has primarily focused on predicting the final building cost of construction. Some studies reported surveyed cost estimation practices while others tested new methods such as building information modeling (BIM) analysis, CBR, and predictive algorithms. The cost estimation methods of detailed analysis (the 'inside view'), CBR, and predictive algorithms are reviewed in this section.
 
 #### Detailed Analysis in the Construction Industry
 
@@ -312,7 +312,7 @@ Detailed analysis refers to the process of an engineer or builder in the constru
 
 Groundbreaking methods into calculating construction costs by @Ma2014 mobilised data from building information modeling (BIM) models, although this is still technically a detailed analysis of the costs. The idea is to quantify the cost of building a structure directly from a three dimensional BIM model created by the design consultants (engineers and architects). Ma and Liu's [-@Ma2014] first trial was to automate the cost calculation of a reinforced concrete structure. They programmed their algorithm to intelligently establish construction techniques for each element, as architectural or engineering models do not provide this. From the construction technique and material, a cost was derived for each element. This was successful and @Ma2014 aim to further their work so that more construction information can be intelligently obtained from BIM models. A system like Ma and Liu's [-@Ma2014] would definitely accelerate the cost estimation process and reduce human error, however it is still an 'inside view' and could still deliver inaccurate estimates similar to detailed analysis by a person. The detailed view does not 'step back' and take into account set backs in construction that may have affected past similar projects. There is potential for this innovation to be combined with an 'outside view' system.
 
-Detailed analysis remains the most prevalent method for construction cost estimation despite the industry having a long history of projects running over time and budget using the same technique [@Shane2009]. Next, the method of detailed sums shall be compared to results from parametric algorithms and case based reasoning ('outside view').
+Detailed analysis remains the most prevalent method for construction cost estimation despite the industry having a long history of projects running over time and budget using the same technique [@Shane2009]. Next, the method of detailed sums shall be compared to results from parametric algorithms and CBR ('outside view').
 
 
 #### Statistical and Machine Learning Models in the Construction Industry
@@ -331,9 +331,9 @@ Similar result statistics are useful, however there is a gap in the literature r
 
 The literature on construction cost estimation does not acknowledge that dozens of consultants and sub-contractors contribute to a large project. Most consultants, such as engineers and architects, produce their own cost estimates for their effort that contributes to the project. Their contracts are often fixed price, with minimal room for movement, and they wear the risk of over-spending their time [@Harris1999]. Furthermore, the existing studies collected data from many businesses for a single study, which leaves a gap in research exploring a single contractor's history of projects at one time. 
 
-#### Case Based Reasoning in the Construction Industry
+#### CBR in the Construction Industry
 
-Case based reasoning (CBR) is a systematic method of expert judgment, where the decision maker manually compares similar projects from his or her experience [@Shepperd1996]. The idea is that in the case of a new project, similar projects are chosen, before generalisations about the data are made. This contrasts to algorithmic models that are built from the entire set of data [@Elfaki2014]. Research into the application of case based reasoning to construction cost estimation began in the 1980's [@Kim2004]. The general procedure involves:
+CBR is a systematic method of expert judgment, where the decision maker manually compares similar projects from his or her experience [@Shepperd1996]. The idea is that in the case of a new project, similar projects are chosen, before generalisations about the data are made. This contrasts to algorithmic models that are built from the entire set of data [@Elfaki2014]. Research into the application of CBR to construction cost estimation began in the 1980's [@Kim2004]. The general procedure involves:
 
 1. Storing a collection of projects with key variable values
 2. Once a new project or case arrives, similar cases are retrieved. This can be achieved either algorithmically with a distance function applied to the variables, or manually by users reviewing past cases. The nearest neighbour algorithm has been used to find the distance between cases in previous studies. It is programmed to calculate the Euclidean distance in n-dimensional space between cases, where each variable is a dimension [@Kumar2007].
@@ -351,7 +351,7 @@ In summary, research into cost estimation in the construction industry has teste
 
 ### Effort Estimation in the IT Industry
 
-In the software industry, the main component of cost is *effort* as opposed to the cost of building materials in the construction industry. A parallel can be drawn between software development effort estimation and consultants' effort estimation in the construction industry - which was highlighted as a gap in the previous section. Plenty of research has been dedicated to the problem of effort prediction, with methods that can be categorised similarly to the construction industry: detailed analysis, algorithmic modeling, and Case Based Reasoning.
+In the software industry, the main component of cost is *effort* as opposed to the cost of building materials in the construction industry. A parallel can be drawn between software development effort estimation and consultants' effort estimation in the construction industry - which was highlighted as a gap in the previous section. Plenty of research has been dedicated to the problem of effort prediction, with methods that can be categorised similarly to the construction industry: detailed analysis, algorithmic modeling, and CBR.
 
 
 #### Detailed Analysis in the IT Industry 
@@ -383,7 +383,7 @@ Algorithmic estimation tools have not been successfully adopted by the IT indust
 In comparison to the construction industry, infrastructure projects do not have a function point variable and need to utilise other information such as expected total project cost (which is notoriously hard to predict based on the previous section), client characteristics, and other project characteristics. 
 
 
-#### Case Based Reasoning in the IT Industry
+#### CBR in the IT Industry
 
 CBR applications have been researched using similar methodologies to the construction industry. In a study by @Shepperd1996, once the similar cases were narrowed down, Linear Regression was employed to predict effort for the new case. CBR was found to perform approximately equally to algorithmic methods such as Neural Networks. This contrasts results in the construction industry where Neural Networks performed better [@Shepperd1996; @Finnie1997]. It was also highlighted that CBR is intuitively similar to how an expert thinks about pricing projects  [@Finnie1997].
 
@@ -720,7 +720,7 @@ The limited literature on work similar to Saradhi & Palshikar's [-@Saradhi2011] 
 
 ## Literature Review Conclusion
 
-The literature pertaining to the aim of this research project, cost prediction using internal consulting CRM data, has been extensively reviewed. Previous studies addressing the problem have generally been limited to prediction of construction costs for buildings/infrastructure and effort estimation for IT projects. The prediction models consisted of Case Based Reasoning, Linear Regression, Neural Networks and in one or two instances ensemble trees or SVM. This leaves a gap in effort estimation for consulting companies in the construction industry in combination with trialing a broader range of prediction methods. 
+The literature pertaining to the aim of this research project, cost prediction using internal consulting CRM data, has been extensively reviewed. Previous studies addressing the problem have generally been limited to prediction of construction costs for buildings/infrastructure and effort estimation for IT projects. The prediction models consisted of CBR, Linear Regression, Neural Networks and in one or two instances ensemble trees or SVM. This leaves a gap in effort estimation for consulting companies in the construction industry in combination with trialing a broader range of prediction methods. 
 
 A comprehensive list of machine learning and statistical models were reviewed in the broader scope of business problem prediction. It was determined that Bayesian Networks and ensemble tree methods have potential to perform estimation as well as complex algorithms such as Neural Networks while providing insights into model structure. Other strategies will be developed to address the problem of industry uptake as well.
 
@@ -833,7 +833,7 @@ With the engineered variables, all three data sources could be represented in th
 
     $project\ profit = total\ invoiced\ amount - cost\ from\ employee\ hours$
 
-* Return per dollar as the measure of profitability 
+* 'Return per dollar' as the measure of profitability 
 
     $return\ per\ dollar = \frac{project\ profit}{cost\ from\ hours}$
 
@@ -850,7 +850,7 @@ Case study projects with extreme 'return per dollar' values could be the result 
 Alternatively, defining outliers in terms of high leverage requires solving for statistical measures such as Cook's distance or DFFITS for each case. Cook's Distance is the scaled change of all predicted values resulting from the deletion of an observation using linear or logistic regression [@Nurunnabi2009]. In contrast, DFFITS measures the change in the predicted value of a single case when the case is left out of the regression model [@Nurunnabi2009]. Cluster based outlier detection involves clustering your data via unsupervised learning, and inspecting the cases with the highest distance to the centroid of their cluster [@Schubert2014]. For this project, Tukey's method was initially chosen so that the case study company would have a simple intuitive method to follow for excluding future outlier data points. A simple method was also appealing because the outliers would be reviewed with an employee so that their domain knowledge could interpret causes for outliers and refine the rules.
 
 
-Upon review of the outliers with an employee, many projects that appeared wildly profitable were actually small jobs and high profitability ratios only indicated extra profits of a few hundred dollars. It was concluded that small job outliers most likely required so little time that busy employees did not bother writing down their hours for that job. Other bigger outlier projects had unrealistically low hours logged against them which could have been the result of data entry errors or errors from when the data was transferred across databases about 4 years prior to data extraction. Based on the employee's domain knowledge and assessment of the outlier cases, reasonable cut-off values for the range of return per dollar values were revised. 
+Upon review of the outliers with an employee, many projects that appeared wildly profitable were actually small jobs and high profitability ratios only indicated extra profits of a few hundred dollars. It was concluded that small job outliers most likely required so little time that busy employees did not bother writing down their hours for that job. Other bigger outlier projects had unrealistically low hours logged against them which could have been the result of data entry errors or errors from when the data was transferred across databases about 4 years prior to data extraction. Based on the employee's domain knowledge and assessment of the outlier cases, reasonable cut-off values for the range of 'return per dollar' values were revised. 
 
 In summary, projects with 'return per dollar' values greater than 3 were removed and one project with a very low 'return per dollar' was removed because it contained incorrect invoiced amounts. 26 of the 36 outlier cases with a high 'return per dollar' were small projects worth less than \$4,000. This may indicate small projects are not suitable to predict due to time sheet entry habits on these projects, however after outlier deletion, 1,159 projects below \$4,000 remained in the data set. The prediction model would therefore still be applicable to small projects under \$4,000. 
 
@@ -1101,13 +1101,13 @@ The procedure outlined in this section described how to statistically determine 
 
 # Variable Selection
 
-To create the best possible model, only important variables were selected in order to reduce the effect of noisy explanatory variables and enhance simplicity and model comprehension. Initially there were 34 explanatory variables for the single response variable, return per dollar, i.e. the chosen measure of profitability for a project. By the end of variable selection, only 11 explanatory variables remained. As stated in the previous chapter, three predictive methods were selected which output variable importance scores which differ due to their unique theoretical foundations. These were Linear Regression, Random Forests, and cForests.
+To create a high-performing model, only important variables were selected in order to reduce the effect of noisy explanatory variables and enhance simplicity and model comprehension. Initially there were 34 explanatory variables for the single response variable, 'return per dollar'. By the end of variable selection, only 11 remained. As stated in the previous chapter, three predictive methods were selected that output variable importance scores. These were Linear Regression, Random Forests, and cForests, which have unique theoretical foundations.
 
 ## Linear Regression
 
-Linear Regression must be fed complete data sets but the case study data set only had a core set of 13 complete variables (including the response variable). If an incomplete variable was added to the core variables, the 'complete' data set would shrink to the size of the incomplete variable. If another incomplete variable was added, the complete set of data would shrink again. Therefore, to make the most of the available data, each incomplete variable was added to the core variables one at a time, where a Linear Regression model was built for each. That meant a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F-statistic of each variable are plotted below. The core variables received p-values in all 21 models, while 'add.variable' represents p-values for the additional incomplete variable in each model.
+Linear Regression must be fed complete data sets but the case study data had a core set of only 13 complete variables (including the response variable). If an incomplete variable was added to the core variables, the 'complete' data set would shrink to the complete rows of the incomplete variable. If another incomplete variable was added, the complete set of data would shrink again. Therefore, to make the most of the available data, each incomplete variable was added to the core variables one at a time, where a Linear Regression model was built for each. That meant a model was made for each incomplete variable, resulting in 21 separate ANOVA models. The p-values for the F-statistic of each variable are plotted below. The core variables received p-values in all 21 models, while 'add.variable' represents the p-values for the unique additional incomplete variable in each model.
 
-```{r, echo=FALSE, fig.height=4.7, fig.cap = c("P-values of an ANOVA regression's F-statistics used to interpret variable importance")}
+```{r, echo=FALSE, fig.height=4.7, fig.cap = c("P-values of ANOVA regressions' F-statistics which were used to interpret variable importance")}
 
 plot.pvals = readRDS("AOV_varimp_plot.rds")
 
@@ -1116,13 +1116,13 @@ ggplot(plot.pvals, aes(x = mod.vars, y = p.val)) + geom_boxplot() +
               panel.background = element_rect(fill = 'gray95')) +
         geom_hline(yintercept = 0.05, colour = 'red', linetype = 2) +
         scale_y_continuous(breaks = c(0, 0.05, .25, .5, .75, 1)) +
-        labs(y = "P-value of F-statistic", x = "Independent Variables",
-             title = "Summary of variable F-statistic P-values from ANOVA models")
+        labs(y = "P-Value of F-Statistic", x = "Independent Variables",
+             title = "Summary of Variable F-Statistic P-Values from ANOVA Models")
 
 
 ```
 
-The ANOVA models indicated that the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the null hypothesis:
+The ANOVA models indicated that the following variables have a median p-value below 0.05 and therefore significantly contribute to the rejection of the regression null hypothesis:
 
 * Number of employees on the project team (no.users)
 * Percent of hours completed by a professional as opposed to technical employee (pc.pro)
@@ -1143,9 +1143,9 @@ The variables listed above had p-values below 0.05, meaning the null hypothesis,
 
 ## Random Forests
 
-The Random Forest algorithm can process data sets with missing values, however it does so by automatically imputing missing values [@randomForest]. This was not desirable in the early stage of variable selection. Instead, the completeness of the variables was assessed and it was decided that all variables with at least 2300 overlapping complete cases would be chosen. Additionally, the Random Forest algorithm cannot process categorical variables with more than 53 categories. This eliminated more variables and the resulting 'core' data set contained 15 variables and 2364 cases. Because of the Random Forest algorithm's known biases and limitations with numbers of categories, a briefer approach to variable importance analysis was taken in comparison to regression and cForests. 
+The Random Forest algorithm can process data sets with missing values, however it does so by automatically imputing those missing values [@randomForest]. This was not desirable in the early stage of variable selection. Instead, the completeness of the variables was assessed and it was decided that all variables with at least 2300 overlapping complete cases would be chosen. Additionally, the Random Forest algorithm cannot process categorical variables with more than 53 categories. This eliminated more variables and the resulting 'core' data set contained 15 variables and 2364 complete cases. Because of the Random Forest algorithm's known biases and limitations with numbers of categories, a briefer approach to variable importance analysis was taken in comparison to Regression and cForests. 
 
-Each tree in a Random Forest is created with a bootstrapped training sample of the data. The random sampling means the results of each forest are slightly different. To cater for the variation in results, 10 forests were run and the mean rank of each variable was recorded. Variable importance output from a single forest is simply a ranked list of the variables where rank 1 indicates the most important variable:  
+As explained in the Literature Review, each tree in a Random Forest is created with a bootstrapped training sample of the data. The random sampling means the results of each forest are slightly different. To cater for the variation in results, 10 forests were run and the mean rank of each variable was recorded. Variable importance output from a single forest is simply a ranked list of the variables where rank 1 indicates the most important variable:  
 
 ```{r, echo = FALSE}
 
@@ -1155,9 +1155,9 @@ kable(rf.rank, format = 'markdown')
 
 ```
 
-## Cforest
+## CForest
 
-CForests were also run with the core 15 complete variables with 2364 complete cases. Incomplete variables were added to the core variables individually, each with their own separate run. Variables with an unlimited number of categories can be included in the cForest function, which is an advantage over Random Forests [@Hothorn2006; @Strobl2007; @Strobl2008]. CForests compute a variable importance ranking which is a number relating to the reduction in error the variable provides (similar method to the permutation importance in Random Forests). The variable importance rankings for the core 15 variables are as follows:
+CForests were also run using the core 15 complete variables with 2364 complete cases. Incomplete variables were added to the core variables individually, each with their own separate run. Variables with an unlimited number of categories can be included in the cForest function, which is an advantage over Random Forests [@Hothorn2006; @Strobl2007; @Strobl2008]. CForests compute a variable importance ranking which is a score relating to the reduction in error that the variable provides (a similar method to the permutation importance in Random Forests). The variable importance rankings for the core 15 variables were as follows:
 
 ```{r, echo = FALSE, fig.height = 4.5, fig.cap = c("Variable importance output from a cForest built from 15 core variables")}
 
@@ -1169,14 +1169,14 @@ ggplot(data=cfor.varimp, aes(x=var, y=imp)) +
         theme(axis.text.x=element_text(angle=45,hjust=1),
               panel.background = element_rect(fill = 'gray95')) +
         geom_bar(stat='identity') +
-        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "cForest Variable Importance Rankings of Complete Variables") +
+        labs(y = "Relative Variable Importance Value", x = "Independent Variables", title = "CForest Variable Importance Rankings of Complete Variables") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
 
-Four incomplete variables that were added independently ranked in the top 6 most important variables in their model:
+Four incomplete variables that were added individually ranked in the top 6 most important variables in their model:
 
 * Percent of Hours completed by the main employee on the project (pc.majpos)
 * Client id (code.client)
@@ -1207,35 +1207,37 @@ Based on the results of the three methods for variable importance, 11 explanator
 
 ## Variable Selection Discussion
 
-The variable importance results from the three types of models: ANOVA regression, Random Forest, and cForest showed more similarities than differences. All three models ranked five variables highly:
+The variable importance results from the three types of models: ANOVA Regression, Random Forest, and cForest showed more similarities than differences. All three models ranked five variables highly:
 
-* percent of hours by a professional
-* project time span
-* number of employees in project team
-* total amount invoiced
-* business category of client
+* Percent of hours by a professional
+* Project time span
+* Number of employees in project team
+* Total amount invoiced
+* Business category of client
 
-This was not necessarily expected, particularly between ANOVA and the ensemble tree methods as ANOVA measures linear relationships in contrast to non-linear ensemble trees. Random forests favour variables that are numeric or have many categories and this held true for the analysis. The 6 highest-ranked variables were numeric with one categorical variable, Business category of client, which had 28 categories. The two lowest ranking variables had only 4 categories. It was expected that cForests would rank the categorical variables with only 4 categories more fairly. This was the case with Discipline and it received a mid-level ranking. Business category of the client and Broad business type however, were ranked similarly to Random Forests. 
+This was not necessarily expected, particularly between ANOVA and the ensemble tree methods, because ANOVA measures linear relationships in contrast to non-linear ensemble trees. 
 
-The qualities of the higher ranked variables were not surprising, and were generally centered around who did how much of the work internally, client characteristics, project time span, and project category. It was expected that Billing Type would play a more important role in predicting profitability as it describes the structure of the incoming fees. For this reason, and with advice from the case study business, the Billing Type was kept in the model.
+Random Forests favour variables that are numeric or have many categories and this held true for the analysis. Its 6 highest-ranked variables were numeric with one categorical variable, Business category of the client, which had 28 categories. The two lowest ranking variables had only 4 categories. It was expected that cForests would rank the categorical variables with only 4 categories more fairly. This was the case with Discipline and it received a mid-level ranking. Business category of the client and Broad business type however, were ranked similarly to Random Forests. 
 
-For construction projects and IT software projects, the literature indicated size was the most important variable predicting effort. Size could mean size of a building or function point (level of functionality of the software) [@Shepperd1996; @Finnie1997; @Pai2013]. In this case study, profitability is the dependent variable, not total effort and the size variable plays a different role. Instead of contributing to predicting the total effort, it is describing whether the size of a project correlates with how profitable the project is. The closest estimate of size in this case study is the invoiced amount variable, which did rank as very important. The exact invoiced amount is difficult to guess before a project begins, and is part of the problem this study is addressing. Therefore, the invoiced amount was binned into categories that a manager could much more confidently choose as an estimate. The other variables indicated as important in this study  (including the number of employees on a project, client business type and percent of hours by certain types of employees) have not been strongly represented in the literature to date. This is because the variables were easily calculated from internal CRM data but would not be easily obtained externally from projects across many companies or regions.
+The overall qualities of the higher ranked variables were not surprising, and were generally centered around who did how much of the work internally, client characteristics, project time span, and project category. It was expected that Billing Type would play a more important role in predicting profitability as it describes the structure of the incoming fees. For this reason, and with advice from the case study business, the Billing Type was kept in the model.
 
-The 11 explanatory variables from table __ were progressed to the next stage where they were used to build predictive models. The outcomes of the regression and categorical models are summarised and discussed in the following two chapters.
+For IT software projects, the literature indicated size was the most important variable predicting effort, and in Construction projects size was also often an explanatory variable. Size could mean size of a building or function point (level of functionality of the software) [@Shepperd1996; @Finnie1997; @Pai2013]. In this case study, profitability is the dependent variable, not total effort and the size variable plays a different role. Instead of predicting total effort, it is describing whether the size of a project correlates with how profitable the project is. The closest estimate of size in this case study is the invoiced amount variable, which did rank as very important. The exact invoiced amount is difficult to guess before a project begins, and is part of the problem this study is addressing. Therefore, the invoiced amount was binned into categories that a manager could much more confidently choose as an estimate. The other variables indicated as important in this study (including the number of employees on a project, client business type and percent of hours by certain types of employees) have not been strongly represented in the literature to date. This is because the variables were easily calculated from internal CRM data but would not be easily obtained from an external standpoint for projects across many companies or regions.
+
+The 11 explanatory variables from table __ were progressed to the next stage where they were used to build the first set of predictive models. The outcomes of the regression and categorical models are summarised and discussed in the next two chapters.
 
 # Regression Models
 
-Prediction of 'return per dollar' as a regression problem was attempted first followed by prediction of profit or loss as a binary classification problem. Linear Regression, Random Forests and Boosted Tree methods were applied to both problems with varying success.
+Prediction of 'return per dollar' as a regression problem was attempted first followed by prediction of profit or loss as a binary classification problem. Linear Regression, Random Forests and Boosted Tree methods were applied to both problems.
 
 ## ANOVA
 
-In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. Since linear relationships are being tested, continuous variables are assumed to be normally distributed. Therefore, where appropriate, numeric variables were normalised via logarithmic or cube root transformations. Trials of various variable interactions revealed that interactions between:
+In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values and variances of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. The continuous variables were normalised to kerb the effects of possible high leverage points, and logarithmic or cube root transformations were used for this. Trials of various variable interactions revealed that interactions between:
 
 * total amount invoiced * percent of job by professional level employee
 * total amount invoiced * client id
 * project category * number of employees on the job
 
-were statistically significant. Two types of ANOVA models were run. The first used only a 'core' list of 6 variables that were largely complete and any relevant interaction terms.
+were statistically significant. Two types of ANOVA models were built. The first used only a 'core' list of 6 variables that were largely complete along with relevant interaction terms:
 
 * Total amount invoiced 
 * Discipline 
@@ -1244,7 +1246,7 @@ were statistically significant. Two types of ANOVA models were run. The first us
 * % of hours completed by a professional level employee
 * Client business category
 
-The second method was developed to overcome the problem of missing data. When all variables were combined, only 15% of the project cases had complete data and therefore the ANOVA test would eliminate 85% of the data upon execution. Imputing the missing data was not desirable at that stage due to the volume of missing categorical data and an inability to ensure the imputed data was not hampering results. The second method was a more complicated procedure that required dozens of models but allowed variables with missing data to be included. First, a project was randomly selected (a row in the data set) which would have certain variables complete. The data was then filtered for all projects that had at least the same columns complete, and an ANOVA model was built on this reduced data set. This method allowed variables with a larger proportion of missing data to be included while not attempting to analyse all variables at once. 
+The second method was developed to overcome the problem of missing data. When all variables were combined, only 15% of the project cases had complete data and therefore the ANOVA test would eliminate 85% of the data upon execution. Imputing the missing data was not desirable at that stage due to the volume of missing categorical data and an inability to ensure the imputed data did not adversely influence results. The second method was a complicated procedure that required dozens of models but allowed variables with missing data to be included. First, a project was randomly selected (a row in the data set) which would have certain variables complete. The data was then filtered for all projects that had at least the same columns complete, and an ANOVA model was built on this reduced data set. This method allowed variables with a larger proportion of missing data to be included while not attempting to analyse all variables at once. 
 
 ```{r insert_data}
 # load function for determining number of required samples for 0.8 power
@@ -1268,10 +1270,10 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
         
 }
 
-results.core = readRDS("reg_lm_core.rds")
+results.core = readRDS("report_data/reg_lm_core.rds")
 # n.samples(data = results.core$diff)
 
-results.A2 = readRDS("reg_lm.rds")
+results.A2 = readRDS("report_data/reg_lm.rds")
 results.A2 <- dplyr::filter(results.A2, diff>-15)
 # n.samples(data = results.A2$diff)
 
@@ -1279,94 +1281,123 @@ results.A2 <- dplyr::filter(results.A2, diff>-15)
 ```
 
 
-The results of the ANOVA models were assessed using the root mean squared error (RMSE) statistic of the return per dollar predictions. These were compared against a baseline RMSE, which was the RMSE of the predicted return per dollar values against the mean return per dollar of all projects. Then, the RMSE from each model was subtracted from the RMSE using mean return per dollar. If the models were effective, the RMSE should be lower for ANOVA model predictions, so the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only (method 1 using ANOVA). Note, only `r n.samples(data = results.A2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+The results of the ANOVA models were assessed using the RMSE statistic of the 'return per dollar' predictions. These were compared against a baseline RMSE, which was the RMSE of the predicted 'return per dollar' values less the mean 'return per dollar' of all projects. 
 
-```{r, fig.height = 4.3, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+$RMSE_b = \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - \bar y)^2}{n}}$
+
+RMSE_b = baseline root mean squared error
+y = predicted 'return per dollar'
+y = mean 'return per dollar' for al projects
+
+Where 
+
+$$
+\begin{aligned}
+RMSE_b = \textrm{baseline root mean squared error} \\
+n &= \textrm{number of data points} \\
+\widehat{y} &= \textrm{predicted values of the response variable} \\
+\bar y &= \textrm{mean 'return per dollar' for all projects} \\
+\end{aligned}
+$$
+
+Then, the RMSE from each model was subtracted from the baseline RMSE:
+
+$\Delta\ RMSE = RMSE_b - RMSE$
+
+If the models were effective, the RMSE should be lower for ANOVA model predictions, so the difference would be greater than 0. Below is a histogram of this difference across 50 models run on randomly sampled 75% train and 25% test sets using core variables only (method 1 ANOVA). Note, only `r n.samples(data = results.A2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+
+```{r, fig.height = 4.3, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on 6 core variables) and a baseline predictor that uses the mean 'return per dollar' as its prediction. If the ANOVA model was effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
+
 results.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 100 ANOVA models \nCore Variables Only") +
+        labs(x = expression(Delta~RMSE), 
+             y = "Density", title = expression(atop(paste("Density Plot of")~Delta~RMSE~paste("for 50 ANOVA Models"),Core~Variables~Only))) +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
-A student t-test indicates the difference is significantly above 0 with a p-value of `r t.test(results.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of return per dollar over using the mean return per dollar to a statistically significant degree. However, the mean difference is only \$`r mean(results.core$diff) %>% format(digits = 1)`. Furthermore, the mean RMSE in return per dollar is \$`r mean(results.core$final.RMSE) %>% format(digits = 2)`, which is unacceptably high. Almost 50 cents is a large mean error when the value is estimating the profit from \$1 spent.
+A student t-test indicated $\Delta RMSE$ was significantly above 0 with a p-value of `r t.test(results.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. Therefore, the null hypothesis that the difference is less than or equal to zero can be rejected. In other words, the ANOVA model improved estimates of 'return per dollar' over using the mean 'return per dollar' to a statistically significant degree. However, the mean difference was only \$`r mean(results.core$diff) %>% format(digits = 1)`. Furthermore, the mean RMSE in 'return per dollar' was \$`r mean(results.core$final.RMSE) %>% format(digits = 2)`, which is unacceptably high. Almost 50 cents is a large error when the value is estimating the profit after spending \$1.
 
-Results from 100 models using method 2, which captures incomplete variables, are shown below.
+Results from 100 models using method 2, which captures incomplete variables, are shown below:
 
-```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between ANOVA model predictions (built on all variables) and a baseline predictor that uses the mean 'return per dollar' as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.A2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 ANOVA models \nAll Variables Sampled") +
+        labs(x = expression(Delta~RMSE), 
+             y = "Density", title = expression(atop(paste("Density Plot of")~Delta~RMSE~paste("for 100 ANOVA Models"),All~Variables~Sampled))) +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
-A student t-test indicates the difference is not significantly above 0, which is clear from the plot (p-value = `r t.test(results.A2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 3)`). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the data set was `r results.core$test.nrow[1]*4` for the core variables but averaged only `r (mean(results.A2$test.nrow)*4) %>% round(0)` for the sampled set of all variables. Regression results from ANOVA models were poor - the Random Forest algorithm was trialed next.
+A student t-test indicated the difference was not significantly above 0, which is clear from the plot (p-value = `r t.test(results.A2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 3)`). This method clearly performed poorly in comparison to the core variables. A reason for this could be that the mean number of cases in the data set was `r results.core$test.nrow[1]*4` for the core variables but averaged only `r (mean(results.A2$test.nrow)*4) %>% round(0)` for the sampled set of all variables. Overall, the Regression results from Linear ANOVA models were poor and the Random Forest algorithm was trialed next.
 
 ## Random Forests
 
 ```{r load_rf_results}
-results.rf.core = readRDS("reg_rf_core.rds")
+results.rf.core = readRDS("report_data/reg_rf_core.rds")
 # n.samples(data = results.rf.core$diff)
 
-results.rf2 = readRDS("reg_rf.rds")
+results.rf2 = readRDS("report_data/reg_rf.rds")
 # n.samples(data = results.rf2$diff)
 
 ```
 
-Numeric predictions of return per dollar were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run (similar to the two ANOVA methods). The Random Forest parameters were first tuned using the caret package and optimal values mtry = 5 (the number of randomly selected explanatory variables to consider at each split) and ntree = 500 (the number of decision trees to ensemble) were determined [@caret]. A density plot of 50 models of the core variables using different training/test sets is shown below. The plot was created using the same procedure used in the ANOVA models where the x-axis measures the RMSE obtained by using the Random Forest model subtracted from the RMSE using the mean of all project return per dollar values. Note, only `r n.samples(data = results.rf2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
+Numeric predictions of 'return per dollar' were attempted first with core variables that were largely complete followed by a method of sampling a mix of core and less complete variables in every run (similar to the two ANOVA methods). The Random Forest parameters were first tuned using the caret package and the optimal values mtry = 5 (the number of randomly selected explanatory variables to consider at each split) and ntree = 500 (the number of decision trees to ensemble) were determined [@caret]. A density plot of 50 models of the core variables using different training/test sets is shown below. The plot was created using the same procedure used in the ANOVA models where the x-axis measures $\Delta RMSE$. Note, only `r n.samples(data = results.rf2$diff)` samples (models) were required for a statistical power of 80% [@pwr].
 
-```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on 6 core variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on 6 core variables) and a baseline predictor that uses the mean 'return per dollar' as its prediction. If the Random Forest model was effective, the difference would be greater than 0.")}
 
 #plot histogram to show differences
 results.rf.core %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models \nCore Variables Only") +
+        labs(x = expression(Delta~RMSE), 
+             y = "Density", title = expression(atop(paste("Density Plot of")~Delta~RMSE~paste("for 50 Random Forest Models"),Core~Variables~Only))) +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
-This plot shows a mean return per dollar RMSE improvement of \$`r mean(results.core$diff) %>% format(digits = 1)`, which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is `r t.test(results.rf.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)` and could be rejected. Results from 100 Random Forest models using method 2 are shown below:
+This plot shows a mean 'return per dollar' RMSE improvement of \$`r mean(results.core$diff) %>% format(digits = 1)`, which is the same as the ANOVA model. The p-value for the null hypothesis that the difference is less than or equal to zero is `r t.test(results.rf.core$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)` and could be rejected. Results from 100 Random Forest models using method 2 are shown below:
 
-```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on all variables) and a base line predictor that uses the mean return per dollar as its prediction. If the ANOVA model is effective, the difference should be greater than 0.")}
+```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of the difference in RMSE between randomForest predictions (built on all variables) and a baseline predictor that uses the mean 'return per dollar' as its prediction. If the Random Forest model is effective, the difference should be greater than 0.")}
 
 #plot histogram to show differences
 results.rf2 %>% ggplot(., aes(x =diff, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "Difference in RMSE (Mean RMSE - Model RMSE)", title = "Density Plot of change in RMSE for 50 randomForest models \nAll Variables Sampled") +
+        labs(x = expression(Delta~RMSE), 
+             y = "Density", title = expression(atop(paste("Density Plot of")~Delta~RMSE~paste("for 100 Random Forest Models"),All~Variables~Sampled)))+
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
-The p-value for these models and the aforementioned null hypothesis is `r t.test(results.rf2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. The null hypothesis was rejected which contrasted the matching ANOVA test. On the right hand tail of the graph above, the RMSE is improved by almost \$0.20 but also worsens by over \$0.10 per dollar on the left tail. A density plot of the RMSE for the models is shown below:
+The p-value for these models and the aforementioned null hypothesis is `r t.test(results.rf2$diff, alternative = "greater", mu = 0)$p.value %>% format(digits = 2)`. The null hypothesis was rejected which contrasted the matching ANOVA test. On the right hand tail of the graph above, the RMSE is improved by almost \$0.20 but also worsens by over \$0.10 per dollar on the left tail. A density plot of the unaltered RMSE values for the models are shown below:
 
 ```{r, fig.height = 4.3, echo = FALSE, fig.cap = c("Distribution of RMSE's of 'return per dollar' from 100 randomForest models built on random subsamples of the variables")}
 
 #plot histogram of RMSE's
 results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+ 
         geom_histogram() + geom_density() +
-        labs(x = "RMSE", title = "Density Plot of RMSE for 100 randomForest models \nVariables Randomly Sampled") +
+        labs(x = "RMSE", title = "Density Plot of RMSE for 100 Random Forest Models \nVariables Randomly Sampled",
+             y = "Density") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 ```
 
-Although the Random Forest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for return per dollar was wide and the mean RMSE was high (\$`r mean(results.rf2$final.RMSE) %>% round(2)`).
+Although the Random Forest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for 'return per dollar' was wide and the mean RMSE was high (\$`r mean(results.rf2$final.RMSE) %>% round(2)`).
 
-The two regression models predicting 'return per dollar' resulted in high mean RMSE's ranging from \$`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. The next section discusses possible reasons for the poor results and the decision to halt progression of regression models. 
+The two regression models predicting 'return per dollar' resulted in high mean RMSE's ranging from \$`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. The next section discusses possible reasons for the poor results and the decision to halt development of regression models. 
 
 ## Regression Models: Discussion
 
-Both ANOVA and Random Forest models produced a similar lowest RMSE value, but performed differently when directly comparing models built on the same list of variables. Both methods predicted at best within an average of \$0.48 for the response variable, 'return per dollar', using either core variables or a sample of core and less complete variables. Random Forest predictions were much more accurate than ANOVA's with a mix of core (almost complete) and less variables while Random Forest and ANOVA performed similarly with the core variables only. There was much less data available for training the models that used less-complete variables so it was interesting that Random Forest performed considerably better (RMSE of \$0.50 for Random Forest vs. \$2 for ANOVA). The main difference between ensemble tree methods and ANOVA is that ANOVA assumes linear relationships between variables (some of which are normalised) whereas trees are capable of capturing non-linear relationships. It is possible the less complete variables had non-linear relationships with the response variable. Random Forest is also an ensemble method while ANOVA is not. Each Random Forest is the average of 500 single trees, whereas each ANOVA model is a single model only. 50 Random Forest models produce 500 times more models than 50 ANOVA models so the averaging effect may have eliminated outliers for better overall performance.
+Both ANOVA and Random Forest models produced a similar lowest RMSE value, but performed differently when directly comparing models built on the same list of variables. Both methods predicted at best within an average of \$0.48 for the response variable, 'return per dollar', using either core variables or a sample of core and incomplete variables. Random Forest predictions were much more accurate than ANOVA's with a mix of core (almost complete) and less variables while Random Forest and ANOVA performed similarly with the core variables only. There was much less data available for training the models that used less-complete variables so it was interesting that Random Forest performed considerably better (RMSE of \$0.50 for Random Forest vs. \$2 for ANOVA). The main difference between ensemble tree methods and ANOVA is that ANOVA assumes linear relationships between variables (some of which are normalised) whereas trees are capable of capturing non-linear relationships. It is possible the less complete variables had non-linear relationships with the response variable. Random Forest is also an ensemble method while ANOVA is not. Each Random Forest is the average of 500 single trees, whereas each ANOVA model is a single model only. 50 Random Forest models produce improved overall performance.
 
-If the best RMSE achievable at that point was \$0.48, what does that imply in terms of the business decision? The magnitude of the RMSE can be evaluated from the end-user's perspective (the manager who is proposing fees for new projects). To give a feel for typical project performance, refer the plot below of historical 'return per dollar' values:
+If the best RMSE achievable at that point was \$0.48, what does that imply in terms of the business decision? The magnitude of the RMSE can be evaluated from the end-user's perspective (the manager who is proposing fees for new projects). To give a feel for typical project performance, refer to the plot below of historic 'return per dollar' values:
 
 ```{r, fig.cap = c("Distribution of 'return per dollar' for all projects")}
 
@@ -1377,27 +1408,28 @@ if(.Platform$OS.type == 'windows'){
 }
 ggplot(all8a, aes(x = return.pdol, y = ..density..)) + 
         geom_histogram() + geom_density() +
-        labs(x = "Return per Dollar ($)", title = "Density Plot of Return per Dollar - All Projects") +
+        labs(x = "Return per Dollar ($)", title = "Density Plot of Return per Dollar - All Projects",
+             y = "Density") +
         theme(panel.background = element_rect(fill = 'gray95'))
 
 ```
 
-The 95% confidence interval for this data is \$`r (mean(all8a$return.pdol)- qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)` to \$`r (mean(all8a$return.pdol) + qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)`. If a project returns \$0 for every dollar spent (return per dollar = \$0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the return per dollar is -\$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the return per dollar is \$1, the project earned double what it cost to perform. Using this reasoning, if model predictions have an average error of \$.50 for return per dollar, this represents an error in revenue of half what the project cost to complete. Unfortunately, this is clearly not informative enough to bring into the business decision-making process. 
+The 95% confidence interval for this data is \$`r (mean(all8a$return.pdol)- qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)` to \$`r (mean(all8a$return.pdol) + qnorm(0.975)*sd(all8a$return.pdol)) %>% round(2)`. If a project returns \$0 for every dollar spent (return per dollar = \$0), the project has earned only enough to cover the cost of doing the project (salary costs and business costs). If the 'return per dollar' is -\$0.50, the project has earned enough to cover half of the costs of doing the job. Finally, if the 'return per dollar' is \$1, the project earned double what it cost to perform. Using this reasoning, if model predictions have an average error of \$.50 for 'return per dollar', this represents an error in revenue of half of the project cost. Unfortunately, this is clearly not informative enough to bring into the business decision-making process. 
 
-Further regression methods could have been pursued, however Random Forest is a high-performing algorithm and was far from providing usable results. It is likely that either not enough data was available or that the given variables did not capably explain all the factors affecting return per dollar. Each row of data is a project, which can take the company from a few weeks to sometimes years to complete. Therefore, more data cannot be easily accessed or created. It was decided categorical predictions should be pursued next as predicting whether a job will be profitable or not is a simpler task and could more effectively leverage the limited data.
+Further regression methods could have been pursued, however Random Forest is a high-performing algorithm and was far from providing usable results. It is likely that either not enough data was available or that the given variables did not capably explain all the factors affecting 'return per dollar'. Each row of data is a project, which can take a few weeks or in some cases, years, to complete. Therefore, more data could not be easily accessed or created. It was decided binary classification should be pursued next as predicting whether a job will be profitable or not is a simpler task and could more effectively leverage the limited data.
 
-This conclusion differs to case studies in the literature, which tend to predict total cost/effort as a regression problem [@Kim2004; @Chan2005; @Akintoye2000]. This is likely because the literature dealt with substantial projects that are rarer and impact governments and large companies. A simple profit or loss prediction would not be useful. The case study company on the other hand may find a profit/loss binary prediction useful because they complete hundreds of small projects a year. If binary classification is successful, applications of the predictions must be explored along with contributions to the company decisions and profits. 
+This conclusion differs to case studies in the literature, which tended to predict total cost or effort as a regression problem [@Kim2004; @Chan2005; @Akintoye2000]. This is likely because a simple profit or loss prediction would not be useful for the way the problem was framed in the literature. The problem was to estimate costs better for project budgeting, without considering contract structure or the choice to not do a project at all. The case study company on the other hand may find a profit/loss binary prediction useful because they complete hundreds of small projects a year, and if risky projects are identified, the project could be rejected or have a conservative contract structure. If binary classification is successful, applications of the predictions must be explored along with contributions to the company decisions and profits. 
 
-In summary, because of the poor results when predicting return per dollar, further development of regression models was deferred in favour of binary classification models. Binary classification is a simpler task than regression because it requires less precision. The challenge is how to gainfully apply the results to the business scenario.
+In summary, because of the poor results when predicting 'return per dollar', further development of regression models was deferred in favour of binary classification models. Binary classification is a simpler task than regression because it requires less precision. The challenge is how to gainfully apply the results to the business scenario.
 
 
 # Binary Classification Models
 
-The cost estimation problem analysed in the literature review had been converted to a profitability estimation problem and was finally converted to a binary profit/loss prediction. The predictive formula was re-structured so that the 11 explanatory variables predicted a new response variable: profitable project (or not). The original 'return per dollar' response variable was transformed by converting all 'return per dollar' values less than or equal to zero to 'loss making' jobs and 'return per dollar' values greater than 1 to 'profitable' jobs. The following section summarises results from the trialed methods.
+The cost estimation problem analysed in the literature review had been translated to a profitability estimation problem and was finally converted to a binary profit/loss prediction. The predictive formula was re-structured so that the 11 explanatory variables predicted a new response variable: profitable/unprofitable projects. The original 'return per dollar' response variable was transformed by converting all 'return per dollar' values less than or equal to zero to 'loss making' jobs and 'return per dollar' values greater than 1 to 'profitable' jobs. The following section summarises results from the trialed methods.
 
 ## Results from Five Methods
 
-The five prediction methods, Boosted Trees, Naive Bayes, Logistic Regression, Random Forests and Bayesian Networks, were initially developed without imputing data, using the maximum amount of data possible depending on the method. Boosted Trees and Naive Bayes are able to process data with missing values, so all data could be input [@gbm; @e1071]. Logistic Regression, Random Forest and Bayesian Networks require data sets without missing values so a subset of complete data was used. It was expected that Boosted Trees would perform best as they are known to have powerful predictive capabilities and can use incomplete data. For this reason, 4 x 5-fold runs of each method were performed (20 models each) and statistically compared against Boosted Trees' results. A power calculation was then used to calculate the number of runs required to achieve a statistical power of 0.8.
+The five prediction methods, Boosted Trees, Naive Bayes, Logistic Regression, Random Forests and Bayesian Networks, were initially built without imputing data, by using the maximum amount of data possible depending on the method. Boosted Trees and Naive Bayes are able to process data with missing values, so all data could be input [@gbm; @e1071]. Logistic Regression, Random Forest and Bayesian Networks require data sets without missing values so a subset of complete data was used. It was expected that Boosted Trees would perform best as they are known to have powerful predictive capabilities and can use incomplete data (i.e. could make use of all the data). For this reason, 4 x 5-fold runs of each method were performed (20 models each) and statistically compared against Boosted Trees' results. A power calculation was then used to calculate the number of runs required to achieve a statistical power of 0.8.
 
 The models were compared using the AUC test statistic calculated from the ROC as this gives a good indication of model performance under binary classification [@pROC; @Putler2012]. An example plot of five ROC's built from 5-fold cross validation using the Boosted Tree algorithm is shown below.
 
@@ -1417,11 +1449,11 @@ Before the plot could be made, the Boosted Tree algorithm parameters were tuned 
 
 In the plot above, the average AUC was 0.763, which indicated that altogether, taking into account a range of possible thresholds, the model was predicting profit/loss better than random chance (AUC = 0.5) but not perfectly (AUC = 1). 20 models and their resulting AUC statistics from each method were initially determined. These were used to calculate how many models were required to achieve a minimum statistical power of 0.8 when compared to the Boosted Tree results. The comparison of logistic regression required 100 models, while Random Forest required over 700 because the AUC distributions were close. Bayesian Networks and Naive Bayes did not perform as well and the power calculations revealed only 5 and 8 models were required respectively. Bayesian Networks were then dropped as Naive Bayes performed slightly better and were faster and simple enough to work as a baseline comparison to the higher-performing methods.
 
-It was finally decided that Random Forest and Boosted Trees would likely not be distinguishable since the power calculation indicated that 700 models were required. Hence, 100 models of each method were built as calculated for logistic regression. 10-fold cross validation was performed 10 times. The violin plot below summarises the AUC values produced by each method. The 'violins' are coloured according to whether the distributions significantly vary to Boosted Trees using a critical value of 0.05.
+It was finally decided that Random Forest and Boosted Trees would likely not be distinguishable since the power calculation indicated that 700 models were required. Hence, 100 models of each method were built as calculated for Logistic Regression. This was achieved by performing 10-fold cross validation 10 times. The violin plot below summarises the AUC values produced by each method and the 'violins' are coloured according to whether the distributions significantly vary to Boosted Trees using a critical value of 0.05.
 
 ```{r reduced_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Subsets of the data were used for Logistic Regression and randomForests in order to provide datasets without missing values.")}
 
-reduc.totAUC <- readRDS("reduc_df_auc.rds")
+reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1443,9 +1475,9 @@ ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) +
         scale_fill_manual(values = c('sienna1','navajowhite'),
                           name = "Significantly different from boosted trees") +
         scale_colour_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly different from boosted trees") +
+                          name = "Significantly Different from Boosted Trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method") +
+             title = "AUC Distribution from 100 models of Each Method") +
         scale_x_discrete(labels = c("boost" = "Boosted Trees", 
                          "log" = "Logistic Regression",
                          "naiive" = "Naive Bayes", "rf" = "Random Forest")) +
@@ -1458,11 +1490,11 @@ ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) +
 
 The AUC performance of Logistic Regression and the Random Forest algorithms cannot be statistically differentiated from Boosted Trees. 
 
-Next, data imputation methods were trialed which would make the complete data set available to Logistic Regression and Random Forests. It was possible this would improve AUC results and the same process as above could be repeated. Imputation was done using the MICE method with Random Forest imputation [@mice]. Again, 100 models were required to achieve a power of 0.8 although this could not be achieved for Random Forest unless over 450,000 models were made.
+Next, data imputation methods were trialed which would make the complete data set available to Logistic Regression and Random Forests. It was possible this would improve AUC results and the same process as above could be repeated. Imputation was done using the MICE method with Random Forest imputation [@mice]. Again, 100 models were required to achieve a power of 0.8 with respect to Boosted Trees, although this could not be achieved for Random Forest unless over 450,000 models were made.
 
 ```{r mice_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
 
-mice.totAUC <- readRDS("mice_df_auc.rds")
+mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1485,7 +1517,7 @@ ggplot(mice.totAUC, aes(x= factor(L1), y= value)) +
         scale_colour_manual(values = c('sienna1','navajowhite'),
                           name = "Significantly different from boosted trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
-             title = "AUC Distribution from 100 models of each Method - Imputed Data") +
+             title = "AUC Distribution from 100 Models of Each Method - Imputed Data") +
         scale_x_discrete(labels = c("boost" = "Boosted Trees", 
                          "log" = "Logistic Regression",
                          "naiive" = "Naive Bayes", "rf" = "Random Forest")) +
@@ -1527,13 +1559,13 @@ ggplot(combine.micer, aes(x= factor(L1), y= value)) +
 
 ## Binary Classification: Discussion
 
-Testing Boosted Trees, Random Forests, Naive Bayes, Logistic Regression and Bayesian Networks on the binary classification problem showed that Boosted Trees, Logistic Regression and Random Forests performed best (according to AUC). Bayesian Networks are not particularly popular and require discretised variables so it was expected that this algorithm would not perform as well as highly regarded methods such as Boosted Trees and Random Forests. Naive Bayes and Logistic Regression were included as baseline models and it was expected that the more complex models would outperform these. Therefore it was surprising that results from 100 Logistic Regression models were not statistically lower than Boosted Trees. 
+Testing Boosted Trees, Random Forests, Naive Bayes, Logistic Regression and Bayesian Networks on the binary classification problem showed that Boosted Trees, Logistic Regression and Random Forests performed best (according to AUC). Bayesian Networks were not popular in the Literature and required discretised variables, so this algorithm was not expected to perform as well as more highly regarded methods (Boosted Trees and Random Forests). Naive Bayes and Logistic Regression were included as baseline models and it was expected that the more complex models would outperform these. Therefore it was surprising that results from 100 Logistic Regression models were not statistically significantly lower than Boosted Trees. 
 
-A possible explanation for this, according to the literature, is that there was not enough data for the ensemble trees to learn the complex decision rules at which they excel. Trees tend to overfit the patterns in a smaller training set. Logistic regression on the other hand is capable of only one decision boundary (which does not have to be parallel to the variable axes) and is not prone to overfitting [@Perlich2003]. This may explain Logistic Regression's comparatively high performance on the case study's smaller data set with many variables.
+A possible explanation for this, according to the literature, is that there was not enough data for the ensemble trees to learn the complex decision rules at which they excel. Trees tend to overfit the patterns in a smaller training set. Logistic Regression on the other hand is capable of only one decision boundary (which does not have to be parallel to the variable axes) and is not prone to overfitting [@Perlich2003]. This may explain Logistic Regression's comparatively high performance on the case study's small but complex data set.
 
-Boosted trees, Random Forests and Logistic Regression all had mean AUC values around 0.775. The tests were repeated using imputed data and again the means sat around 0.775. The variables were not particularly well suited for imputing so this result is logical and could have even diminished the mean AUC. For example, many of the imputed variables were categorical such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job. The benefit of having an imputed data set that performs acceptably well is that each model is fed the full data set and therefore produces predictions for the full data. Beforehand, Random Forest and Logistic Regression models were limited to a complete set of original data, which implied a reduced data set. With complete model predictions, the high performing models could be blended to test whether better predictions were possible. For this reason, the imputed data models were propagated forward to the development of blended models. 
+Boosted trees, Random Forests and Logistic Regression all had mean AUC values around 0.775. The tests were repeated using imputed data and again the means sat around 0.775. The variables were not particularly well suited for imputing so this result is logical and could have even diminished the mean AUC. For example, many of the imputed variables were categorical such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job. The benefit of having an imputed data set that performs acceptably well is that each model is fed the full data set and therefore produces predictions for the full data. Beforehand, Random Forest and Logistic Regression models were limited to complete original data, which implied a reduced final data set. With complete sets of model predictions, the high performing models could be blended to test whether better predictions were possible. For this reason, the imputed data models were chosen to be progressed to the development of blended models. 
 
-In summary, the individual binary classification models performed well above random chance (AUC = 0.5) and it can be expected that implementing a model would improve a manager's ability to predict whether a new job will be profitable or loss making. Whether the model is worth implementing in the work place is dependent on the extent to which the algorithm would improve 'bottom line' profits for the business and if the model actually affects decisions in practice. Results from model blending and overall profit impact are presented and discussed in the next chapter.
+In summary, the individual binary classification models performed well above random chance (AUC = 0.5) and implementing a model is expected to improve a manager's ability to predict whether a new job will be profitable or loss making. Whether the model is worth implementing in the work place is dependent on the extent to which the algorithm would improve 'bottom line' profits for the business and if the model can affect decisions in practice. Results from model blending and overall profit impact are presented and discussed in the next chapter.
 
 # Model Blending
 
@@ -1938,7 +1970,7 @@ ggplot(finance.plot %>% filter(method == "simp.log"),
 # * bottom line analysis - run 1000 times to get confidence interval around the line.
 #     * should the business adopt the model?
 #     
-# * to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the case based reasoning approach
+# * to address the problem of trust and create insight to the past data - nearest neighbour algorithm. This also mimics the CBR approach
 ```
 
 
@@ -2171,7 +2203,7 @@ ggplot(reject.plot,
 
 ```
 
-The statistical distribution of return per dollar in the rejected projects is skewed towards negative returns. This means the algorithm has identified a proportionally much higher percentage of loss making projects which is not surprising given previous results.
+The statistical distribution of 'return per dollar' in the rejected projects is skewed towards negative returns. This means the algorithm has identified a proportionally much higher percentage of loss making projects which is not surprising given previous results.
 
 ```{r, fig.cap = c("Distribution of 'return per dollar' in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
 
@@ -2282,7 +2314,7 @@ Hypothesis 1 stated a statistical or machine learning model based on the CRM dat
 
 Lastly, hypothesis 2 proposed that the best predictive model developed from hypothesis 1 could be shown to improve the overall profitability (bottom line) of the case study business. This theory was tested on a range of predictive models because AUC scores were not directly linked to profitability once the models were applied to a business scenario. The models output a probability, so an optimal probability threshold needed to be found that would dictate whether a job was classified 'profitable' or 'loss making'. A range of threshold were trialed, and a decision framework was created where if a project was scored below the threshold it was accepted while projects above the threshold were rejected. If a project was accepted, the profits and losses were summed while if a project was rejected the profits and losses were forfeited. A perfect model would reject all loss making jobs and accept all profitable jobs, thereby improving overall profits. Final results showed the Logistic Regression blend of the individual Logistic Regression, Random Forest and Boosted Tree models improved profits the most. The 95% confidence interval for these improvements were between `r best.fin %>% filter(method == "simp.log") %>% .$lower_bound_95CI - 100`% and `r best.fin %>% filter(method == "simp.log") %>% .$upper_bound_95CI - 100`% using a probability threshold of `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
 
-These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending have been applied minimally to cost estimation. Past research tested regression models and to some extent Neural Networks and case based reasoning. The advantage of ensemble tree methods is that they provide insight into the model's structure while predicting as well as Neural Networks. Next, a clear framework for how a business can tangibly improve profits was developed and proven successful. Previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. Lastly, the decision framework was progressed even further into a prototype application where user trust was addressed. Previous studies had shown that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. This was addressed by providing intuitive plots of the model structure and a parallel nearest neighbour graph of similar internal projects. Further work is required to test user confidence in the output.
+These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending have been applied minimally to cost estimation. Past research tested regression models and to some extent Neural Networks and CBR. The advantage of ensemble tree methods is that they provide insight into the model's structure while predicting as well as Neural Networks. Next, a clear framework for how a business can tangibly improve profits was developed and proven successful. Previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. Lastly, the decision framework was progressed even further into a prototype application where user trust was addressed. Previous studies had shown that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. This was addressed by providing intuitive plots of the model structure and a parallel nearest neighbour graph of similar internal projects. Further work is required to test user confidence in the output.
 
 Another topic identified for future research was to test how well managers estimate project input variables. Estimation of the time span, team size, total invoiced amount, and percentage of hours completed by professionals in particular should be tested. Initial estimates of input variables could also be kept in the database for future analysis. Overall, this project has successfully demonstrated a mathematical blend of Logistic Regression, Random Forest, and Boosted Tree models could guide managers in rejecting loss making projects and improve net profitability. 
 

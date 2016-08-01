@@ -56,13 +56,16 @@ $f(x) = \beta_{0} + \sum_{j = 1}^{p} X_{j} \beta_{j}$
 
 $RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
 
+$RMSE_b = \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - \bar y)^2}{n}}$
 
-where $X_{j}$ is simply something
+$$
+\begin{aligned}
+RMSE_b = \textrm{baseline root mean squared error} \\
+n &= \textrm{number of data points} \\
+\widehat{y} &= \textrm{predicted values of the response variable} \\
+\bar y &= \textrm{mean 'return per dollar' for all projects} \\
+\end{aligned}
+$$
 
-$X_{1}$, include the terms $X_{2} = X_1^2$ and $X_{3} = X_1^3$ to build a third degree polynomial. Interactions between explanatory variables can be modelled by including a terms such as $X_5 = X_4*X_1$ 
+$\Delta\ error = RMSE_b - RMSE$
 
-$\operatorname{logit}(p) = \log\left(\frac{p}{1-p}\right) = \log(odds)$
-
-$p(ABCD) = p(C|ABD)\cdot p(A|BD) \cdot p(B|D) \cdot p(D)$
-
-$p(ABCD) = p(C|BD)\cdot p(A|B) \cdot p(B) \cdot p(D)$
