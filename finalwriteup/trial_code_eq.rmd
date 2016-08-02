@@ -50,22 +50,16 @@ $odds = e^{\ln\  odds}$
 | ...     | ...   | ...           | ...         | ...        | ...        |         | ...        | ...         |\
 \\
 
-$Overall\ Profit = Revenue\ from\ Project\ Invoices\ - (Employee + Business\ Costs)$
 
-$f(x) = \beta_{0} + \sum_{j = 1}^{p} X_{j} \beta_{j}$
 
-$RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
-
-$RMSE_b = \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - \bar y)^2}{n}}$
+$Relative\ Profit_t = \frac{Profit_t}{\sum_{t = 1}^{n}\left|Profit_t\right|}$
 
 $$
 \begin{aligned}
-RMSE_b = \textrm{baseline root mean squared error} \\
-n &= \textrm{number of data points} \\
-\widehat{y} &= \textrm{predicted values of the response variable} \\
-\bar y &= \textrm{mean 'return per dollar' for all projects} \\
+Profit_t &= \textrm{Profit from project}\ t\textrm{. Negative values indicate loss making projects}
 \end{aligned}
 $$
 
 $\Delta\ error = RMSE_b - RMSE$
 
+to losses of \$`r 156100 %>% format(digits = 2)`
