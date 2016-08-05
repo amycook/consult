@@ -48,7 +48,7 @@ opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo 
 
 # Abstract
 
-Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by avoiding approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. The internal data collected by the case study company described each of their projects in terms of employee positions, fraction of project time completed by each employee, client characteristics, project characteristics (time span, hours, technical details) and invoicing history. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which" rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. This process was repeated on hundreds of models built from different training subsets of the data in order to obtain a 95% statistical confidence interval of profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. Further work is recommended to test user input estimation and user interface designs. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
+Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs or help tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by avoiding approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. The internal data collected by the case study company described each of their projects in terms of employee positions, fraction of project time completed by each employee, client characteristics, project characteristics (time span, hours, technical details) and invoicing history. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which" rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. This process was repeated on hundreds of models built from different training subsets of the data in order to obtain a 95% statistical confidence interval of profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. Further work is recommended to test user input estimation and user interface designs. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
 
 # Table of Contents
 
@@ -1271,10 +1271,10 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
         
 }
 
-results.core = readRDS("report_data/reg_lm_core.rds")
+results.core = readRDS("reg_lm_core.rds")
 # n.samples(data = results.core$diff)
 
-results.A2 = readRDS("report_data/reg_lm.rds")
+results.A2 = readRDS("reg_lm.rds")
 results.A2 <- dplyr::filter(results.A2, diff>-15)
 # n.samples(data = results.A2$diff)
 
@@ -1341,10 +1341,10 @@ A student t-test indicated the difference was not significantly above 0, which i
 ## Random Forests
 
 ```{r load_rf_results}
-results.rf.core = readRDS("report_data/reg_rf_core.rds")
+results.rf.core = readRDS("reg_rf_core.rds")
 # n.samples(data = results.rf.core$diff)
 
-results.rf2 = readRDS("report_data/reg_rf.rds")
+results.rf2 = readRDS("reg_rf.rds")
 # n.samples(data = results.rf2$diff)
 
 ```
@@ -1454,7 +1454,7 @@ It was finally decided that Random Forest and Boosted Trees would likely not be 
 
 ```{r reduced_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Subsets of the data were used for Logistic Regression and randomForests in order to provide datasets without missing values.")}
 
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1477,9 +1477,9 @@ ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) +
                      hjust = -.2, angle = 40, vjust = -.2
                      ) +
         scale_fill_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly different from boosted trees") +
+                          name = "Significantly different from Boosted Trees") +
         scale_colour_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly Different from Boosted Trees") +
+                          name = "Significantly different from Boosted Trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 100 models of Each Method") +
         scale_x_discrete(labels = c("boost" = "Boosted Trees", 
@@ -1498,7 +1498,7 @@ Next, data imputation methods were trialed which would make the complete data se
 
 ```{r mice_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
 
-mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
+mice.totAUC <- readRDS("mice_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1587,7 +1587,7 @@ Explanatory variable assessments were completed and compared using cForests, Log
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a cForest blended model. The results from the three best performing models were added as explanatory variables.")}
 
-cfor.varimp = readRDS("report_data/cfor_blend_varimp.rds")
+cfor.varimp = readRDS("cfor_blend_varimp.rds")
 cfor.varimp <- mutate(cfor.varimp, var = revalue(var, c("norm.log" = "log.pred",
                                          "norm.rf" = "rf.pred",
                                          "norm.boost" = "boost.pred")))
@@ -1606,7 +1606,7 @@ The cForest highlighted predictions from the Logistic Regression and Boosted Tre
 
 ```{r}
 
-log.varimp = readRDS("report_data/logblend.rds")
+log.varimp = readRDS("logblend.rds")
 log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
 colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
 log.varimp = add_rownames(log.varimp)
@@ -1653,7 +1653,7 @@ As well as the following variables as individual terms:
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a Random Forest blended model. The results from the three best performing models were added as explanatory variables.")}
 
-rf.varimp = readRDS("report_data/rfblend.rds")
+rf.varimp = readRDS("rfblend.rds")
 rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
 rf.varimp = add_rownames(rf.varimp)
 rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
@@ -1680,7 +1680,7 @@ Permutation importance by Random Forest rated all three prediction models highes
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a Boosted Tree blended model. The results from the three best performing models were added as explanatory variables")}
 
-boost.varimp = readRDS("report_data/boostblend.rds")
+boost.varimp = readRDS("boostblend.rds")
 boost.varimp = add_rownames(boost.varimp)
 boost.varimp <- mutate(boost.varimp, rowname = revalue(rowname, 
                                                        c("norm.log" = "log.pred",
@@ -1721,7 +1721,7 @@ Only three of the model blending techniques used the 8 variables determined abov
 
 ```{r blend_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.")}
 
-auc.list <- readRDS("report_data/blend_auc2.rds")
+auc.list <- readRDS("blend_auc2.rds")
 means = lapply(auc.list, mean) %>% unlist
 greater = means[means> means["orig.log"]] %>% names
 auc.melt = melt(auc.list)
@@ -1766,7 +1766,7 @@ To achieve a power of 0.8, a two-sample power analysis was performed on the 100 
 
 ```{r}
 #load results from 150 iterations
-auc.150 = readRDS("report_data/blend_auc150.rds")
+auc.150 = readRDS("blend_auc150.rds")
 
 ```
 
@@ -1820,8 +1820,8 @@ The simple Logistic Regression blend and simple averaging of the individual mode
 ## Blended Models Discussion
 
 ```{r blend_vs_initial}
-auc.150 = readRDS("report_data/blend_auc150.rds")
-mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
+auc.150 = readRDS("blend_auc150.rds")
+mice.totAUC <- readRDS("mice_df_auc.rds")
 compare.blends <- append(auc.150, mice.totAUC)
 
 index = c(3,4,5,6)
@@ -1878,7 +1878,7 @@ The predictive models output a 'probability' between 0 and 1 that each project w
 ```{r power_profit_curve}
 
 # How to achieve statistical power of 0.8?
-finance.plot = readRDS("report_data/plot_finance.rds" )
+finance.plot = readRDS("plot_finance.rds" )
 fin.summary.1 = finance.plot %>% group_by(threshold, method) %>% 
         summarise_each(funs(mean_profit_ratio = round(mean(.), 1), 
                             sd_prof_ratio = round(sd(.), 1)),
@@ -2069,7 +2069,7 @@ The red line sits at the profit curve's optimal threshold point, 0.6, so project
 
 ```{r, fig.height = 5.5, fig.cap = c("Distribution of projects according to the probability outputs from a typical simple Logistic Regression blended model. A bargraph of counts and relative profits are shown.")}
 
-reject.plot <- readRDS('report_data/reject_plot.rds')
+reject.plot <- readRDS('reject_plot.rds')
 
 profs <- reject.plot  %>% .$balance.mlsto %>% abs %>% sum
 simp.l2 <- reject.plot %>% filter(compare == 'full') %>% select(simp.log, balance.mlsto, inv.mlsto.log)
@@ -2132,7 +2132,7 @@ To review method performance further, confusion matrix statistics were scrutinis
 
 ```{r TP_plot, fig.height = 5, fig.cap = c("True positive and false negative rates for each blended method using a typical model from each - displayed as a bar graph.")}
 
-conf.plot <- readRDS("report_data/conf_plot.rds")
+conf.plot <- readRDS("conf_plot.rds")
 
 #if model.pred = loss, this is TP
 conf.plot$model.pred <- ifelse(conf.plot$actual == "loss" & 
@@ -2219,7 +2219,7 @@ All below plots and comments summarise results from one Simple Blended Logistic 
 
 ```{r, fig.cap = c("Proportion of profitable and loss making jobs in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
 
-reject.plot <- readRDS('report_data/reject_plot.rds')
+reject.plot <- readRDS('reject_plot.rds')
 
 ggplot(reject.plot, aes(x = f.rpdol)) +
         geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +

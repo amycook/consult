@@ -63,3 +63,29 @@ $$
 $\Delta\ error = RMSE_b - RMSE$
 
 to losses of \$`r 156100 %>% format(digits = 2)`
+
+```{r}
+finance.plot = readRDS("plot_finance_100_4.rds" )
+
+finance.plot$method <- factor(finance.plot$method, 
+                                    levels=c("average", "simp.log","simp.boost",
+                                             "comp.boost","comp.rf", "FWLS","orig.log",
+                                             "orig.rf","orig.boost"))
+
+ggplot(finance.plot %>% filter(method == "average") %>% slice(43:63), 
+       aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        geom_line() +
+        geom_point() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        theme(legend.position = "none", 
+              panel.background = element_rect(fill = 'grey95'),
+              panel.grid.minor = element_blank()) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Example Profit Curve for Simple Average Blended Model")
+
+```
+
