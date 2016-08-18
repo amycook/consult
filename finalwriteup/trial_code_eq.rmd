@@ -21,6 +21,8 @@ library('randomForest')
 library('RColorBrewer')
 library('pwr')
 library('scales')
+library(visdat)
+
 
 
 # detect OS
@@ -336,6 +338,34 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
 
 ```
 
+```{r}
+miss <- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all9c.csv')
+
+miss <- rename(miss, Project_type = JD.Second,
+               Client_Business = Business,
+               Timespan_cat = b.timespan.cbrt,
+               Invoiced_cat = b.inv.log,
+               Team_size = no.users,
+               Loss_making = b.rpdol,
+               Client_inv = client.totinv.log, 
+               pc.majpos = pc.majpos.log)
+
+
+# summary(miss)
+vis_dat(miss %>% select(-code.client, -code.contact, -mlsto,
+                        -X, -Year, -timespan.cbrt, -inv.mlsto.log,
+                        -return.pdol, -Billing.Type)) +
+        scale_fill_brewer(palette ='Paired')
+
+```
+```{r}
+test <- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+head(test)
+
+test %>% filter(mlsto == "2010.165")
+
+```
 
 
 
