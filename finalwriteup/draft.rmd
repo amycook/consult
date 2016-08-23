@@ -27,6 +27,7 @@ library('randomForest')
 library('RColorBrewer')
 library('pwr')
 library('scales')
+library('purrr')
 
 
 # detect OS
@@ -47,7 +48,7 @@ opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo 
 
 # Abstract
 
-Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by avoiding approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. The internal data collected by the case study company described each of their projects in terms of employee positions, fraction of project time completed by each employee, client characteristics, project characteristics (time span, hours, technical details) and invoicing history. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which" rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. This process was repeated on hundreds of models built from different training subsets of the data in order to obtain a 95% statistical confidence interval of profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. Further work is recommended to test user input estimation and user interface designs. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
+Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs or help tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by avoiding approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. The internal data collected by the case study company described each of their projects in terms of employee positions, fraction of project time completed by each employee, client characteristics, project characteristics (time span, hours, technical details) and invoicing history. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which" rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. This process was repeated on hundreds of models built from different training subsets of the data in order to obtain a 95% statistical confidence interval of profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. Further work is recommended to test user input estimation and user interface designs. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
 
 # Table of Contents
 
@@ -978,14 +979,14 @@ Only predictions made on the test data should be entered into the equations abov
 
 ![Points with TPR's and FPR's as coordinates for different probability thresholds [@Provost2013]](images/method/ROC1.JPG) 
 
-A model that is perfectly classified would have all positives correctly classified (1.0 True Positive Rate) and no incorrectly classified positives (0.0 False Positive Rate). If a model has a 1.0 TPR and 1.0 FPR (top right corner) it has correctly classified all positives at the expense of incorrectly classifying all negatives as positive. It is 'dumbly' classifying all cases as positive. If a model classifies 0.8 of its positives as TP but also 0.8 of its negative cases as positive it is 'dumb' in a similar way to the previous example. There is an 80% chance *any* case will be classified as positive. Therefore, a point that lies on the diagonal line classifies cases with the same capability as random chance. 
+A model that is perfectly classified would have all positives correctly classified (1.0 TPR) and no incorrectly classified positives (0.0 FPR). If a model has a 1.0 TPR and 1.0 FPR (top right corner) it has correctly classified all positives at the expense of incorrectly classifying all negatives as positive. It is 'dumbly' classifying all cases as positive. If a model classifies 0.8 of its positives as TP but also 0.8 of its negative cases as positive it is 'dumb' in a similar way to the previous example. There is an 80% chance *any* case will be classified as positive. Therefore, a point that lies on the diagonal line classifies cases with the same capability as random chance. 
 
 To plot the curve in an ROC, a series of points and their coordinates must first be calculated. This is done by choosing numerous threshold probability values between 0 and 1, then classifying each probability outcome in the test set as 0 or 1 based on the threshold value. Finally the TPR and FPR for that threshold point can be calculated which are the coordinates. Once enough points are plotted, a curve can be drawn. The closer the curve reaches toward the top left hand corner, the closer the algorithm is to perfectly predicting positive and negative cases at some optimal threshold. A curve that squarely reaches the top left hand corner would have an area under its curve (AUC) of 1. An AUC between 0.5 and 1 means the model is performing better than random chance (since the diagonal line represents a model randomly assigning positives to all cases at a certain rate and would have an AUC of 0.5).
 
 ![An ROC defined by data points calculated from 5 probability thresholds [@Provost2013]](images/method/ROC2.JPG) 
 
 
-For binary classification, AUC is a more meaningful statistic than classification accuracy when the output is a probability that can be applied to the problem. The AUC indicates model performance across many thresholds while classification accuracy represents a single threshold. The AUC statistic is therefore useful in problems where cases can be ranked and a cut-off threshold that will optimise the rates of true positives and true negatives can be found [@Huang2005]. Note the 'probability' outputs from the models are not true statistical probabilities, but a score the model has assigned to a case using its own measure of certainty. 
+For binary classification, AUC is a more meaningful statistic than classification accuracy when the output is a probability that can be applied to the problem. The AUC indicates model performance across many thresholds while classification accuracy represents a single threshold. The AUC statistic is therefore useful in problems where cases can be ranked and a cut-off threshold that will optimise the rates of true positives (TP's) and true negatives (TN's) can be found [@Huang2005]. Note the 'probability' outputs from the models are not true statistical probabilities, but a score the model has assigned to a case using its own measure of certainty. 
 
 In order to compare which models performed significantly better than others, an adequate sample size of results statistics is required. Multiple models could be made by using different data in the training vs. testing sets, each providing a resulting test statistic (RMSE or AUC). 5 fold cross validation was used, which created 5 models, then the division of 5 folds was repeated using a different random seed to create another set of 5 training/testing data sets. Initially, 20 models of each method were created in this fashion. Then a two-sample power calculation was run using the two sets of 20 results to determine the sample size to achieve a statistical power of 0.8. Once the number of required samples was determined, more models were built via 5 fold cross validation to obtain additional results statistics. The highest performing models were advanced to the next stage where various methods of combining, or blending, methods were tested.
 
@@ -1270,10 +1271,10 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
         
 }
 
-results.core = readRDS("report_data/reg_lm_core.rds")
+results.core = readRDS("reg_lm_core.rds")
 # n.samples(data = results.core$diff)
 
-results.A2 = readRDS("report_data/reg_lm.rds")
+results.A2 = readRDS("reg_lm.rds")
 results.A2 <- dplyr::filter(results.A2, diff>-15)
 # n.samples(data = results.A2$diff)
 
@@ -1340,10 +1341,10 @@ A student t-test indicated the difference was not significantly above 0, which i
 ## Random Forests
 
 ```{r load_rf_results}
-results.rf.core = readRDS("report_data/reg_rf_core.rds")
+results.rf.core = readRDS("reg_rf_core.rds")
 # n.samples(data = results.rf.core$diff)
 
-results.rf2 = readRDS("report_data/reg_rf.rds")
+results.rf2 = readRDS("reg_rf.rds")
 # n.samples(data = results.rf2$diff)
 
 ```
@@ -1453,7 +1454,7 @@ It was finally decided that Random Forest and Boosted Trees would likely not be 
 
 ```{r reduced_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Subsets of the data were used for Logistic Regression and randomForests in order to provide datasets without missing values.")}
 
-reduc.totAUC <- readRDS("report_data/reduc_df_auc.rds")
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1469,13 +1470,16 @@ reduc.totAUC$sigdiff = ifelse(reduc.totAUC$L1 %in% signif, TRUE, FALSE)
 
 
 ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) + 
-        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        geom_violin(aes(fill = sigdiff, colour = sigdiff), alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "gray30", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "gray20", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
         scale_fill_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly different from boosted trees") +
+                          name = "Significantly different from Boosted Trees") +
         scale_colour_manual(values = c('sienna1','navajowhite'),
-                          name = "Significantly Different from Boosted Trees") +
+                          name = "Significantly different from Boosted Trees") +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 100 models of Each Method") +
         scale_x_discrete(labels = c("boost" = "Boosted Trees", 
@@ -1494,8 +1498,8 @@ Next, data imputation methods were trialed which would make the complete data se
 
 ```{r mice_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
 
-#copied from output of rf_log_naiive_auc.rmd
-mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
+
+mice.totAUC <- readRDS("mice_df_auc.rds")
 
 #significant difference??
 index = c(1,3,4)
@@ -1510,9 +1514,13 @@ mice.totAUC = melt(mice.totAUC)
 mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
 
 ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
-        geom_violin(aes(fill = sigdiff, colour = sigdiff)) + 
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        geom_violin(aes(fill = sigdiff, colour = sigdiff), 
+                    alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "gray30", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "gray20", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
         scale_fill_manual(values = c('sienna1','navajowhite'),
                           name = "Significantly different from boosted trees") +
         scale_colour_manual(values = c('sienna1','navajowhite'),
@@ -1540,8 +1548,6 @@ combine.micer$Data_Source <- factor(combine.micer$Data_Source,
 
 ggplot(combine.micer, aes(x= factor(L1), y= value)) +
         geom_violin(aes(fill = Data_Source, colour = Data_Source)) +
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-
         # stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
         scale_fill_manual(values = c('sienna1','navajowhite'),
                           name = "Data Source") +
@@ -1564,7 +1570,7 @@ Testing Boosted Trees, Random Forests, Naive Bayes, Logistic Regression and Baye
 
 A possible explanation for this, according to the literature, is that there was not enough data for the ensemble trees to learn the complex decision rules at which they excel. Trees tend to overfit the patterns in a smaller training set. Logistic Regression on the other hand is capable of only one decision boundary (which does not have to be parallel to the variable axes) and is not prone to overfitting [@Perlich2003]. This may explain Logistic Regression's comparatively high performance on the case study's small but complex data set.
 
-Boosted trees, Random Forests and Logistic Regression all had mean AUC values around 0.775. The tests were repeated using imputed data and again the means sat around 0.775. The variables were not particularly well suited for imputing so this result is logical and could have even diminished the mean AUC. For example, many of the imputed variables were categorical such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job. The benefit of having an imputed data set that performs acceptably well is that each model is fed the full data set and therefore produces predictions for the full data. Beforehand, Random Forest and Logistic Regression models were limited to complete original data, which implied a reduced final data set. With complete sets of model predictions, the high performing models could be blended to test whether better predictions were possible. For this reason, the imputed data models were chosen to be progressed to the development of blended models. 
+Boosted trees, Random Forests and Logistic Regression all had mean AUC values between 0.756 and 0.767. The tests were repeated using imputed data and again the means sat in a similar range from 0.755 to 0.764. Many variables were categorical which are not particularly well suited for imputation. These included variables such as job category, percent of job completed by a professional level employee, and the position of the majority worker on a job. Therefore it is logical the AUC's did not improve, in fact they marginally reduced. The benefit of having an imputed data set that performs acceptably well is that each model is fed the full data set and therefore produces predictions for the full data set. Before, Random Forest and Logistic Regression models were limited to complete original data, which implied a reduced final data set. With complete sets of model predictions, the high performing models could be blended to test whether better predictions were possible. For this reason, the imputed data models were chosen to be progressed to the development of blended models. 
 
 In summary, the individual binary classification models performed well above random chance (AUC = 0.5) and implementing a model is expected to improve a manager's ability to predict whether a new job will be profitable or loss making. Whether the model is worth implementing in the work place is dependent on the extent to which the algorithm would improve 'bottom line' profits for the business and if the model can affect decisions in practice. Results from model blending and overall profit impact are presented and discussed in the next chapter.
 
@@ -1582,7 +1588,7 @@ Explanatory variable assessments were completed and compared using cForests, Log
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a cForest blended model. The results from the three best performing models were added as explanatory variables.")}
 
-cfor.varimp = readRDS("report_data/cfor_blend_varimp.rds")
+cfor.varimp = readRDS("cfor_blend_varimp.rds")
 cfor.varimp <- mutate(cfor.varimp, var = revalue(var, c("norm.log" = "log.pred",
                                          "norm.rf" = "rf.pred",
                                          "norm.boost" = "boost.pred")))
@@ -1601,7 +1607,7 @@ The cForest highlighted predictions from the Logistic Regression and Boosted Tre
 
 ```{r}
 
-log.varimp = readRDS("report_data/logblend.rds")
+log.varimp = readRDS("logblend.rds")
 log.varimp = summary(log.varimp)$coefficients %>% as.data.frame
 colnames(log.varimp)[names(log.varimp) %in% 'Pr(>|z|)']<-'P_value'
 log.varimp = add_rownames(log.varimp)
@@ -1648,7 +1654,7 @@ As well as the following variables as individual terms:
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a Random Forest blended model. The results from the three best performing models were added as explanatory variables.")}
 
-rf.varimp = readRDS("report_data/rfblend.rds")
+rf.varimp = readRDS("rfblend.rds")
 rf.varimp = importance(rf.varimp, type = 1) %>% as.data.frame
 rf.varimp = add_rownames(rf.varimp)
 rf.varimp = arrange(rf.varimp, desc(MeanDecreaseAccuracy))
@@ -1675,7 +1681,7 @@ Permutation importance by Random Forest rated all three prediction models highes
 
 ```{r, fig.height = 4.5, fig.cap = c("Variable importance output from a Boosted Tree blended model. The results from the three best performing models were added as explanatory variables")}
 
-boost.varimp = readRDS("report_data/boostblend.rds")
+boost.varimp = readRDS("boostblend.rds")
 boost.varimp = add_rownames(boost.varimp)
 boost.varimp <- mutate(boost.varimp, rowname = revalue(rowname, 
                                                        c("norm.log" = "log.pred",
@@ -1716,7 +1722,7 @@ Only three of the model blending techniques used the 8 variables determined abov
 
 ```{r blend_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.")}
 
-auc.list <- readRDS("report_data/blend_auc2.rds")
+auc.list <- readRDS("blend_auc2.rds")
 means = lapply(auc.list, mean) %>% unlist
 greater = means[means> means["orig.log"]] %>% names
 auc.melt = melt(auc.list)
@@ -1724,10 +1730,15 @@ auc.melt$greater = ifelse(auc.melt$L1 %in% greater, TRUE, FALSE)
 
 
 ggplot(auc.melt, aes(x= factor(L1), y= value)) + 
-        geom_violin(aes(fill = greater, colour = greater)) + 
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-        stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
-        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_violin(aes(fill = greater, colour = greater), 
+                    alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "gray30", 
+                     shape =4) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "gray20", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
+        theme(axis.text.x=element_text(angle=40,hjust=1)) +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 100 Blended Models of each Method") +
         scale_x_discrete(labels = c("boost" = "BT Blend", 
@@ -1738,9 +1749,9 @@ ggplot(auc.melt, aes(x= factor(L1), y= value)) +
                          "simp.boost" = "Simple BT Blend",
                          "simp.log" = "Simple LR Blend")) +
         scale_fill_manual(values = c('navajowhite','sienna1'),
-                          name = "Mean AUC Greater than Original Logistic Regression") +
+                          name = "AUC Greater than Original Logistic Regression") +
         scale_colour_manual(values = c('navajowhite','sienna1'),
-                          name = "Mean AUC Greater than Original Logistic Regression") +
+                          name = "AUC Greater than Original Logistic Regression") +
         theme(legend.position = "bottom")
 
 
@@ -1756,7 +1767,7 @@ To achieve a power of 0.8, a two-sample power analysis was performed on the 100 
 
 ```{r}
 #load results from 150 iterations
-auc.150 = readRDS("report_data/blend_auc150.rds")
+auc.150 = readRDS("blend_auc150.rds")
 
 ```
 
@@ -1769,7 +1780,8 @@ The results of the 150 iterations are shown in the plot below. Simple model aver
 index = c(2:3)
 pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
 for(i in seq_along(index)){
-        pvals$p_value[i] = t.test(auc.150[[1]], auc.150[[index[i]]])$p.value %>%
+        pvals$p_value[i] = t.test(auc.150[[1]],
+                                  auc.150[[index[i]]])$p.value %>%
                 format(digits = 2) %>% as.numeric }
 
 signif = pvals %>% filter(p_value<0.05) %>% .$method
@@ -1778,10 +1790,15 @@ auc.150$signif = ifelse(auc.150$L1 %in% signif, TRUE, FALSE)
 
 
 ggplot(auc.150, aes(x= factor(L1), y= value)) + 
-        geom_violin(aes(fill = signif, colour = signif)) + 
-        geom_jitter(alpha = 0.2, shape = 16, colour= 'gray70') +
-        stat_summary(fun.y = "mean", geom="point", colour = "gray60", shape =3) +
-        theme(axis.text.x=element_text(angle=45,hjust=1)) +
+        geom_violin(aes(fill = signif, colour = signif),
+                    alpha = .8) + 
+        stat_summary(fun.y = "mean", geom="point", 
+                     colour = "gray30", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "gray20", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
+        theme(axis.text.x=element_text(angle=40,hjust=1)) +
         labs(x = "Method", y = "Area Under Curve (AUC)",
              title = "AUC Distribution from 150 Blended Models of Best Methods") +
         scale_x_discrete(labels = c( 
@@ -1789,9 +1806,9 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
                          "orig.log" = "Orignal LR",
                          "simp.log" = "Simple LR Blend")) +
         scale_fill_manual(values = c('navajowhite','sienna1'),
-                          name = "Mean AUC Significantly Greater than Original Logistic Regression") +
+                          name = "AUC Significantly Greater than Original Logistic Regression") +
         scale_colour_manual(values = c('navajowhite','sienna1'),
-                          name = "Mean AUC Significantly Greater than Original Logistic Regression") +
+                          name = "AUC Significantly Greater than Original Logistic Regression") +
         theme(legend.position = "bottom") 
 
 
@@ -1803,10 +1820,43 @@ The simple Logistic Regression blend and simple averaging of the individual mode
 
 ## Blended Models Discussion
 
-Trials of different methods of blending model results demonstrated that again, the simplest methods worked best with the data. In this case, averaging the results of the best three single models (Logistic Regression, Random Forests, and Boosted Trees) or taking a Logistic Regression of the three models outperformed more complex Boosted Trees, Random Forests, and Logistic Regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
-It was plausible that simple blending models would perform better than complex methods because the data was not big enough for complex models to learn intricate patterns. This was observed in the single method models (previous chapter) when Logistic Regression performed as well as Random Forests and Boosted Trees. The literature does not extensively cover blended machine learning methods however their success in the 2009 Netflix competition generated some publications. The Netflix data set comprised of almost 3,000,000 observations, so the size of the data could have enabled the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed almost as well as blending results using Logistic Regression. It was expected that Logistic Regression would have an advantage over model averaging due to its ability to weight the prediction variables while maintaining a simple model structure. 
+```{r blend_vs_initial}
+auc.150 = readRDS("blend_auc150.rds")
+mice.totAUC <- readRDS("mice_df_auc.rds")
+compare.blends <- append(auc.150, mice.totAUC)
 
-The Logistic Regression blending model did indeed weight predictions from the original models differently. A summary of the resulting coefficients from an example blended Logistic Regression model is shown in the table below.
+index = c(3,4,5,6)
+pvals = data.frame("method" = names(compare.blends)[index], 
+                   "mean_AUC" = map_dbl(compare.blends, function(x) round(mean(x),3))[index],
+                   'p_value' = NA)
+
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(compare.blends[[3]],
+                                  compare.blends[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+pvals[1,'p_value'] <- NA
+pvals <- pvals %>% arrange(desc(mean_AUC))
+
+new.levels = c("simp.log" = "SBLR",
+               "log" = "Original Logistic Regression",
+               "boost" = "Original Boosted Trees",
+               "rf" = "Original Random Forest")
+
+pvals <- mutate(pvals, method = revalue(method, new.levels))
+names(pvals) = c("Method", "Mean AUC", "P-Value for t-test against SBLR")
+
+
+```
+
+The AUC distributions from the two best blended models, simple Logistic Regression and simple averaging, were statistically significantly higher than the AUC distribution of the original Logistic Regression model. Blended models improved the mean AUC from 0.759 to 0.77, which is an increase of `r ((0.77-0.759)/0.759) %>% "*"(100) %>% round(1)`%. The original Logistic Regression model was chosen for comparison because it was a fast baseline model that had an AUC distribution not statistically different to the other high performing original models. It was expected that model blending would improve predictions because it combined the strengths of individual models with different theoretical foundations. Next, the performance of different blended models is discussed. 
+
+The trials of different blending methods demonstrated that again, the simplest methods worked best with the case study data. In this incident, averaging the results of the best three single models (Logistic Regression, Random Forests, and Boosted Trees) or taking a Logistic Regression of the three models outperformed more complex Boosted Trees, Random Forests, and Logistic Regression blends that facilitated interaction of the individual model results and original variables (meta-features). 
+
+Simple blended models could perform better than complex methods if the data is not big enough for the complex models to learn the more intricate patterns at which they excel. This was observed in the single model methods (previous chapter) when Logistic Regression performed as well as Random Forests and Boosted Trees. There is limited literature on blended machine learning methods, however their success in the 2009 Netflix competition generated some publications. The Netflix data set comprised of almost 3,000,000 observations, so the size of the data could have enabled the success of complex blending methods such as FWLS [@Sill2009]. That being the case, it was still surprising that simple averaging of probabilities from the individual models performed almost as well as Logistic Regression. Logistic Regression's ability to weight the prediction variables while maintaining a simple model structure was expected to give an advantage over averaging. 
+
+The blended Logistic Regression model did indeed weight predictions from the original models differently. A summary of the resulting coefficients from an example blended Logistic Regression model is shown in the table below.
 
 | Model Results as Variable | Coefficient (Log Odds) | Odds  | Increase in Variable Input | Increases in Odds |
 |---------------------------|------------------------|-------|----------------------------|-------------------|
@@ -1814,15 +1864,17 @@ The Logistic Regression blending model did indeed weight predictions from the or
 | Random Forest             | 1.4753                 | 4.37  | 0.1                        | 43.7%             |
 | Boosted Trees             | 2.7943                 | 16.35 | 0.1                        | 163.5%            |
 
-As shown in the table, if the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the model predicting a loss making job increased by 56.0%. The weightings contrasted the other simple model that averaged the original probabilities (i.e. weighted them equally) but still managed to produce similar AUC results. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and three complex blended models.
+As displayed in the table, if the predicted probability from the original Logistic Regression model increased by 0.1, the odds of the blended model predicting a loss making job increased by 56.0%. This same interpretation can be made for the Random Forest and Boosted Trees values, which means the results from Boosted Tree models were weighted highest. Clearly, the weightings contrasted the equal weightings from the simple averaged model, yet their AUC results were similar. It was not clear why this was the case, however both simple models were compared again in the analysis of the impact each model could have on the company's overall profits. The analysis of overall profits did not directly relate to AUC measurements, so a range of models were carried forward for comparison. These included the three original individual models, three simple blended models and three complex blended models.
 
 # Extended Analysis
 
+This chapter first presents the full range of method results in terms of improvements to the case study's bottom line. A business decision making scenario was created so that profit curves based on the decision rule could be built and analysed. From the profit curves, optimal probability thresholds could be derived for each method (individual and blended methods). These threshold points allowed the probability output from each model to be converted to categorical output (profit or loss) which in turn could generate confusion matrix statistics for each method. The confusion matrix statistics are discussed after the profit curve results and discussion. Then, output from the method which produced the best profit curve was used to create two subsets of profitable and loss mkaing projects. The characteristics of these subsets are compared and contrasted to gauge any overall trends. Finally, alternate ways of framing the business decision scenario are proposed.
+
 ## Profit Curve Analysis
 
-The first research question, whether machine learning and statistical techniques can predict project profitability based on historic data, has been answered. The measure of profitability could not be modeled but simplifying the profitability prediction to a binary (profit/loss) model was successful. To answer the second research question, whether the model would improve the business' profitability, a profit analysis was performed. 
+The first research question, whether machine learning and statistical techniques can predict project profitability based on historic data, has been answered. The measure of profitability could not be modeled well, but simplifying the profitability prediction to a binary (profit/loss) model was successful and a mean AUC of 0.77 was achieved for the best blended model. This falls midway between a model that predicts perfectly (AUC = 1) and a model that predicts as well as random chance (AUC = 0.5). To answer the second research question, whether the model would improve the business' profitability, a profit analysis was performed. 
 
-The models output a 'probability' between 0 and 1 that each project will be a loss making job (probability = 1 indicates a loss making job). This leaves the question, at what probability would a decision-maker round the probability up to 1 or down to 0? And what business decision would then be made? To find the threshold point for rounding, an experimental business-scenario was tested. At a given threshold, all projects calculated above the threshold were considered too risky, and were rejected. All profits and losses from these projects were forfeited, while the profits from the remaining jobs (below the threshold) were summed to give a revised total profit. 
+The predictive models output a 'probability' between 0 and 1 that each project will be a loss making job (where probability = 1 indicates a loss making job). The question the arises, at what probability would a decision-maker round the probability up to 1 or down to 0? And what business decision would then be made? To find the threshold point for rounding, an experimental business-scenario was tested. At a given threshold, all projects with probability outputs above the threshold were considered too risky, and were rejected. All profits and losses from these projects were forfeited, while the profits from the remaining jobs (below the threshold) were summed to give a revised total profit. 
 
 ```{r power_profit_curve}
 
@@ -1860,13 +1912,13 @@ for(i in seq_along(index)){
 
 ```
 
-Using this logic, if the threshold was 0, all projects were rejected and the total profit would equal \$0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. This profit calculation was made on a range of thresholds between 0 and 1 at 0.05 increments. The total profits were plotted for each threshold and joined to make a profit curve where at an optimal threshold, the total profits were highest (refer plot below).
+Using this logic, if the threshold was 0, all projects were rejected and the total profit would equal \$0. If the threshold was 1, all projects were accepted and the total profits would be the same as historical figures. This profit calculation was made on a range of thresholds between 0 and 1 at 0.05 increments. The total profits were plotted for each threshold and joined to make a profit curve where at the optimal threshold, the total profits were highest (refer plot below).
 
-Profit curves for the three simple blended models as well as the three individual models were calculated. However, the total profit coordinates were based on probability outputs in test data sets. This means that the profit curve for the simple logistic regression blend (for example) would be different for different training/testing data divisions. I.e. the total profits at each point in the profit curve depend on the model parameters that were calculated using the training data and which projects were analysed in the test data. Therefore, the process of training a blended model, then calculating the profit curve from the test data was repeated multiple times to create a distribution of profit curves for each method (blended and individual). 
+Profit curves for the three simple blended models as well as the three individual models were calculated. However, the total profit coordinates were based on probability outputs in test data sets. This means that the profit curve for the simple Logistic Regression blend (for example) would be different for different training/testing data divisions. In other words, the total profits at each point in the profit curve depend on the model parameters that were calculated using the training data and which projects were analysed in the test data. Therefore, the process of training a blended model, then calculating the profit curve from the test data, was repeated multiple times to create a distribution of profit curves for each method (blended and individual). 
 
-To start, 10 curves for each method were calculated (2 x 5-fold cross validation). Two-sampled power calculations (for a power of 0.8) were performed between the results of each method at their optimal threshold against the best performing method (simple average blend). For example, the optimal threshold for the simple average blended model was 0.55 while the optimal threshold for the original Boosted Tree model was 0.60. The 10 'total profit' values at these two thresholds were compared in the two-sample power calculation to determine the number of samples required to achieve a power of 0.8. The maximum required number of samples was 64 so 100 models were of each method were built (20 x 5 fold cross validation).
+To start, 10 curves for each method were calculated (using 2 x 5-fold cross validation). Two-sampled power calculations (for a power of 0.8) were performed between the results of each method (at their optimal threshold points) against the best performing method (simple Logistic Regression blend). For example, the optimal threshold for the simple Logistic Regression blended model was 0.55 while the optimal threshold for the original Boosted Tree model was 0.60. The 10 'total profit' values at these two thresholds were compared in the two-sample power calculation to determine the number of samples required to achieve a power of 0.8. Out of all the methods compared against the Blended Logistic Regression, the maximum required number of samples was 64, so 100 models of each method were built (20 x 5-fold cross validation).
 
-The plot below illustrates the results of each model at each threshold with a line joining the mean value at each threshold for each method. The grey ribbon illustrates the 95% confidence interval for the profit improvement ratio at each threshold for the 100 models.
+The plot below illustrates the distrubtion of profit curves for each method, where the solid lines join the mean values at each threshold point. The grey ribbon illustrates the 95% confidence interval for the profit improvement ratio at each threshold point for the 100 models.
 
 ```{r profit_curve, fig.height = 6, fig.cap = c("Profit Curves summarising results from 100 models of 9 methods: 3 simple blends, 3 complex blends, and the original 3 best methods.")}
 
@@ -1906,7 +1958,7 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
 
 ```
 
-Two blended models clearly outperformed the individual models as shown in the plot above with higher profit ratios as well as tighter confidence intervals. The table below denotes each models' optimal thresholds and the corresponding increase in total profits:
+Two blended models clearly outperformed the individual models as shown in the above plot with higher profit ratios as well as tighter confidence intervals. The table below denotes each models' optimal thresholds and the corresponding increase in total profits:
 
 ```{r profit_table}
 
@@ -1937,9 +1989,9 @@ best.t = best.fin %>% filter(method == "simp.log") %>% .$threshold
 
 ```
 
-The simple logistic regression blend performed best with the highest mean profit ratio at `r best.mean`% with a standard deviation of `r best.sd`%. This means that for the simple blended logistic regression model, if all jobs above the probability threshold `r best.t` were rejected, the profits would increase on average by `r best.mean - 100`% in comparison to historical profits.
+The simple Logistic Regression blend performed best with the highest mean profit ratio of `r best.mean`% with a standard deviation of `r best.sd`%. This means that for the simple blended Logistic Regression model, if all jobs above the probability threshold `r best.t` were rejected, the profits would increase on average by `r best.mean - 100`% in comparison to historical profits.
 
-For clarity, the plot for the simple blended logistic regression model is shown below:
+For clarity, the plot for the simple blended Logistic Regression model is shown below:
 
 ```{r av_profit_curve, fig.height = 4.5, fig.cap = c("Profit Curve of the best performing method: the simple Logistic Regression Blended Method")}
 
@@ -1990,12 +2042,31 @@ ggplot(finance.plot %>% filter(method == "simp.log"),
 simp.l <- readRDS("finance_average_model.rds")
 
 ```
+<!-- comments on your results; -->
+<!-- explains what your results mean; -->
+<!-- interprets your results in a wider context; indicates which results were expected or unexpected; -->
+<!-- provides explanations for unexpected results. -->
+<!-- The Discussion should also relate your specific results to previous research or theory. You should point out what the limitations were of your study, and note any questions that remain unanswered. The Discussion CAN also include Conclusions/Future Research. -->
 
-### Highest Profit Curves
+In this section, the results from the models that delivered the highest performing profit curves are reviewed first and analysed in a broader business context. Then, all the methods that produced profit curves are compared and possible explanations for differences are evaluated. 
 
-The simple average blend and logistic regression blended models outperformed the complex blended models, which is rational because their AUC values were significantly higher than the others. The simple average of Logistic Regression, Random Forests, and Boosted Trees results produced a profit curve with an almost identical profit improvement (and standard deviation) to the Logistic Regression that blended the same three variables. The blended Simple Logistic Regression produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. To put this in context, if the company's yearly profits were \$1,000,000, the mean yearly increased profit would be \$`r comma_format() ((best.mean-100)/100*1000000)` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects.
+### Examination of the Highest Profit Curves
 
-The plot below illustrates this proportion of projects as well as the proportion of profits and losses assigned to a range of probability levels by the simple logistic regression blend. The red line sits at its optimal threshold point, i.e. projects greater than the threshold point would be rejected:
+Profit curves from the simple average blend and Logistic Regression blended models outperformed the complex blended models, which follows logically from their significantly higher AUC distributions. The simple average blended model produced a profit curve with an almost identical profit improvement (and standard deviation) to the Logistic Regression blend. As summarised in the previous section, the blended Simple Logistic Regression produced a `r best.mean-100`% increase in profit by rejecting jobs with a probability of loss over `r best.t`. In a business context, this means that if the company's yearly profits were \$1,000,000, the mean increased profit could be \$`r comma_format() ((best.mean-100)/100*1000000)` by rejecting all jobs with a probability higher than `r best.t`. In the data, projects assigned a probability higher than `r best.t` represent only `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of all projects.
+
+The plot below illustrates the relative profits and losses that sit within the range of probability levels, as assigned by the simple Logistic Regression blend. 
+
+$Relative\ Profit_t = \frac{Profit_t}{\sum_{t = 1}^{n}\left|Profit_t\right|}$
+
+Where
+
+$$
+\begin{aligned}
+Profit_t &= \textrm{Profit from project}\ t\textrm{. Negative values indicate loss making projects}
+\end{aligned}
+$$
+
+The red line sits at the profit curve's optimal threshold point, 0.6, so projects greater than the threshold point would be rejected:
 
 ```{r, fig.height = 5.5, fig.cap = c("Distribution of projects according to the probability outputs from a typical simple Logistic Regression blended model. A bargraph of counts and relative profits are shown.")}
 
@@ -2014,7 +2085,7 @@ simp.l2$prob.bin <- cut(simp.l2$simp.log, seq(0,1,by = 0.05), labels = seq(.05,1
 ggplot(simp.l2, aes(x = prob.bin)) + 
         facet_grid(faceter~., scales = "free_y",
                    labeller = labeller(faceter = c("hist" = "Count of Projects",
-                                       "profs"= "Relative Profits/Losses"
+                                       "profs"= "Relative Profits and Losses"
                                        ))) +
         geom_bar(data = simp.l2 %>% filter(faceter == "hist")) + 
         geom_bar(data = simp.l2 %>% filter(faceter == "profs"),
@@ -2024,27 +2095,41 @@ ggplot(simp.l2, aes(x = prob.bin)) +
         labs(x = "Probability Score", 
              y = "",
              title = "Distribution of Project Counts and Project Profits Against Probability") +
-        geom_vline(xintercept = 10.5, colour = hcl(h = 15, l = 65, c = 100), linetype = 1,
+        geom_vline(xintercept = 10.5, 
+                   colour = hcl(h = 15, l = 65, c = 100), linetype = 1,
                    alpha = 0.8) +
+        geom_hline(yintercept = 0, colour = "white", linetype = 1)
         theme(panel.background = element_rect(fill = 'gray95'))
 
 
 ```
 
+As shown in the upper plot, a low count of projects fall above the optimal threshold for the simple Logistic Regression blend. The lower plot illustrates the relative profits (and losses for negative values) within each probability score bin which are normalised by the sum of the absolute value of all profits and losses. The model has assigned low probability scores to profitable projects and high scores to unprofitable jobs well. The heights of the bars reduce from left to right, and loss making jobs dominate projects on the right hand side of the optimal threshold point. This is advantageous as these jobs would be rejected.
+
 ### Comparison of All Profit Curves
 
-The tested profit curve models can be divided into three categories: original individual methods, simple blends of the individual methods, and complex blends of the individual methods that employed interactions with original features. All original methods did achieve improvements of profit at their optimal thresholds, but did not necessarily consistently improve profits across all cross-folded models. The shaded grey 95% confidence intervals in the Profit Curve plot shows that with the 100 sample models that were analysed, none of the lower bounds for the original methods' were above 100% on the y-axis. That is, it cannot be said with 95% confidence that the original methods' would produce a profit higher than historical profits if projects higher than the optimal thresholds (jobs that are likely to be loss making) were rejected. Clearly this is not helpful for the case-study business to adopt.
+The tested profit curve models can be divided into three categories: original individual methods, simple blends of the individual methods, and complex blends of the individual methods that employed interactions with original features. All original methods did achieve improvements of profit at their optimal thresholds, but did not necessarily consistently improve profits across all cross-folded models. The shaded grey 95% confidence intervals in the Profit Curve plot shows that with the 100 sample models that were analysed, none of the lower bounds for the original methods' were above 100% on the y-axis. That is, it cannot be said with 95% confidence that the original methods' would produce a mean profit higher than historical profits in the given decision framework. This framework stated that projects higher than the optimal thresholds (jobs that are likely to be loss making) should be rejected. Clearly this level of certainty is not beneficial for the case-study business to adopt.
 
-The complex blended models had mixed results. FWLS and Random Forests performed more poorly than the individual methods while Boosted Trees produced a marginally higher profitability ratio (`r best.fin %>% filter(method == "comp.boost") %>% .$mean_profit_ratio`) but the lower bound of its confidence interval was `r best.fin %>% filter(method == "comp.boost") %>% .$lower_bound_95CI`, i.e. not above original profits. 
+The complex blended models had mixed results. FWLS and Random Forests performed more poorly than the individual methods while Boosted Trees produced a marginally higher profitability ratio (`r best.fin %>% filter(method == "comp.boost") %>% .$mean_profit_ratio`%) but the lower bound of its confidence interval was `r best.fin %>% filter(method == "comp.boost") %>% .$lower_bound_95CI`%, i.e. not an improvement on original profits. 
 
-The simple blended models performed more favourably, as already discussed, particularly the simple average and Logistic Regression. The Boosted Tree's lower bound confidence interval was `r best.fin %>% filter(method == "simp.boost") %>% .$lower_bound_95CI`% at its optimal threshold point. This is not above 100%, and again does not make a convincing argument for the case-study to adopt it. 
+The simple blended models performed much more favourably, as already discussed, particularly the simple average and Logistic Regression blends. The blended Boosted Tree's lower bound confidence interval was `r best.fin %>% filter(method == "simp.boost") %>% .$lower_bound_95CI`% at its optimal threshold point. This is not above 100%, and again does not make a convincing argument to the case study business. 
 
-It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. It may be that there was not enough data for the ensemble trees to adequately learn the complex series of rules they develop as previously stated. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data. According to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in logistic regression. The data contained 315 events per explanatory variable and did not pose that risk. Nevertheless, the additional variables must have added misleading noise to the model. The performance of the models so far has been concerned with AUC and profit, however insight into the differences in model performance may be gained by reviewing confusion matrix statistics such as TPR and FPR.
+It is not clear why simple linear models and the averaging model outperformed ensemble tree blending methods. As previously stated, the ensemble trees may not have received enough data to adequately learn the complex series of rules they develop. It was also surprising FWLS was ineffective given the success it had in the Netflix Prize competition [@Sill2009]. The only differences between FWLS and the simple Logistic Regression (that performed best) were two additional explanatory variables and four interaction terms. The number of variables was not high for the amount of data since according to @Peduzzi1996, 10 events per explanatory variable or more avoids the risk of biased estimation of variable coefficients in Logistic Regression. The data contained 315 events per explanatory variable and did not pose that risk. Nevertheless, the additional variables must have added misleading noise to the model. 
+
+The performance of the models so far has been evaluated in terms of the AUC statistics and profit improvements, however further insight into may be gained by reviewing confusion matrix statistics such as TPR's and FPR's.
+
+### Profit Analysis Conclusion
+
+To conclude, because of the promising AUC results, it was logical that the models translated into financial benefits for the company. The `r (best.mean-100)`% improvement in profits produced by the simple blended Logistic Regression is reasonable, and may be high enough to trigger further cost-benefit analyses and the development of a more comprehensive framework describing different decision scenarios.
 
 
-### Comparison of Confusion Matrix Statistics
+## Categorical Predictions Analysis and Discussion
 
-To investigate method performance further, confusion matrix statistics were scrutinised. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. Nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of predictions by each method on actual loss making projects. If the project was predicted correctly as loss making, this was a true positive, and the job was rejected (in the fabricated scenario). If it was predicted incorrectly as a profit-making job, this was a false negative, and the project was completed, resulting in a loss for the business. 
+The probability thresholds derived from the profit curves enabled the numeric model probability outputs to be converted to categorical output: profitable and loss making projects. The final classification of projects drove alternative ways to review method performance. These include an analysis of TPR's and FPR's for the various methods as well as a review of project characteristics of rejected vs. accepted projects. Finally, alternate decision rules are proposed and considered.
+
+### Comparison of Confusion Matrix Statistics from All Methods
+
+To review method performance further, confusion matrix statistics were scrutinised. For each method, 100 full data sets of results were generated via 5-fold cross validation. Each data set of probability results differed to the next because of the random division into the five-fold data sets used for training and testing. For this analysis, nine full data sets of results was chosen that produced the mean profitability ratio at each of the nine method's optimal threshold points. These were deemed a 'typical' set of predictions for each method. Then, the confusion matrix for each set of results at their respective thresholds could be calculated. The plot below shows the breakdown of FN's and TP's on true loss making projects. If the project was predicted correctly as loss making, this was a TP, and the job was rejected (in the fabricated decision scenario). If it was predicted incorrectly as a profit-making job, this was a false negative (FN), and the project was completed, resulting in a loss for the business. 
 
 ```{r TP_plot, fig.height = 5, fig.cap = c("True positive and false negative rates for each blended method using a typical model from each - displayed as a bar graph.")}
 
@@ -2080,11 +2165,11 @@ ggplot(conf.plot %>% filter(actual == "loss"),
 
 ```
 
-Choosing the right probability threshold point is about finding the right balance point in an imperfect model. In this case, projects above a threshold point will include profitable and loss making jobs. The optimal point is where the savings from rejecting loss making jobs (TP) outweigh the lost profits from rejecting profitable jobs (FP) the most. All models were capable of different TP and FN ratios at alternate threshold points.
+Choosing the right probability threshold point is about finding the right balance point in an imperfect model. In this case, projects above a threshold point will include profitable and loss making jobs. The optimal point is where the savings from rejecting loss making jobs (TP's) most outweigh the lost profits from rejecting profitable jobs (FP's). All models were capable of different TP and FN ratios at alternate threshold points.
 
-The plot above shows the Complex Boosted Tree Blend has the highest TPR followed by the Simple Logistic Regression Blend and the Simple Averaged Blend. All of these TPR's are below 25% which shows it was not worth catching a large percentage of loss making jobs in comparison to the losses in rejected profitable jobs (FP's) that accompanied the TP's. This implies the models were not able to very cleanly divide loss making jobs from profitable jobs. 
+The plot above shows the Complex Boosted Tree Blend has the highest TPR followed by the Simple Logistic Regression Blend and the Simple Averaged Blend. All of these TPR's are below 25% which shows it was not worth rejecting a large percentage of loss making jobs in comparison to the accompanying losses in rejected profitable jobs (FP's). This also implies the models were not able to cleanly divide loss making jobs from profitable jobs. 
 
-A summary of predicted results on actual profitable jobs is shown below at each method's optimal threshold point. If a job was predicted to be profitable, and was therefore accepted, it was classified TN. If a job was loss making but labelled profitable, the business would complete the job and make a loss (FN). 
+A summary of predicted results on true profitable jobs is shown below at each method's optimal threshold point. If a job was predicted to be profitable, and was therefore accepted, it was classified as a TN. If a job was profitable but labelled loss making, the business would reject the job and forfeit the profits (FP). 
 
 ```{r TN_plot, fig.height = 5, fig.cap = c("True negative and false positive rates for each blended method using a typical model from each - displayed as a bar graph.")}
 
@@ -2123,7 +2208,7 @@ ggplot(conf.plot %>% filter(actual == "profit"),
 
 ```
 
-The complex Boosted Tree method had the highest TPR, but also had a high FPR. The increased number of FP (i.e. rejected profitable jobs) offset the more accurate rejection of loss making jobs so much that the simple averaged blend and simple logistic regression blend outperformed it. The aforementioned simple blends performed similarly, with a higher than average TPR and average FPR in comparison to other methods. The complex Random Forest blend and FLWS both had lower TPR's than the simple blends but higher TN rates. In the end, the improved TN rate did not outweigh the lower TPR, i.e. the higher rate of accepting profitable jobs did not outweigh the lower rate of accurately rejecting loss making jobs.
+The complex Boosted Tree method had the highest TPR, but also had a high FPR. The increased number of FP's (i.e. rejected profitable jobs) offset the more accurate rejection of loss making jobs so much that the simple averaged blend and simple Logistic Regression blend outperformed it. The aforementioned simple blends performed similarly, with a higher than average TPR and average FPR in comparison to other methods. The complex Random Forest blend and FLWS both had lower TPR's than the simple blends but higher TN rates. In the end, the improved TN rate did not outweigh the lower TPR, i.e. the higher rate of accepting profitable jobs did not outweigh the lower rate of accurately rejecting loss making jobs.
 
 All individual original methods used substantially lower TPR's at their optimal thresholds, while their TN rates were spread out. This means, as the trialed threshold values moved, and the TPR improved, the increasing lost profits from FP's was too great to justify a TPR higher than 4.6%. Blending the individual methods has made use of their unique strengths and seems to have clustered the probabilities of the actual loss making jobs more accurately towards 1, and the profitable jobs towards 0. This allowed for higher TPR's with lower FPR's at the blended methods' optimal thresholds.
 
@@ -2131,7 +2216,7 @@ All individual original methods used substantially lower TPR's at their optimal 
 
 The profit curves and TP/FP rates give a good indication of overall performance of the methods, however an analysis of the characteristics of the predicted loss making projects can provide more detailed insight.
 
-All below plots and comments summarise results from one Simple Blended Logistic Regression Model. The results from this model were chosen because it represented the mean for improvement in profits output by this blending method. The plot below illustrates how the ratio of profitable to unprofitable jobs compare in the full project population vs. the rejected projects.
+All below plots and comments summarise results from one Simple Blended Logistic Regression Model. The results from this model were chosen because it represented the mean improvement in profits output by this blending method. The plot below illustrates how the ratio of profitable to unprofitable jobs compare in the full project population vs. the rejected projects.
 
 ```{r, fig.cap = c("Proportion of profitable and loss making jobs in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
 
@@ -2151,9 +2236,9 @@ ggplot(reject.plot, aes(x = f.rpdol)) +
 
 ```
 
-Originally, 25% of projects were loss making. The model rejects a population of projects which are over 60% loss making. This represents a significant swing in proportions, but is not perfect. The class imbalance towards profitable jobs in the initial data set may have weakened the model's ability to classify losses. @Saradhi2011 took advantage of SVM's ability to adjust class penalties to address class imbalance, however SVM's were avoided because of their black box predictions in this work and the remaining methods cannot accommodate class penalties. 
+Originally, 25% of projects were loss making. The model rejects a population of projects which are over 60% loss making. This represents a significant swing in proportions, but is not perfect. The class imbalance towards profitable jobs in the initial data set may have weakened the model's ability to classify losses. @Saradhi2011 took advantage of SVM's ability to adjust class penalties to address class imbalance, however SVM's were avoided because of their black box predictions in this work and the remaining methods could not accommodate class penalties. 
 
-The plot below illustrates the monetary size of profits and losses from rejected projects. The different coloured bands indicate different projects and it can be observed that the magnitude of rejected profits and losses vary greatly. They range from profits/losses of just \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% tail(1) %>% round(0)` to losses of \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% head(1) %>% round(-3)`.
+The plot below illustrates the monetary size of profits and losses from rejected projects. The coloured bands indicate different projects and it can be observed that the financial magnitude of rejected profits and losses vary greatly. They range from profits/losses of just \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% tail(1) %>% round(0)` to losses of \$`r reject.plot %>% filter(compare == "reject") %>% arrange(desc(abs(balance.mlsto))) %>% .$balance.mlsto %>% head(1) %>% round(-3) %>% format(digits = 2)`.
 
 ```{r, fig.height = 5, fig.cap = c("Proportion of the absolute value of profits and losses from profitable and loss making jobs in the rejected projects only. Colours are alternated between different jobs to indicate profit/loss magnitude. Predictions were from a typical simple Logistic Regression.")}
 
@@ -2192,11 +2277,20 @@ ggplot(reject.plot,
 
 ```
 
-The algorithm tended to accept projects which were completed 100% by a professional level employee and rejected more projects with 0-60% of hours by a professional employee. This could either indicate that professional level employees complete projects more efficiently or that the types of projects that do not require technical employees are more profitable.
+The model tended to accept projects which were completed 100% by a professional level employee and rejected more projects with 0-60% of hours by a professional employee. This could either indicate that professional level employees complete projects more efficiently or that the types of projects that do not require technical employees are more profitable.
 
 The distribution of time spans of rejected projects differed significantly to the time span distribution of all projects. The chart below shows that proportionally very few short jobs were rejected, i.e. projects that lasted between 1 day and 2.5 months. These projects are likely small and may be easier to estimate fixed fees. A much higher relative proportion of projects lasting 1.5 - 3 years were rejected. They may face an opposite challenge to the small projects. On the other hand, large projects can provide long-term security for a small business and it is unlikely the company would want to reject them. It may make more sense to adjust the contract structure of large projects that have been highlighted as a risk. Alternate uses of the algorithm results are discussed in the next section. 
 
 ```{r, fig.cap = c("Proportion of each timespan category for projects in the full data set vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
+
+reject.plot <- within(reject.plot, 
+                         b.timespan.cbrt <- factor(b.timespan.cbrt, 
+                                               levels= c("1d-3wk",
+                                                         "3wk-2.5m",
+                                                         "2.5m-9m",
+                                                         "9m-1.5y",
+                                                         "1.5y-3y",
+                                                         ">3y")))
 
 ggplot(reject.plot, 
              aes(x = b.timespan.cbrt)) +
@@ -2213,7 +2307,7 @@ ggplot(reject.plot,
 
 ```
 
-The statistical distribution of 'return per dollar' in the rejected projects is skewed towards negative returns. This means the algorithm has identified a proportionally much higher percentage of loss making projects which is not surprising given previous results.
+The statistical distribution of 'return per dollar' in the rejected projects is skewed towards negative returns. This means the algorithm has identified a proportionally higher percentage of loss making projects which is not surprising given previous results.
 
 ```{r, fig.cap = c("Distribution of 'return per dollar' in the full data set of projects vs. the rejected projects only. Predictions from a typical simple Logistic Regression were used.")}
 
@@ -2235,23 +2329,25 @@ ggplot(reject.plot,
     
 There were a couple more revealing differences between the full set of projects and the rejected projects. The first was that rejected projects had disproportionately more projects with mid-level and senior-level technical employees as the main worker on a project. The second was that a comparatively high percentage of rejected projects were subdivisions, sewerage, or civil building works. 
 
-The detailed analysis of rejected project characteristics gave insight into the characteristics of projects that are likely to be loss making as well as the accuracy of the algorithm. While it is interesting to observe characteristics of rejected projects, a complex combination of all the features contribute to the final probability of loss prediction.   
+The detailed analysis of rejected project characteristics gave insight into the nature of projects that are likely to be loss making as well as the accuracy of the algorithm. While it is interesting to observe characteristics of rejected projects, a complex combination of all the features (which is learned by the algorithms) contributes to the final probability of loss prediction.   
 
 ### Alternate Interpretations of Blended Model Results
 
-Alternative strategies exist for how to deal with projects that are marked with a probability of loss greater than `r best.t`. For example, contracts for these projects could be changed to hourly rate contracts without exception. This means that each hour booked on the project will definitely be charged to the client for each stage of the project. Another example would be to increase fixed fees for projects above the threshold by a nominal percentage. However, this method seems less practical as the case study projects above `r best.t` would need to increase fees by 46% in order to generate a 15% profit. A proposed fee increase of that magnitude may not be as palatable as an hourly rate contract depending on the project and client. Contracts could be adjusted in many other creative ways to reduce risk in high probability projects. The threshold of `r best.t` was optimised based on the accept/reject strategy but different courses of actions could be developed for specific clients or project sizes via similar analyses of threshold scenarios.    
+Alternative strategies exist for how to deal with projects that are marked with a probability of loss greater than `r best.t`. For example, contracts for these projects could be changed to hourly rate contracts without exception. This means that each hour booked on the project will definitely be charged to the client for each stage of the project. Another example would be to increase fixed fees for projects above the threshold by a nominal percentage. However, this method seems less practical as the case study projects above `r best.t` would need to increase fees by 46% in order to generate a 15% profit. A proposed fee increase of that magnitude may not be as palatable as an hourly rate contract, but this depends on the project and client. Contracts could be adjusted in many other creative ways to reduce risk in high probability projects. The threshold of `r best.t` was optimised based on the accept/reject strategy but different actions could be developed for certain clients or project sizes via similar analyses of thresholds.    
 
-To conclude, because of the promising AUC results, it was logical that the models translated into financial benefits for the company. The `r (best.mean-100)`% improvement in profits looks reasonable, and may be high enough to trigger further cost-benefit analyses before finally introducing the model into business decisions. Development of the user interface as well as some further data analyses are recommended before implementation of the model and are described in the 'User Interface and Engagement' and 'Limitations and Future Work' sections below.
+### Categorical Predictions Conclusion
+
+The confusion matrix statistics revealed that the most profitable method, the simple Logistic Regression blended model, was optimised at a threshold with a TPR of only `r conf.plot %>% filter(method == "simp.log", model.pred == "TP") %>% .$pc`% and a TNR of `r conf.plot %>% filter(method == "simp.log", model.pred == "FN", actual == "profit") %>% .$pc %>% .[2]`%. Despite the low TPR, it was higher than almost all other methods at their optimal threshold and produced notable improvements in profits to the business. Review of the rejected project characteristics were logical, and development of the user interface as well as some further data analyses must be completed before the model can be finally introduced into business decisions. These are described in the 'User Interface and Engagement' and 'Limitations and Future Work' sections below. 
 
 
-### User Interface and Engagement
+## User Interface and Engagement
 
-Industry's lack of uptake of cost estimation models was marked as a significant issue in the literature [@Akintoye2000]. Decision makers did not sufficiently trust the model output which were not directly connected to their experiences. In many studies, case-based reasoning had more traction than more accurate models because decision makers could justify the output. Clearly this is an important aspect of the study to address. The user interface should do two things well: 
+Industry's lack of uptake of cost estimation models was marked as a significant issue in the literature [@Akintoye2000]. Decision makers did not sufficiently trust the model output which were not directly connected to their experiences. In many studies, CBR had more traction than more accurate models because decision makers could justify the output. Clearly this is an important aspect of the study to address and could be managed at the point where the decision maker engages with the algorithm: the user interface. This interface should do two things well: 
 
 * Communicate the model results practically and clearly
 * Create trust via a connection to the user's experiences
 
-User interfaces also allow input values to be tweaked and re-run so the decision maker can test different scenarios. A prototype user interface was developed using the Shiny package in R where a strategy was developed for how the input options and results would be communicated [@shiny]. 
+User interfaces also allow input values to be tweaked and re-run so the decision maker can test different scenarios (active sensitivity analysis). A prototype user interface was developed using the Shiny package in R where a strategy was developed for how the input options and results would be communicated [@shiny]. 
 
 ![Opening panel and tab of user interface application for the predictive model](images/app/front_page.png) 
 
@@ -2290,7 +2386,7 @@ The similar projects are calculated using a different method from the blended al
 
 The `r (best.mean-100)`% improvements in profit sound promising, however it is important to consider limitations in the data and implementation process, which in turn motivates future research. This includes how accurately users of the algorithm would be capable of guessing input values and how to integrate new data into the model.
 
-First, successfully estimating project variables is critical in translating this research into tangible business benefits. The data represents the company's records of *completed* projects so initially expected variable values were not documented. For example, if a project was originally expected to last 1.5 years but instead took 2, the company data only retains the two year time span. This prompts the question, how well could a user predict the variables before beginning a project? Uncertainty has been managed by binning variables such as 'total amount invoiced' and 'time span' to 5 or 6 broad categories (i.e. "1 day - 3 weeks", "3 weeks - 2.5 months", etc). However, two remaining categories: team size and percent of project completed by professional level employees were left as continuous variables. It would be interesting to test how well business managers could guess the aforementioned four variables at the start of a project. 
+First, successfully estimating project variables is critical in translating this research into tangible business benefits. The data represents the company's records of *completed* projects so initially expected variable values were not documented. For example, if a project was originally expected to last 1.5 years but instead took 2 years, the company data only retains the two year time span. This prompts the question, how well could a user predict the variables before beginning a project? Uncertainty has been managed by binning variables such as 'total amount invoiced' and 'time span' to 5 or 6 broad categories (i.e. "1 day - 3 weeks", "3 weeks - 2.5 months", etc). However, two remaining categories: team size and percent of project completed by professional level employees were left as continuous variables. It would be interesting to test how well business managers could guess the aforementioned four variables at the start of a project. 
 
 The process of initially guessing variable values and then checking them upon project completion is time consuming. However, it would be worthwhile integrating into the pre-existing data-collection system. When a new project is entered into the database, it could be mandated that the project manager guesses the time-span (1 of 6 categories), total amount invoiced (1 of 5 categories), team size and percent by professionals. Over time, this estimation data could contribute to a revised version of the algorithm.
 
@@ -2318,15 +2414,17 @@ The process of initially guessing variable values and then checking them upon pr
 
 The objectives of this research consisted of a general aim and two research hypotheses, all of which have been fulfilled and tested. The findings made a significant contribution to the present body of literature and highlighted areas of future work that would refine the outcomes. 
 
-The general aim was to use statistical techniques to model the profitability of projects for a case study consulting business using their internal CRM data. This was rigorously completed by approaching the prediction of 'profitability' in two ways: as a regression problem predicting the degree of profitability and as a binary classification problem predicting simply profit or loss. Several statistical and machine learning approaches were applied to both problems including Naive Bayes, Bayesian Networks, Linear Regression, Random Forests, gradient Boosted Trees and multiple methods of blending the individual models. 
+The general aim was to use statistical techniques to model the profitability of projects for a case study consulting business using their internal CRM data. This was rigorously completed by approaching the prediction of 'profitability' in two ways: as a regression problem predicting the degree of profitability and as a binary classification problem predicting either profit or loss. Several statistical and machine learning approaches were applied to both problems including Naive Bayes, Bayesian Networks, Linear Regression, Random Forests, gradient Boosted Trees as well as multiple methods of blending the individual models. 
 
 Hypothesis 1 stated a statistical or machine learning model based on the CRM data could predict the profitability of a new project. Testing this hypothesis revealed that the degree of profitability (the regression problem) could not be accurately predicted but whether a job would be profitable or not (binary classification) could be predicted to a level significantly better than random assignment (AUC = 0.76). This was achieved by 3 individual methods while various techniques that blended the individual methods improved results further (AUC = 0.77). It is likely the simpler task of binary classification suited the complex yet small data set better.
 
-Lastly, hypothesis 2 proposed that the best predictive model developed from hypothesis 1 could be shown to improve the overall profitability (bottom line) of the case study business. This theory was tested on a range of predictive models because AUC scores were not directly linked to profitability once the models were applied to a business scenario. The models output a probability, so an optimal probability threshold needed to be found that would dictate whether a job was classified 'profitable' or 'loss making'. A range of threshold were trialed, and a decision framework was created where if a project was scored below the threshold it was accepted while projects above the threshold were rejected. If a project was accepted, the profits and losses were summed while if a project was rejected the profits and losses were forfeited. A perfect model would reject all loss making jobs and accept all profitable jobs, thereby improving overall profits. Final results showed the Logistic Regression blend of the individual Logistic Regression, Random Forest and Boosted Tree models improved profits the most. The 95% confidence interval for these improvements were between `r best.fin %>% filter(method == "simp.log") %>% .$lower_bound_95CI - 100`% and `r best.fin %>% filter(method == "simp.log") %>% .$upper_bound_95CI - 100`% using a probability threshold of `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
+Lastly, hypothesis 2 proposed that the best predictive model developed from hypothesis 1 could be shown to improve the overall profitability (bottom line) of the case study business. This theory was tested on a range of predictive models because AUC scores were not directly linked to profitability once the models were applied to a business decision scenario. The models output a probability, so an optimal probability threshold needed to be found that would dictate whether a job was classified 'profitable' or 'loss making'. A range of threshold values were trialed, and a decision framework was created where if a project was scored below the threshold it was accepted while projects above the threshold were rejected. If a project was accepted, the profits and losses were summed while if a project was rejected the profits and losses were forfeited. A perfect model would reject all loss making jobs and accept all profitable jobs, thereby improving overall profits. Final results showed the simple Logistic Regression blend of the individual Logistic Regression, Random Forest and Boosted Tree models improved profits the most. The 95% confidence interval for these improvements was between `r best.fin %>% filter(method == "simp.log") %>% .$lower_bound_95CI - 100`% and `r best.fin %>% filter(method == "simp.log") %>% .$upper_bound_95CI - 100`% using a probability threshold of `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
 
-These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending have been applied minimally to cost estimation. Past research tested regression models and to some extent Neural Networks and CBR. The advantage of ensemble tree methods is that they provide insight into the model's structure while predicting as well as Neural Networks. Next, a clear framework for how a business can tangibly improve profits was developed and proven successful. Previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. Lastly, the decision framework was progressed even further into a prototype application where user trust was addressed. Previous studies had shown that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. This was addressed by providing intuitive plots of the model structure and a parallel nearest neighbour graph of similar internal projects. Further work is required to test user confidence in the output.
+These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending had been applied minimally to cost estimation to date. Past research tested regression models and to some extent Neural Networks and CBR. The advantage of ensemble tree methods is that they provide insight into the model's structure while predicting at a similar level to Neural Networks. Next, a clear framework for how a business could tangibly improve profits was developed and proven successful. Previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. Lastly, the decision framework was progressed even further into a prototype application where user trust was addressed. Previous studies had shown that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. This was addressed by providing intuitive plots of the model structure and a parallel nearest neighbour graph of similar internal projects to provide a clear and intuitive 'outside view'. Further work is required to test user confidence in the output.
 
-Another topic identified for future research was to test how well managers estimate project input variables. Estimation of the time span, team size, total invoiced amount, and percentage of hours completed by professionals in particular should be tested. Initial estimates of input variables could also be kept in the database for future analysis. Overall, this project has successfully demonstrated a mathematical blend of Logistic Regression, Random Forest, and Boosted Tree models could guide managers in rejecting loss making projects and improve net profitability. 
+Another topic identified for future research was to test how well managers estimate project input variables. Estimation of the time span, team size, total invoiced amount, and percentage of hours completed by professionals in particular should be tested. Initial estimates of input variables could also be kept in the database for future analysis. 
+
+Overall, this work has successfully built a mathematical blend of Logistic Regression, Random Forest, and Boosted Tree models, built on a consulting company's internal project data. This blended model can predict whether a project will be profitable or not and in a reasonable business decision framework, can guide managers in rejecting financially risky projects and improving final profitability.    
 
 # References
 

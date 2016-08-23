@@ -50,22 +50,42 @@ $odds = e^{\ln\  odds}$
 | ...     | ...   | ...           | ...         | ...        | ...        |         | ...        | ...         |\
 \\
 
-$Overall\ Profit = Revenue\ from\ Project\ Invoices\ - (Employee + Business\ Costs)$
 
-$f(x) = \beta_{0} + \sum_{j = 1}^{p} X_{j} \beta_{j}$
 
-$RSS(\beta) = \sum_{i = 1}^{N} (y_{i} - f(x_{i}))^2$
-
-$RMSE_b = \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - \bar y)^2}{n}}$
+$Relative\ Profit_t = \frac{Profit_t}{\sum_{t = 1}^{n}\left|Profit_t\right|}$
 
 $$
 \begin{aligned}
-RMSE_b = \textrm{baseline root mean squared error} \\
-n &= \textrm{number of data points} \\
-\widehat{y} &= \textrm{predicted values of the response variable} \\
-\bar y &= \textrm{mean 'return per dollar' for all projects} \\
+Profit_t &= \textrm{Profit from project}\ t\textrm{. Negative values indicate loss making projects}
 \end{aligned}
 $$
 
 $\Delta\ error = RMSE_b - RMSE$
+
+to losses of \$`r 156100 %>% format(digits = 2)`
+
+```{r}
+finance.plot = readRDS("plot_finance_100_4.rds" )
+
+finance.plot$method <- factor(finance.plot$method, 
+                                    levels=c("average", "simp.log","simp.boost",
+                                             "comp.boost","comp.rf", "FWLS","orig.log",
+                                             "orig.rf","orig.boost"))
+
+ggplot(finance.plot %>% filter(method == "average") %>% slice(43:63), 
+       aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        geom_line() +
+        geom_point() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        theme(legend.position = "none", 
+              panel.background = element_rect(fill = 'grey95'),
+              panel.grid.minor = element_blank()) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Example Profit Curve for Simple Average Blended Model")
+
+```
 
