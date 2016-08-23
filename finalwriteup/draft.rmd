@@ -1494,6 +1494,7 @@ Next, data imputation methods were trialed which would make the complete data se
 
 ```{r mice_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
 
+#copied from output of rf_log_naiive_auc.rmd
 mice.totAUC <- readRDS("report_data/mice_df_auc.rds")
 
 #significant difference??

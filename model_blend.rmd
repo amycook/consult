@@ -355,9 +355,11 @@ cfor.plotsave(df= all10.blend, name= 'cfor_blend', formular = formula.rf)
 
 Now narrow down which interaction terms to include
 ```{r}
-fit2 <- aov(b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + no.users*norm.log + b.inv.log*norm.log + Business*norm.log + JD.Second*norm.log + b.timespan.cbrt*norm.rf + no.users*norm.rf + b.inv.log*norm.rf + Business*norm.rf + JD.Second*norm.rf + b.timespan.cbrt*norm.boost + no.users*norm.boost + b.inv.log*norm.boost + Business*norm.boost + JD.Second*norm.boost + Discipline*norm.boost + Discipline*norm.log + Discipline*norm.rf,
+fit2 <- glm(b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + no.users*norm.log + b.inv.log*norm.log + Business*norm.log + JD.Second*norm.log + b.timespan.cbrt*norm.rf + no.users*norm.rf + b.inv.log*norm.rf + Business*norm.rf + JD.Second*norm.rf + b.timespan.cbrt*norm.boost + no.users*norm.boost + b.inv.log*norm.boost + Business*norm.boost + JD.Second*norm.boost + Discipline*norm.boost + Discipline*norm.log + Discipline*norm.rf, family = binomial(),
                                    data = all10.blend)
 
+backwards = step(fit2)
+formula(backwards)
 
 ```
 
