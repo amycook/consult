@@ -58,7 +58,10 @@ $Relative\ Profit_t = \frac{Profit_t}{\sum_{t = 1}^{n}\left|Profit_t\right|}$
 
 $$
 \begin{aligned}
-Profit_t &= \textrm{Profit from project}\ t\textrm{. Negative values indicate loss making projects}
+RMSE_b &= \textrm{baseline root mean squared error} \\
+n &= \textrm{number of data points} \\
+\widehat{y} &= \textrm{predicted values of the response variable} \\
+\bar y &= \textrm{mean 'return per dollar' for all projects} \\
 \end{aligned}
 $$
 
