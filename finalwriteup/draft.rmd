@@ -1235,7 +1235,6 @@ Prediction of 'return per dollar' as a regression problem was attempted first fo
 In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values and variances of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. The continuous variables were normalised to kerb the effects of possible high leverage points, and logarithmic or cube root transformations were used for this. Trials of various variable interactions revealed that interactions between:
 
 * total amount invoiced * percent of job by professional level employee
-* total amount invoiced * client id
 * project category * number of employees on the job
 
 were statistically significant. Two types of ANOVA models were built. The first used only a 'core' list of 6 variables that were largely complete along with relevant interaction terms:
@@ -1247,7 +1246,7 @@ were statistically significant. Two types of ANOVA models were built. The first 
 * % of hours completed by a professional level employee
 * Client business category
 
-The second method was developed to overcome the problem of missing data. When all variables were combined, only 15% of the project cases had complete data and therefore the ANOVA test would eliminate 85% of the data upon execution. Imputing the missing data was not desirable at that stage due to the volume of missing categorical data and an inability to ensure the imputed data did not adversely influence results. The second method was a complicated procedure that required dozens of models but allowed variables with missing data to be included. First, a project was randomly selected (a row in the data set) which would have certain variables complete. The data was then filtered for all projects that had at least the same columns complete, and an ANOVA model was built on this reduced data set. This method allowed variables with a larger proportion of missing data to be included while not attempting to analyse all variables at once. 
+The second method was developed to overcome the problem of missing data. When all variables were combined, only 15% of the project cases had complete data and therefore the ANOVA test would eliminate 85% of the data upon execution. Imputing the missing data was undesirable at that stage due to the volume of missing categorical data and an inability to ensure the imputed data did not adversely influence results. The second method was a complicated procedure that required dozens of models but allowed variables with missing data to be included. First, a project was randomly selected (a row in the data set) which would have certain variables complete. The data was then filtered for all projects that had at least the same columns complete, and an ANOVA model was built on this reduced data set. This method allowed variables with a larger proportion of missing data to be included while not attempting to analyse all variables at once. 
 
 ```{r insert_data}
 # load function for determining number of required samples for 0.8 power
@@ -1271,10 +1270,10 @@ n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = '
         
 }
 
-results.core = readRDS("reg_lm_core.rds")
+results.core = readRDS("report_data/reg_lm_core.rds")
 # n.samples(data = results.core$diff)
 
-results.A2 = readRDS("reg_lm.rds")
+results.A2 = readRDS("report_data/reg_lm.rds")
 results.A2 <- dplyr::filter(results.A2, diff>-15)
 # n.samples(data = results.A2$diff)
 
@@ -1282,7 +1281,7 @@ results.A2 <- dplyr::filter(results.A2, diff>-15)
 ```
 
 
-The results of the ANOVA models were assessed using the RMSE statistic of the 'return per dollar' predictions. These were compared against a baseline RMSE, which was the RMSE of the predicted 'return per dollar' values less the mean 'return per dollar' of all projects. 
+The results of the ANOVA models were assessed using the RMSE statistic of the 'return per dollar' predictions. These were compared against a baseline RMSE, which was the RMSE of the predicted 'return per dollar' values less the mean 'return per dollar' of all projects. For the core complete variables, the baseline RMSE using the mean 'return per dollar' was \$0.53 and for the random subset of projects the baseline RMSE ranged between \$0.51 and \$0.56.
 
 $RMSE_b = \sqrt{\frac{\sum_{t = 1}^{n} (\widehat{y}_t - \bar y)^2}{n}}$
 
@@ -1341,10 +1340,10 @@ A student t-test indicated the difference was not significantly above 0, which i
 ## Random Forests
 
 ```{r load_rf_results}
-results.rf.core = readRDS("reg_rf_core.rds")
+results.rf.core = readRDS("report_data/reg_rf_core.rds")
 # n.samples(data = results.rf.core$diff)
 
-results.rf2 = readRDS("reg_rf.rds")
+results.rf2 = readRDS("report_data/reg_rf.rds")
 # n.samples(data = results.rf2$diff)
 
 ```

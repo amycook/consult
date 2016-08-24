@@ -1,0 +1,143 @@
+---
+title: Prediction of Consulting Project Profitability
+author:
+  - name: Amy Cook, Paul Wu, Kerrie Mengersen
+    email: a21.cook@qut.edu.au
+    affiliation: Queensland University of Technology
+    footnote: Corresponding Author
+address:
+  - code: Queensland University of Technology
+    address: School of Mathematical Sciences, George Street, Brisbane, QLD, 4000
+abstract: |
+  A concise abstract is required. limit to 250 words. clearly state purpose of research, principal resutls and major conclusions. no refs
+  
+  Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs or help tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by declining approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
+keywords: |
+  consulting; machine learning; profitability; predictive model; construction industry; data mining
+abbreviations: 
+  - name: Customer Relationship Management
+    footnote: Abbreviations
+
+bibliography: mybibfile.bib
+output: rticles::elsevier_article
+---
+
+_Text based on elsarticle sample manuscript, see [http://www.elsevier.com/author-schemas/latex-instructions#elsarticle](http://www.elsevier.com/author-schemas/latex-instructions#elsarticle)_
+
+
+1. Introduction
+==========================
+
+Clearly state the research question and objectives of the work. Briefly provide any necessary
+background to frame the research question. Concisely summarize the major findings/results.
+Summary of Key Related Research This section should include a brief summary of key related research.
+Emphasis should be on demonstrating the foundation for the current investigation. Specifically, the
+goal is to clearly delineate a gap or missing link that the current research fills. Authors should avoid
+presenting a litany of past research and should focus on prior work necessary to demonstrate the
+existence of the research gap addressed in the manuscript.
+
+1 page
+
+Intro - pick out bits from thesis
+
+#### 1.1 Problem motivation
+
+- amount of losses, sources
+
+- 'outside' view, that kind of thing
+
+#### 1.2 Case Study
+
+
+
+2. Literature Review
+====================
+
+1 page
+
+#### 2.1 Cost estimation in the Construction Industry and IT Industry
+
+#### 2.2 Methods used in other business applications
+
+
+3. Methods
+==========
+
+Should provide sufficient detail to allow the work to be reproduced. Methods already published should be indicated by a reference: only relevant method modifications should be described.
+
+#### 3.1 Predictive methods
+
+- description of each of the methods: refer thesis
+
+#### 3.2 Procedure
+
+- Regression, classification, blending, bottom line analysis
+
+
+4. Results and Discussion
+=========================
+
+Present results clearly and concisely
+discussion should explore the signficance of the results of the work, not repeat them.
+
+#### 4.1 Predictive Analysis
+- regression was attempted - failed
+
+- binary classification - results of 5 methods
+
+- blended models - improved results
+
+#### 4.2 Bottom line analysis
+
+- decision scenario
+
+- profit curves
+
+
+7. Decision Support Tool
+========================
+
+- how to generate actions from predictive results
+
+- alternative decision scenarios
+
+- user trust
+
+
+9. Conclusions and Future Work
+==============================
+
+3/4 page
+
+Acknowledgments
+===============
+
+This research was supported by a scholarship/ ACEMS?
+
+References {#references .unnumbered}
+==========
+
+#### Installation
+
+If the document class *elsarticle* is not available on your computer,
+you can download and install the system package *texlive-publishers*
+(Linux) or install the LaTeX package *elsarticle* using the package
+manager of your TeX installation, which is typically TeX Live or MikTeX.
+
+The author names and affiliations could be formatted in two ways:
+
+(1) Group the authors per affiliation.
+
+(2) Use footnotes to indicate the affiliations.
+
+Bullet points.
+
+-   document style
+
+-   baselineskip
+
+-   front matter
+
+-   keywords and MSC codes
+
+Here are two sample references: @Feynman1963118 [@Dirac1953888].

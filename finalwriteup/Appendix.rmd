@@ -39,16 +39,20 @@ opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo 
 
 # Appendix
 
-Example results from:
+Example results from a single model from each method. This is broken into the three main types of methods that were trialled:
+
+1. Regression models
+2. Classification models
+3. Blended classification models
 
 ## Regression models
 
-###Linear regression
+### ANOVA regression
 
 Example summary of model built with core variables only:
 ```{r}
 
-all8a = read.csv("report_data/all8a.csv")[,-1]
+all8a = read.csv("all8a.csv")[,-1]
 
 #function below outputs summary of model
 final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
@@ -63,7 +67,8 @@ final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
         sample = df[samp,]
         sample = sample[,!is.na(sample)]
         vars= names(sample)
-        vars = vars[! vars %in% c('mlsto','Year','return.pdol')]
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol',
+                                  'code.client', 'code.contact')]
         variables = vars
         } else{
                 variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
@@ -120,7 +125,7 @@ final.output(df=all8a, no.tests = 1, core = TRUE)
 
 ```
 
-Example summary of model built with all variables:
+Example summary of model built with all variables. Note that each model used a subset of all variables based on the available variables for a randomly selected project:
 
 ```{r}
 
@@ -227,7 +232,7 @@ Example summary output imputed data:
 ```{r}
 
 # load imputed data
-all10mice_f = read.csv("report_data/all10mice_May16.csv")[,-1]
+all10mice_f = read.csv("all10mice_May16.csv")[,-1]
 
 
 #function for running models
@@ -408,10 +413,7 @@ Naive
 
 ## Blended Models
 
-
-### Logistic Regression
-
-#### Simple Blend
+### Simple Average
 
 ```{r}
 
@@ -424,7 +426,7 @@ if(.Platform$OS.type == 'windows'){
 
 }
 
-df.blend <- readRDS("report_data/dfblend.rds")
+df.blend <- readRDS("dfblend.rds")
 
 iter.auc <- function(mult =1, x.folds.iter = 5, 
                      methods = c("simp.log"),
@@ -449,7 +451,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                 
                 if ("simp.log" %in% methods) {
                         print("simp.log")
-                        fit <- glm(f.rpdol ~ log + rf + boost,
+                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost,
                                    data = train,
                                    family = binomial())
                         
@@ -457,7 +459,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["simp.log"]] = rbind(pred.list[["simp.log"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                         
                 }
                 
@@ -472,7 +474,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["simp.boost"]] = rbind(pred.list[["simp.boost"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                         
                 }
 
@@ -483,7 +485,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["orig.log"]] = rbind(pred.list[["orig.log"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                         
                 }
                 
@@ -493,7 +495,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["orig.rf"]] = rbind(pred.list[["orig.rf"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                         
                 }
                 
@@ -503,7 +505,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["orig.boost"]] = rbind(pred.list[["orig.boost"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                         
                 }
                 
@@ -513,19 +515,19 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["average"]] = rbind(pred.list[["average"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                 }
                 
                 if ("FWLS" %in% methods) {
                         print("FWLS")
-                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + b.inv.log*norm.log + b.inv.log*norm.rf + Business*norm.boost,
+                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + b.inv.log*norm.log + b.inv.log*norm.rf + Business*norm.boost + JD.Second + no.users,
                                    data = train,
                                    family = binomial())
                         pred <- predict(fit, test, type = "response")
                         pred.list[["FWLS"]] = rbind(pred.list[["FWLS"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                 }
                 
                 if ("comp.boost" %in% methods) {
@@ -540,7 +542,7 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["comp.boost"]] = rbind(pred.list[["comp.boost"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                 }
                 
                 if ("comp.rf" %in% methods) {
@@ -554,14 +556,14 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
                         pred.list[["comp.rf"]] = rbind(pred.list[["comp.rf"]],
                                                         data.frame("index" = folds,
                                                                    "pred" = pred,
-                                                                   "iteration" = paste("iter",ceiling(k/x.folds.iter),m, sep = "")))
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
                 }
                 
                 
         #pROC
                         pred.p <- pROC::roc(test$f.rpdol, pred)
                         
-                        plot.roc(pred.p, col = colours[i], print.thres = F)
+                        plot.roc(pred.p, col = "darkblue", print.thres = F)
                         
                         auc<- auc(pred.p)  
                         assign("auc.func", auc, envir = .GlobalEnv)
@@ -571,14 +573,28 @@ iter.auc <- function(mult =1, x.folds.iter = 5,
         
 }
 
+simp.av <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("average"),
+                     df.iter = df.blend)
+auc.func
+
+```
+
+
+### Logistic Regression
+
+#### Simple Blend
+
+```{r}
+
 simp.LR <- iter.auc(mult =1, x.folds.iter = 5, 
                      methods = c("simp.log"),
                      df.iter = df.blend)
 auc.func
 summary(simp.LR)
 
-
 ```
+
 
 #### Complex Logistic Regression Blend
 
