@@ -122,20 +122,20 @@ Date....................
 
 # Introduction
 
-Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the task is new and difficult. These errors are trivial in everyday activities, but for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being. Furthermore,  
+Predicting how long it will take a person to do something is a notoriously tricky task. People make mental calculations of this sort every day - estimating how long it will take to drive to meet someone on time, how many tasks you can check off in a day, or how long it will take to cook a dish. As most people have experienced, these estimates can be particularly inaccurate if the task is new and difficult. These errors are trivial in everyday activities, but for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being.  
  
-Consulting businesses give expert advice to other professionals in exchange for a fee based on the amount of time their consulting staff spends on the project. The deliverable 'expert advice' is generally in the form of a document or a package of documents. A document could range from a 5-page report written by a single person to a sequence of hundreds of drawings assembled by a team of 10 over many years. Despite the range of possible deliverables, before any project commences, the client and consultant must agree on a fee, or at least a fee structure. The fee structure can be as creative as the engaged parties wish, but in fact tend to fit a few common models. A couple of examples are:
+Consulting businesses give expert advice to other professionals in exchange for a fee based on the amount of time their consulting staff spends on the project. The deliverable 'expert advice' is generally in the form of a document or a package of documents. A document could range from a 5-page report written by a single person to a sequence of hundreds of drawings assembled by a team of 10 over many years. Despite the range of possible deliverables, before any project commences, the client and consultant must agree on a fee, or at least a fee structure. The fee structure can be as creative as the engaged parties wish, but in fact tend to fit a few common models. Two examples are:
 
 1. The client agrees to pay for the consultants' time by the hour until the task is complete (referred to as hourly rate) or 
 2. The consultant offers a fixed fee to complete the project in full, regardless of time spent (referred to as fixed price or fixed fee). 
 
 In each of these contract models, financial risk is assigned to one of the parties. In model 1, the client must pay for an unknown quantity of consultants' billable hours and in model 2 the consultants must complete the project for a fixed price while not knowing how much of their own time will be spent.
 
-This thesis focuses on the risk taken by a consulting company when offering a fixed fee. Clients commonly seek fixed price quotes from several consultants before selecting one or negotiating further. Quoted fees must be competitive. 
+This thesis focuses on the risk taken by a consulting company when offering a fixed fee. Clients commonly seek fixed price quotes from several consultants before selecting one or negotiating further. Hence, quoted fees must be competitive. 
 
-The way a consulting manager calculates a fixed price varies from industry to industry and even company to company. Typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb (such as a set fraction of the entire client budget for a large project). Such qualitative methods can result in profit margins, which ultimately depend on the skill (or luck) the manager has in predicting the amount of time a project demands. 
+The way a consulting manager calculates a fixed price varies from industry to industry and even company to company. Typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb (such as a set fraction of the entire client budget for a large project). Such qualitative methods can result in profit margins, which ultimately depend on the skill (or luck) of the manager in predicting the amount of time a project demands. 
 
-This thesis focuses on a single case study consulting company in the construction industry that has persevered through many fixed price projects that resulted in losses. A source of insight into the loss making projects was identified - twelve years of passively collected data that described each project in terms of their clients, invoice history, employee hours and technical details. Was it possible to find trends in what makes a project loss making and can these characteristics be identified before a fixed price is offered? Can these trends be modeled into a predictive algorithm, and if so, how could the outcomes be integrated into business decisions? Finally, if the predictive outcomes were integrated into decision-making, would they definitely improve the business' bottom line? These questions are explored in depth and answered over the course of this dissertation.
+This thesis focuses on a single case study consulting company in the construction industry that has persevered through many fixed price projects that resulted in losses. A source of insight into the loss making projects was identified - twelve years of passively collected data that described each project in terms of their clients, invoice history, employee hours and technical details. Was it possible to find trends in what makes a project loss making and can these characteristics be identified before a fixed price is offered? Can these trends be modeled into a predictive algorithm, and if so, how could the outcomes become integrated into business decisions? Finally, if the predictive outcomes were integrated into decision-making, would they definitely improve the business' bottom line? These questions are explored in depth and answered over the course of this dissertation.
 
 Due to the commercially sensitive nature of the data used, the source is not disclosed. Variables have been de-identified to ensure confidentiality is maintained.
 
@@ -311,7 +311,7 @@ Detailed analysis refers to the process of an engineer or builder in the constru
 
 @Elfaki2014 discuss how much detailed cost estimates for construction projects can vary from estimator (engineer) to estimator. This contributes to the lack of accuracy in predicting final costs of a project. They argue that an engineer's expertise is not documented or measured in any way and therefore their expertise and, in turn, their estimate is prone to subjectivity. @Shane2009 theorise that final cost can be subject to so many different unpredictable parameters, such as weather, unexpected ground conditions, duration or sub-contractor issues, that it is almost impossible to achieve an accurate cost prediction manually.
 
-Groundbreaking methods into calculating construction costs by @Ma2014 mobilised data from building information modeling (BIM) models, although this is still technically a detailed analysis of the costs. The idea is to quantify the cost of building a structure directly from a three dimensional BIM model created by the design consultants (engineers and architects). Ma and Liu's [-@Ma2014] first trial was to automate the cost calculation of a reinforced concrete structure. They programmed their algorithm to intelligently establish construction techniques for each element, as architectural or engineering models do not provide this. From the construction technique and material, a cost was derived for each element. This was successful and @Ma2014 aim to further their work so that more construction information can be intelligently obtained from BIM models. A system like Ma and Liu's [-@Ma2014] would definitely accelerate the cost estimation process and reduce human error, however it is still an 'inside view' and could still deliver inaccurate estimates similar to detailed analysis by a person. The detailed view does not 'step back' and take into account set backs in construction that may have affected past similar projects. There is potential for this innovation to be combined with an 'outside view' system.
+Groundbreaking methods into calculating construction costs by @Ma2014 mobilised data from building information modeling (BIM) models, although this is still technically a detailed analysis of the costs. The idea is to quantify the cost of building a structure directly from a three dimensional BIM model created by the design consultants (engineers and architects). Ma and Liu's [-@Ma2014] first trial was to automate the cost calculation of a reinforced concrete structure. They programmed their algorithm to intelligently establish construction techniques for each element, as architectural or engineering models do not provide this. From the construction technique and material, a cost was derived for each element. This was successful and @Ma2014 aim to further their work so that more construction information can be intelligently obtained from BIM models. A system like Ma and Liu's [-@Ma2014] would definitely accelerate the cost estimation process and reduce human error, however it is still an 'inside view' and could still deliver inaccurate estimates similar to detailed analysis by a person. The detailed view does not 'step back' and take into account setbacks in construction that may have affected past similar projects. There is potential for this innovation to be combined with an 'outside view' system.
 
 Detailed analysis remains the most prevalent method for construction cost estimation despite the industry having a long history of projects running over time and budget using the same technique [@Shane2009]. Next, the method of detailed sums shall be compared to results from parametric algorithms and CBR ('outside view').
 
@@ -357,7 +357,7 @@ In the software industry, the main component of cost is *effort* as opposed to t
 
 #### Detailed Analysis in the IT Industry 
 
-Similar to the construction industry, expert judgment or detailed analysis, is the most widely practised method for effort estimation [@Shepperd1996; @Molokken2003]. This is despite many years of research being dedicated to developing algorithmic models that, in the research context, outperform expert judgment. A survey by @Moores1992 found that software tools assisting a software project were in significant use, but only the project planning tools, not the cost estimating tools. This suggests a mental link for project managers to price jobs based on *details* as opposed to an outside view. Another study by @Heemstra1992 found there was no evidence estimation accuracy improved when estimation tools were used. @Bergeron1992 similarly found jobs that used algorithmic models were actually associated with less accurate estimates. However, this trend may be coincidental due to a lack of cases where estimation tools were used [@Molokken2003]. The scarcity of real project evidence that algorithmic estimation tools improve estimations and an unintuitive mental jump could be reasons contributing to detailed expert analysis remaining the most widespread technique and mirrors what was found in the construction industry.
+Similar to the construction industry, expert judgment or detailed analysis, is the most widely practiced method for effort estimation [@Shepperd1996; @Molokken2003]. This is despite many years of research being dedicated to developing algorithmic models that, in the research context, outperform expert judgment. A survey by @Moores1992 found that software tools assisting a software project were in significant use, but only the project planning tools, not the cost estimating tools. This suggests a mental link for project managers to price jobs based on *details* as opposed to an outside view. Another study by @Heemstra1992 found there was no evidence estimation accuracy improved when estimation tools were used. @Bergeron1992 similarly found jobs that used algorithmic models were actually associated with less accurate estimates. However, this trend may be coincidental due to a lack of cases where estimation tools were used [@Molokken2003]. The scarcity of real project evidence that algorithmic estimation tools improve estimations and an unintuitive mental jump could be reasons contributing to detailed expert analysis remaining the most widespread technique and mirrors what was found in the construction industry.
 
 
 #### Algorithmic Methods in the IT Industry
@@ -651,7 +651,7 @@ Because of the interwoven network of nodes, Neural Networks can model complex no
 ![Non-linear decision boundary created by a Neural Network [@Karpathy2016]](images/lit_review/NN_bivariate.PNG)
 
 
-Clearly, Neural Networks can mimick a flexible range of relationships, and if more nodes are added, more flexibility is available [@Putler2012]. A previously mentioned disadvantage is that the algorithm is a black box because the internal structure is too complex for interpretation. They also require a lot of training data relative to other methods. Despite these disadvantages, Neural Networks have found success in high-level tasks where the model structure does not need to be understood. These include hand writing recognition, vehicle control, and face recognition [@Haykin2004].
+Clearly, Neural Networks can mimic a flexible range of relationships, and if more nodes are added, more flexibility is available [@Putler2012]. A previously mentioned disadvantage is that the algorithm is a black box because the internal structure is too complex for interpretation. They also require a lot of training data relative to other methods. Despite these disadvantages, Neural Networks have found success in high-level tasks where the model structure does not need to be understood. These include hand writing recognition, vehicle control, and face recognition [@Haykin2004].
 
 ### SVM's 
 
@@ -1226,7 +1226,7 @@ Prediction of 'return per dollar' as a regression problem was attempted first fo
 
 ## ANOVA
 
-In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values and variances of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. The continuous variables were normalised to kerb the effects of possible high leverage points, and logarithmic or cube root transformations were used for this. Trials of various variable interactions revealed that interactions between:
+In ANOVA, categorical and continuous explanatory variables are treated differently. For categorical variables, differences in the mean values and variances of the response variable in each group are tested. In contrast, linear relationships are examined between continuous explanatory variables and the response variable. The continuous variables were normalised to curb the effects of possible high leverage points, and logarithmic or cube root transformations were used for this. Trials of various variable interactions revealed that interactions between:
 
 * total amount invoiced * percent of job by professional level employee
 * project category * number of employees on the job
@@ -1381,7 +1381,7 @@ results.rf2 %>% ggplot(., aes(x =final.RMSE, y = ..density..))+
 
 Although the Random Forest algorithm performed better than ANOVA when incorporating less complete variables, the spread of RMSE for 'return per dollar' was wide and the mean RMSE was high (\$`r mean(results.rf2$final.RMSE) %>% round(2)`).
 
-The two regression models predicting 'return per dollar' resulted in high mean RMSE's ranging from \$`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. The next section discusses possible reasons for the poor results and the decision to halt development of regression models. 
+The two regression models predicting 'return per dollar' resulted in high mean RMSE's ranging from \$`r mean(results.rf.core$final.RMSE) %>% round(2)` to \$`r mean(results.A2$final.RMSE) %>% round(2)`. Example individual results from the ANOVA Linear Regression and Random Forest regression models can be found in the Appendix, section 11.1. The next section discusses possible reasons for the poor results and the decision to halt development of regression models. 
 
 ## Regression Models: Discussion
 
@@ -1552,6 +1552,7 @@ ggplot(combine.micer, aes(x= factor(L1), y= value)) +
         
 ```
 
+Summaries of an example model from each of the individual classification methods can be found in the Appendix, section 11.2. 
 
 ## Binary Classification: Discussion
 
@@ -1702,12 +1703,12 @@ Upon reviewing important variables ranked by cForest, Logistic Regression, and e
 * Team size on a project
 * Time span
 
-Random Forests and Boosted Trees passively interact explanatory variables, but for Logistic Regression, these must be manually input. Only interaction terms with statistically significant p-values from the Logisitic Regression were included in order to reduce noise.
+Random Forests and Boosted Trees passively interact explanatory variables, but for Logistic Regression, these must be manually input. Only interaction terms with statistically significant p-values from the Logistic Regression were included in order to reduce noise.
 
 
 ### Comparison of Blended Models
 
-Only three of the model blending techniques used the 8 variables determined above. These were FWLS, Random Forest, and Boosted Trees. The remaining 3 techniques used only the predictions of the three individual models. All six methods were compared against the original Logistic Regression model. Initially 100 train/test runs were performed for each blending method by running 20 iterations of 5-fold cross validation. The AUC results of these iterations are displayed below:
+Only three of the model blending techniques used the 8 variables determined above. These were FWLS, Random Forest, and Boosted Trees. The remaining 3 techniques used only the predictions of the three individual models. All six methods were compared against the original Logistic Regression model. Initially 100 train/test runs were performed for each blending method by running 20 iterations of 5-fold cross validation. Summaries of a single example model from each of the blending methods can be found in the Appendix, section 11.3. The AUC results of these iterations are displayed below:
 
 ```{r blend_violin, fig.height = 5.5, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.")}
 
@@ -1805,7 +1806,7 @@ ggplot(auc.150, aes(x= factor(L1), y= value)) +
 ```
 
 
-The simple Logistic Regression blend and simple averaging of the individual models (Logistic Regression, Boosted Trees and Random Forests) gave virtually the same distribution of results, where both AUC distributions were significantly greater than the original Logistic Regression model. The p-values from the two-sample t-tests were `r pvals$p_value[1]` and `r pvals$p_value[2]` for simple average and simple Logistic Regression methods respectively. It was encouraging that blended models produced higher AUC values than the original Logistic Regression model, however for the case study business, the real measure of success is the model's impact on the business' overall profits. Higher AUC values did not guaruntee more lucrative profit curves so several methods, including the original individual models as well as blended methods, were progressed to the profit analysis. 
+The simple Logistic Regression blend and simple averaging of the individual models (Logistic Regression, Boosted Trees and Random Forests) gave virtually the same distribution of results, where both AUC distributions were significantly greater than the original Logistic Regression model. The p-values from the two-sample t-tests were `r pvals$p_value[1]` and `r pvals$p_value[2]` for simple average and simple Logistic Regression methods respectively. It was encouraging that blended models produced higher AUC values than the original Logistic Regression model, however for the case study business, the real measure of success is the model's impact on the business' overall profits. Higher AUC values did not guarantee more lucrative profit curves so several methods, including the original individual models as well as blended methods, were progressed to the profit analysis. 
 
 ## Blended Models Discussion
 
@@ -1907,7 +1908,7 @@ Profit curves for the three simple blended models as well as the three individua
 
 To start, 10 curves for each method were calculated (using 2 x 5-fold cross validation). Two-sampled power calculations (for a power of 0.8) were performed between the results of each method (at their optimal threshold points) against the best performing method (simple Logistic Regression blend). For example, the optimal threshold for the simple Logistic Regression blended model was 0.55 while the optimal threshold for the original Boosted Tree model was 0.60. The 10 'total profit' values at these two thresholds were compared in the two-sample power calculation to determine the number of samples required to achieve a power of 0.8. Out of all the methods compared against the Blended Logistic Regression, the maximum required number of samples was 64, so 100 models of each method were built (20 x 5-fold cross validation).
 
-The plot below illustrates the distrubtion of profit curves for each method, where the solid lines join the mean values at each threshold point. The grey ribbon illustrates the 95% confidence interval for the profit improvement ratio at each threshold point for the 100 models.
+The plot below illustrates the distribution of profit curves for each method, where the solid lines join the mean values at each threshold point. The grey ribbon illustrates the 95% confidence interval for the profit improvement ratio at each threshold point for the 100 models.
 
 ```{r profit_curve, fig.height = 6, fig.cap = c("Profit curves summarising results from 100 models of 9 methods: 3 simple blends, 3 complex blends, and the original 3 best methods.")}
 
@@ -2057,7 +2058,7 @@ $$
 
 The red line sits at the profit curve's optimal threshold point, 0.6, so projects greater than the threshold point would be rejected:
 
-```{r, fig.height = 5.5, fig.cap = c("Distribution of projects according to the probability outputs from a typical simple Logistic Regression blended model. A bargraph of counts and relative profits are shown.")}
+```{r, fig.height = 5.5, fig.cap = c("Distribution of projects according to the probability outputs from a typical simple Logistic Regression blended model. A bar graph of counts and relative profits are shown.")}
 
 reject.plot <- readRDS('reject_plot.rds')
 
@@ -2403,18 +2404,651 @@ The process of initially guessing variable values and then checking them upon pr
 
 The objectives of this research consisted of a general aim and two research hypotheses, all of which have been fulfilled and tested. The findings made a significant contribution to the present body of literature and highlighted areas of future work that would refine the outcomes. 
 
-The general aim was to use statistical techniques to model the profitability of projects for a case study consulting business using their internal CRM data. This was rigorously completed by approaching the prediction of 'profitability' in two ways: as a regression problem predicting the degree of profitability and as a binary classification problem predicting either profit or loss. Several statistical and machine learning approaches were applied to both problems including Naive Bayes, Bayesian Networks, Linear Regression, Random Forests, gradient Boosted Trees as well as multiple methods of blending the individual models' output. 
+The general aim was to use statistical techniques to predict the profitability of projects for a case study consulting business using their internal CRM data. This was rigorously completed by approaching the prediction of 'profitability' in two ways: as a regression problem predicting the degree of profitability and as a binary classification problem predicting either profit or loss. Several statistical and machine learning approaches were applied to both problems including Naive Bayes, Bayesian Networks, Linear Regression, Random Forests, gradient Boosted Trees as well as multiple methods of blending the individual models' output. 
 
 Hypothesis 1 stated a statistical or machine learning model based on the CRM data could predict the profitability of a new project. Testing this hypothesis revealed that the degree of profitability (the regression problem) could not be accurately predicted but whether a job would be profitable or not (binary classification) could be predicted to a level significantly better than random assignment (AUC = 0.76). This was achieved by 3 individual methods while various techniques that blended the individual methods improved results further (AUC = 0.77). It is likely the simpler task of binary classification suited the complex yet small data set better.
 
-Lastly, hypothesis 2 proposed that the best predictive model developed from hypothesis 1 could be shown to improve the overall profitability (bottom line) of the case study business. This theory was tested using a range of predictive models because AUC scores were not directly linked to profitability once the models were applied to a business decision scenario. The models output probability scores, so an optimal probability threshold needed to be found that would dictate whether a job was classified as 'profitable' or 'loss making'. A range of threshold values were trialed, and a decision framework was created where if a project was scored below the threshold it was accepted while projects above the threshold were rejected. If a project was accepted, the profits and losses were summed while if a project was rejected the profits and losses were forfeited. A perfect model would reject all loss making jobs and accept all profitable jobs, thereby improving overall profits. Final results showed the simple Logistic Regression blend of the individual Logistic Regression, Random Forest and Boosted Tree models improved profits the most. The 95% confidence interval for these improvements was between `r best.fin %>% filter(method == "simp.log") %>% .$lower_bound_95CI - 100`% and `r best.fin %>% filter(method == "simp.log") %>% .$upper_bound_95CI - 100`% using a probability threshold of `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
+Lastly, hypothesis 2 proposed that predictive models developed from hypothesis 1 could be shown to improve the overall profitability (bottom line) of the case study business. A range of probability threshold values were trialed for each method using a decision framework where projects scored below the threshold were accepted, while projects above the threshold were rejected. If a project was rejected, the profits and losses were forfeited, and the remaining accepted profits and losses were summed. Final results showed the simple Logistic Regression blend of the individual Logistic Regression, Random Forest and Boosted Tree models improved profits the most. The 95% confidence interval for these improvements was between `r best.fin %>% filter(method == "simp.log") %>% .$lower_bound_95CI - 100`% and `r best.fin %>% filter(method == "simp.log") %>% .$upper_bound_95CI - 100`% using a probability threshold of `r best.t` (approximately `r ((simp.l %>% filter(mean.iter>best.t) %>% nrow)/nrow(simp.l)*100) %>% round(1)`% of projects). 
 
-These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending had been applied minimally to cost estimation previously, and past research had favoured Linear Regression, Neural Networks and CBR. Ensemble tree methods are advantageous because they provide insight into the model's structure while predicting at a similar level to Neural Networks. Next, a clear framework for how a business could tangibly improve profits was developed and proven successful. Previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. Lastly, the decision framework was progressed even further into a prototype application where user trust was addressed. Past surveys have reported that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. This was addressed by displaying intuitive plots of the model structure as well as a Nearest Neighbour graph of similar internal projects that provide an 'outside view'. Further work is required to test user confidence in the output.
+These results contribute significantly to the research in cost estimation in three ways: the applied methods, the decision framework, and the appeal to user trust. Ensemble tree methods and blending had been applied minimally to cost estimation previously, even though ensemble trees provide insight into model structure while predicting at a similar level to Neural Networks. Next, previous studies have verified predictive accuracy but stopped short of how the algorithm would affect decisions and what the measured benefits would be. This study presented a clear framework for how a business could improve profits by applying the algorithm. Lastly, a prototype application was developed where insight into the model structure encouraged user trust  and a Nearest Neighbour chart presented an ‘outside view’ based on the company’s projects. Past surveys have reported that despite decades of promising research in cost estimation, decision maker's still mainly use an 'inside view' during fee estimation. Further work is required to test user confidence in the output.
 
-Another topic identified for future research was to test how well managers estimate some numeric project input variables. In particular, time span, team size, total invoiced amount, and percentage of hours completed by professionals should be tested as these variables were calculated post project completion. Time span and total invoiced amount were discretised into wide categories, which should be easier for a manager to choose between. Initial estimates of input variables could also be kept in the database for future analysis.
+Another topic identified for future research was to test how well managers estimate some numeric project input variables. In particular, time span, team size, total invoiced amount, and percentage of hours completed by professionals should be tested as these variables were calculated post project completion. Time span and total invoiced amount were discretised into wide categories, which should be easier for a manager to choose between.
 
-Overall, this work has successfully built a mathematical blend of Logistic Regression, Random Forests, and Boosted Tree models, built on a consulting company's internal project data. This blended model can predict whether a project will be profitable or not and in a reasonable decision framework, can guide managers in rejecting financially risky projects and improving profitability of the business.
+Overall, this work has successfully built a mathematical blend of Logistic Regression, Random Forests, and Boosted Tree models, from a consulting company's internal project data. This blended model can predict whether a project will be profitable or not and in a reasonable decision framework, can guide managers in rejecting financially risky projects and improving profitability of the business.
     
+# Appendix
+
+Example results from a single model from each method. This is broken into the three main types of methods that were trialled:
+
+1. Regression models
+2. Classification models
+3. Blended classification models
+
+## Regression models
+
+ANOVA Linear Regression and Random Forests were applied to profitability as a regression problem.
+
+### ANOVA regression
+
+Example summary of model built with core variables only:
+```{r}
+
+all8a = read.csv("all8a.csv")[,-1]
+
+#function below outputs summary of model
+final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
+        
+        summary.tests = matrix(NA, nrow = no.tests, ncol = 3)
+        
+        for(i in 1:no.tests){
+        
+        if(core == FALSE){
+        samp = sample.int(nrow(df), 1)                        
+        #create sample df - use all variables that are complete from a sample row of data
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol',
+                                  'code.client', 'code.contact')]
+        variables = vars
+        } else{
+                variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
+                              'no.users', 'pc.pro', 'Business')
+        }
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(j in 1:length(variables)){
+                formula = paste(formula, variables[j], sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'pc.pro' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*pc.pro', sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'code.client' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*code.client', sep= " + ")
+        }
+        
+        if('JD.Second' %in% variables &
+           'no.users' %in% variables){
+                formula = paste(formula, 'JD.Second*no.users', sep= " + ")
+        }
+        
+        samp_size = floor(0.75*nrow(reduced))
+        create.train = base::sample.int(nrow(reduced), samp_size)
+        train.df = reduced[create.train,]
+        test.df = reduced[-create.train,]
+
+        cats = c('code.client', 'code.contact', 'JD.Second', 'Business', 'majority.pos')
+        for(k in seq_along(cats)){
+                if(cats[k] %in% variables){
+                test.df = test.df[test.df[,cats[k]] %in% unique(train.df[,cats[k]]),]
+        }
+        }
+
+        final = aov(as.formula(formula), data = train.df)
+        
+        fit= summary(final)
+        
+        }
+
+        return(fit)
+}
+
+final.output(df=all8a, no.tests = 1, core = TRUE)
+
+```
+
+Example summary of model built with all variables. Note that each model used a subset of all variables based on the available variables for a randomly selected project:
+
+```{r}
+
+final.output(df=all8a, no.tests = 1, core = FALSE)
+
+```
+
+
+### Random Forest
+
+Example summary of model built with core variables only:
+
+```{r}
+
+final.rf.output<- function(df=all8a, no.tests = 50, core = TRUE) {
+        
+        summary.tests = matrix(NA, nrow = no.tests, ncol = 3)
+        
+        for(i in 1:no.tests){
+        
+        if(core == FALSE){
+        samp = sample.int(nrow(df), 1)                        
+        #create sample df - use all variables that are complete from a sample row of data
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol')]
+        variables = vars
+        } else{
+                variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
+                              'no.users', 'pc.pro', 'Business')
+        }
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        if('code.client' %in% variables){
+        sample = factor(sample(unique(reduced$code.client),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.client %in% sample,]
+
+        reduced$code.client= factor(reduced$code.client)
+        }
+        
+        if('code.contact' %in% variables){
+        sample1 = factor(sample(unique(reduced$code.contact),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.contact %in% sample1,]
+
+        reduced$code.contact= factor(reduced$code.contact)
+        }
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(j in 1:length(variables)){
+                formula = paste(formula, variables[j], sep= " + ")
+        }
+        
+        
+        samp_size = floor(0.75*nrow(reduced))
+        create.train = base::sample.int(nrow(reduced), samp_size)
+        train.df = reduced[create.train,]
+        test.df = reduced[-create.train,]
+
+        cats = c('code.client', 'code.contact', 'JD.Second', 'Business', 'majority.pos')
+        for(k in seq_along(cats)){
+                if(cats[k] %in% variables){
+                test.df = test.df[test.df[,cats[k]] %in% unique(train.df[,cats[k]]),]
+        }
+        }
+
+        final = randomForest(as.formula(formula), data= train.df, mtry=5,ntree=500, importance=FALSE)
+        
+
+        
+        }
+        return(final)
+}
+
+rf.core <- final.rf.output(df=all8a, no.tests = 1, core = TRUE)
+
+print(rf.core)
+getTree(rf.core, 1) %>% head(20)
+```
+
+
+All variables:
+
+```{r}
+rf.all <- final.rf.output(df=all8a, no.tests = 1, core = FALSE)
+
+print(rf.all)
+getTree(rf.all, 1) %>% head(20)
+
+```
+
+## Classification models
+
+Logistic Regression, Random Forests, Boosted Trees, Naïve Bayes, and Bayesian Networks were applied to profitability prediction as a classification problem (will a project be profitable or not?)
+
+### Logistic Regression
+
+Example summary output imputed data:
+
+```{r}
+
+# load imputed data
+all10mice_f = read.csv("all10mice_May16.csv")[,-1]
+
+
+#function for running models
+test.roc <- function(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "log",
+                     extra.var = NULL, mult = 1, x.folds = 10){
+        
+        auc<- rep(list(rep(0, length(dfs))), length(dfs))
+        colours <- topo.colors(x.folds*mult)
+
+
+        for(i in 1:length(dfs)){
+                df = get(dfs[i])
+                
+                # mlsto is spinning errors, get rid of
+                df = df[, !(names(df) %in% 'mlsto')]
+                set.seed(seed)
+                
+                # create f.rpdol
+                df$f.rpdol <- as.factor(df$b.rpdol)
+                levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <- "profit"
+                levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <- "loss"
+                
+                #set up 10 fold cv using caret function
+                folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+                #now have folds[[1]] through folds[[10]] list of rows to exclude
+                
+                #for Appendix just want one fold
+                folds <- folds[[1]]
+                
+                if(mult > 1){
+                        for(k in 2:mult){
+                                set.seed(sample(1:1000,1))
+                                folds.temp = createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+                                folds = append(folds, folds.temp)
+                        }
+                }
+                
+                
+                
+                #if extra.var not found in names(df), change to NULL
+                if(!is.null(extra.var)){
+                        if(!(extra.var %in% names(df))) extra.var = NULL
+                }
+
+                
+                #define formula for algorith methods, either rf, log, boost
+                
+                if(nrow(df) == 2364){
+                        if(is.null(extra.var)){
+                                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+                                
+                        }}
+                
+                if(method %in% 'boost') {
+                        #no JD.Second
+                        formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+
+                }
+                
+                if(method %in% 'naiive') {
+                        formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type + JD.Second"
+
+                }
+                
+                        
+                        #turn predictors and response into 'ordered' variables for roc() to work
+                        test<- df[folds,]
+                        levels(test$f.rpdol) <- c('profit', 'loss')
+                        test$f.rpdol <- ordered(test$f.rpdol)
+                        
+                        
+                        if(method %in% 'rf'){
+                                fit <- randomForest(as.formula(formula), data = df[-folds,], 
+                                            mtry = mtrys[i], ntree = 1000)
+                                pred <- predict(fit, test, type = "prob")
+                                pred <- pred[,2]
+                                
+                        }
+                        
+                        if(method %in% 'log'){
+                                fit<- glm(as.formula(formula), 
+                                          data = df[-folds,], family = binomial())
+                                pred <- predict(fit, test,
+                                                type = "response")
+                        } 
+                        if(method %in% 'boost'){
+                                fit <- gbm(as.formula(formula), data = df[-folds,],
+                                           distribution = "bernoulli", n.trees = 10000,
+                                           shrinkage = 0.001, interaction.depth = 5,
+                                           n.minobsinnode = 20)
+                                
+                                pred <- predict(fit, test, n.tree = 10000, type = "response")
+                        }
+                        
+                        if(method %in% 'naiive'){
+                                fit<- naiveBayes( as.formula(formula), df[-folds,])
+                                pred <- predict(fit, test, type = 'raw')
+                                pred<- pred[,2]
+                        }
+
+                        
+                        #pROC
+                        pred.p <- pROC::roc(test$f.rpdol, pred)
+                        
+                        if (i == 1) {
+                        plot.roc(pred.p, col = colours[i], print.thres = F)
+                        
+                        } else{
+                        plot.roc(
+                        pred.p, col = colours, add = TRUE , print.thres = F)
+                        }
+                        
+                        auc<- auc(pred.p)
+                        names(auc) = method
+                        
+                        
+
+                
+        }
+        
+        assign("auc.func", auc, envir = .GlobalEnv)
+        assign("formula", formula, envir = .GlobalEnv)
+        return(fit)
+       
+}
+
+Log.Reg <- test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "log",
+                     extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+summary(Log.Reg)
+
+```
+
+### Random Forest
+
+```{r}
+
+Rand.F <- test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "rf",
+                     extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+Rand.F
+summary(Rand.F)
+
+```
+
+### Boosted Trees
+
+```{r}
+
+Boost.T <- test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "boost",
+                     extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+# Summary of the first tree in the boosted tree
+pretty.gbm.tree(Boost.T) %>% kable
+
+summary(Boost.T)
+
+```
+
+
+### Naive Bayes
+
+```{r}
+
+Naive <- test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "naiive",
+                     extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+Naive
+
+```
+
+### Bayesian Network
+
+[@Genie]
+
+## Blended Models
+
+6 different methods for blending were applied. Three were simple and 3 were complex as listed below:
+Simple:
+
+* Averaging
+* Logistic Regression
+* Boosted Trees
+
+Complex:
+
+* Logistic Regression
+* Boosted Trees 
+* Random Forests
+
+
+### Simple Average
+
+```{r}
+
+if(.Platform$OS.type == 'windows'){
+
+        source("C:/Users/n9232371/Documents/github/consult/functions.R")
+} else{
+
+        source("/Users/yam/Documents/github/consult/functions.R")
+
+}
+
+df.blend <- readRDS("dfblend.rds")
+
+iter.auc <- function(mult =1, x.folds.iter = 5, 
+                     methods = c("simp.log"),
+                     df.iter = df.blend) {
+        
+        #create test and train set: 0.75/0.25
+        pred.list <- vector(mode = "list", length = length(methods))
+        names(pred.list) = methods
+        
+        #create model averaged column
+        if("average" %in% methods){
+        df.iter = mutate(df.iter, model.av = (log + rf + boost)/3) 
+        }
+        
+        #set up 10 fold cv using caret function
+        folds <- createFolds(df.iter$f.rpdol, k = x.folds.iter, list = T, returnTrain = F)
+        #now have folds[[1]] through folds[[10]] list of rows to exclude
+        folds <- folds[[1]]
+        
+                train = df.iter[-folds,]
+                test = df.iter[folds,]
+                
+                if ("simp.log" %in% methods) {
+                        print("simp.log")
+                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost,
+                                   data = train,
+                                   family = binomial())
+                        
+                        pred <- predict(fit, test, type = "response")
+                        pred.list[["simp.log"]] = rbind(pred.list[["simp.log"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                        
+                }
+                
+                if ("simp.boost" %in% methods) {
+                        print("simp.boost")
+                        fit <- gbm(b.rpdol ~ norm.log + norm.rf + norm.boost, data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 6,
+                                   n.minobsinnode = 10)
+                        
+                        pred <- predict(fit, test, n.tree = 6000, type = "response")
+                        pred.list[["simp.boost"]] = rbind(pred.list[["simp.boost"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                        
+                }
+
+                
+                if ("orig.log" %in% methods) { 
+                        print("orig.log")
+                        pred <- test$log
+                        pred.list[["orig.log"]] = rbind(pred.list[["orig.log"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                        
+                }
+                
+                if ("orig.rf" %in% methods) { 
+                        print("orig.rf")
+                        pred <- test$rf
+                        pred.list[["orig.rf"]] = rbind(pred.list[["orig.rf"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                        
+                }
+                
+                if ("orig.boost" %in% methods) { 
+                        print("orig.boost")
+                        pred <- test$boost
+                        pred.list[["orig.boost"]] = rbind(pred.list[["orig.boost"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                        
+                }
+                
+                if ("average" %in% methods) {
+                        print("average")
+                        pred <- test$model.av
+                        pred.list[["average"]] = rbind(pred.list[["average"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                }
+                
+                if ("FWLS" %in% methods) {
+                        print("FWLS")
+                        fit <- glm(f.rpdol ~ norm.log + norm.rf + norm.boost + b.timespan.cbrt*norm.log + b.inv.log*norm.log + b.inv.log*norm.rf + Business*norm.boost + JD.Second + no.users,
+                                   data = train,
+                                   family = binomial())
+                        pred <- predict(fit, test, type = "response")
+                        pred.list[["FWLS"]] = rbind(pred.list[["FWLS"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                }
+                
+                if ("comp.boost" %in% methods) {
+                        print("comp.boost")
+                        fit <- gbm(b.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost, 
+                                   data = train,
+                                   distribution = "bernoulli", n.trees = 6000,
+                                   shrinkage = 0.0005, interaction.depth = 3,
+                                   n.minobsinnode = 10)
+                        
+                        pred <- predict(fit, test, n.tree = 6000, type = "response")
+                        pred.list[["comp.boost"]] = rbind(pred.list[["comp.boost"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                }
+                
+                if ("comp.rf" %in% methods) {
+                        print("comp.rf")
+                        fit <- randomForest(f.rpdol ~ b.timespan.cbrt + no.users + b.inv.log + Business + JD.Second + norm.log + norm.rf + norm.boost,
+                                            data = train, mtry = 3, 
+                                            ntree = 1000, importance = TRUE
+                        )
+                        pred <- predict(fit, test, type = "prob")
+                        pred <- pred[, 2]
+                        pred.list[["comp.rf"]] = rbind(pred.list[["comp.rf"]],
+                                                        data.frame("index" = folds,
+                                                                   "pred" = pred,
+                                                                   "iteration" = paste("iter",ceiling(x.folds.iter), sep = "")))
+                }
+                
+                
+        #pROC
+                        pred.p <- pROC::roc(test$f.rpdol, pred)
+                        
+                        plot.roc(pred.p, col = "darkblue", print.thres = F)
+                        
+                        auc<- auc(pred.p)  
+                        assign("auc.func", auc, envir = .GlobalEnv)
+
+        
+        return(fit)
+        
+}
+
+simp.av <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("average"),
+                     df.iter = df.blend)
+auc.func
+
+```
+
+
+### Logistic Regression
+
+#### Simple Blend
+
+```{r}
+
+simp.LR <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("simp.log"),
+                     df.iter = df.blend)
+auc.func
+summary(simp.LR)
+
+```
+
+
+#### Complex Logistic Regression Blend
+
+```{r}
+complex.LR <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("FWLS"),
+                     df.iter = df.blend)
+auc.func
+summary(complex.LR)
+
+```
+
+### Boosted Trees 
+
+#### Simple Blend
+
+```{r}
+simp.boost <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("simp.boost"),
+                     df.iter = df.blend)
+auc.func
+summary(simp.boost)
+
+# Summary of the first tree in the boosted tree
+pretty.gbm.tree(simp.boost) %>% kable
+
+```
+
+#### Complex Blend
+
+```{r}
+comp.boost <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("comp.boost"),
+                     df.iter = df.blend)
+auc.func
+summary(comp.boost)
+
+# Summary of the first tree in the boosted tree
+pretty.gbm.tree(simp.boost) %>% kable
+
+```
+
+### Random Forest Complex Blend
+
+```{r}
+comp.rf <- iter.auc(mult =1, x.folds.iter = 5, 
+                     methods = c("comp.rf"),
+                     df.iter = df.blend)
+auc.func
+comp.rf
+summary(comp.rf)
+
+
+```
+
+
 
 # References
 
