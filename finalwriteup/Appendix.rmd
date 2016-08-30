@@ -1,6 +1,12 @@
 ---
 title: "Appendix"
-output: word_document
+output:
+  word_document:
+    reference_docx: mystyles.docx
+  html_document: default
+bibliography: Library.bib
+csl: apa.csl
+
 ---
 
 ```{r, echo=FALSE, include=FALSE}
@@ -410,6 +416,7 @@ Naive
 
 ### Bayesian Network
 
+[@Genie]
 
 ## Blended Models
 
