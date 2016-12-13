@@ -1,0 +1,846 @@
+---
+title: "clusters"
+output: word_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.1/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('reshape2',lib='C:/Progra~1/R/R-3.2.1/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+library('ggbiplot',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('RcmdrPlugin.BCA',lib='C:/Progra~1/R/R-3.2.1/library')
+# library('FNN', lib='C:/Progra~1/R/R-3.2.1/library')
+# library('caret', lib='C:/Progra~1/R/R-3.2.1/library')
+
+library(devtools)
+library('ggbiplot')
+library('fpc')
+library('vegan')
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+library('party')
+library('dendextend')
+library('FNN')
+library('caret')
+
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
+all7c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7c.csv')[,-1]
+# all7c<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7c.csv')[,-1]
+all7c$Post.Code<- as.factor(all7c$Post.Code)
+
+```
+
+Cluster exploration!!
+
+time to have a look at if some of these variables with many many categories can be simplified
+
+Remaining categories include:
+
+Full:
+
+inv.mlsto
+timespan
+no.users
+Discipline
+pc.pro
+client.totinv
+code.director
+Num.disc
+Business
+Biz.type
+
+Many NA:
+
+code.contact
+code.client
+Project.Value
+JD.Second
+Post.Code
+code.ProjEng
+Billing.Type
+majority.pos
+pc.majpos
+
+
+
+What kind of clusters are you looking for? Within the numeric variables:
+
+```{r, include=FALSE}
+all7c[,!sapply(all7c, is.factor)] %>% colnames
+all7d[,!sapply(all7d, is.factor)] %>% colnames
+
+```
+
+
+Numeric variables in reduced dataset are: inv.mlsto, timespan, no.users, pc.pro, client.totinv, Num.disc, Project.Value, pc.majpos
+
+Numeric variables worth considering in full dataset: Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto, cost.mlsto, 
+
+So, lets choose:
+
+* inv.mlsto
+* timespan
+* no.users
+* pc.pro
+* client.totinv
+* Num.disc
+* Num.days
+* mean.peeps
+* hours.perday
+* balance.mlsto
+* hrs.mlsto
+* cost.mlsto
+
+Many NA - do second
+* pc.majpos
+* Project.Value
+
+Before clustering, need to standardise variables, and have a look at 'normality' of other variables
+
+```{r var_check, include=FALSE}
+
+# #Q-Q plot of each variable
+# clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+#                          Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+#                          cost.mlsto, pc.majpos, return.pdol)
+# 
+# #get rid of zeroes for log transform
+# 
+# clust[clust$timespan ==0,]$timespan <- 1
+# clust[clust$pc.pro ==0,]$pc.pro <- 5
+# clust[clust$hours.perday ==0,]$hours.perday <- .1
+# clust[clust$hours.perday ==0,]$hours.perday <- .1
+# clust[clust$balance.mlsto ==0,]$balance.mlsto <- 1
+# clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
+# clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
+# clust[clust$return.pdol ==0,]$return.pdol <- .01
+# 
+# for(i in 1:ncol(clust)){
+# qqPlot(clust[,i],
+#        main=colnames(clust)[i])
+# }
+# 
+# #qqplots for log of each variable
+# for(i in 2:ncol(clust)+1){
+# qqPlot(clust[,i] %>% log,
+#        main=colnames(clust)[i])
+# }
+# 
+# #qqplots for sqrt of each variable
+# for(i in 2:ncol(clust[,-1])+1){
+# qqPlot(clust[,i] %>% sqrt,
+#        main=colnames(clust)[i])
+# }
+# 
+# #density plots - plain variables
+# for(i in 1:ncol(clust)){
+# print(
+#         ggplot(clust, aes_string(x=colnames(clust[i]))) + geom_histogram(aes(y=..density..))
+#         )
+# }
+# #density plots - log transformed variables
+# clust.log<- log(clust)
+# for(i in 1:ncol(clust.log)){
+#         print(
+#                 ggplot(clust.log, aes_string(x=colnames(clust.log[i]))) + geom_histogram(aes(y=..density..))
+#                 )
+# }
+# 
+# #plot sqrt of timespan
+# clust$timespan <- clust$timespan %>% sqrt
+# ggplot(clust, aes_string(x='timespan')) + geom_histogram(aes(y=..density..))
+
+```
+
+taking the log worked for:
+* cost.mlsto, hrs.mlsto, hours.perday, Num.days, client.totinv, no.users, inv.mlsto
+* sqrt of timespan
+
+so we end up with a numeric data set with the above variables log transformed.
+Then scale each by subtracting the mean of each variable and then dividing by the sd of each variable.
+
+```{r clust final, include=FALSE}
+clust<- all7c %>% select(mlsto, inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, return.pdol)
+
+#get rid of zeroes for log transform
+
+clust[clust$timespan ==0,]$timespan <- 1
+clust[clust$hours.perday ==0,]$hours.perday <- .1
+clust[clust$hrs.mlsto ==0,]$hrs.mlsto <- 1
+clust[clust$cost.mlsto ==0,]$cost.mlsto <- 1
+
+#take log of all variables to be logged in a for loop
+logged<- c('cost.mlsto', 'hrs.mlsto', 'hours.perday', 'Num.days', 'client.totinv',
+           'no.users', 'inv.mlsto')
+for(i in 1:length(logged)){
+        clust[,logged[i]]<- clust[,logged[i]] %>% log
+}
+clust$timespan<- sqrt(clust$timespan)
+
+#now to standardise
+clust<- cbind(scale(clust[,-1]) %>% as.data.frame, 'mlsto'=clust$mlsto)
+```
+
+Now to do hierarchical clustering
+
+```{r hierarch, include=FALSE}
+
+#Ward's clustering
+
+# x<- dist(clust %>% select(-mlsto), method = 'euclidean')
+# fit<- hclust(x, method = 'ward.D2')
+# plot(fit)
+# 
+# rect.hclust(fit, k=5, border='red')
+#5 clusters looks pretty good
+
+#try horizontal dend with branches coloured for 8 clusters - very slow
+# dend<- fit %>% as.dendrogram
+# dend %>% color_branches(k=8) %>% plot(horiz=T)
+# rect.dendrogram(dend, k=8, horiz=T)
+
+#how many points in each cluster?
+# clust$groups<- cutree(fit,k=5)
+# table(clust$groups)
+
+
+
+```
+
+Now look at properties of groups using k means clustering
+
+```{r kmeans, include=FALSE}
+
+# k1<- kmeans(clust %>% select(-groups, -mlsto), 5)
+# k1.centres<- k1$centers %>% as.data.frame
+# k1.centres$group<- rownames(k1.centres)
+# k1.melt<- melt(k1.centres)
+# k1.melt$group<- k1.melt$group %>% as.factor
+# ggplot(k1.melt, aes(x=variable, y= value, fill=variable)) + geom_bar(stat='identity', position='dodge')+
+#         facet_wrap(~group) +
+#         theme(axis.text.x=element_text(angle=45,hjust=1))
+# 
+# #try plotting means of actual values
+# 
+# all7c$groups<- k1$cluster
+# kmeans.plot<- all7c %>% select(inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+#                          Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+#                          cost.mlsto, return.pdol, groups)
+# all7c.plot<- ddply(kmeans.plot, .(groups), numcolwise(mean))
+# all7c.plot$groups<- rownames(all7c.plot)
+# k2.melt<- melt(all7c.plot)
+# 
+# #summary means of all numeric variables in 5 clusters
+# clust.summary<- all7c.plot %>% select(-groups) %>% round(2)
+# tab<- table(all7c$groups) %>% prop.table %>% as.data.frame
+# bal<- sum(all7c$balance.mlsto)
+# hrs<-  sum(all7c$hrs.mlsto)
+# clust.summary$pc.jobs<- round( tab[,2]*100, 1)
+# clust.summary$bal.pc<- ddply(all7c, .(groups), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
+#         select(2)
+# clust.summary$hrs.pc<- ddply(all7c, .(groups), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
+#         select(2)
+# 
+# clust.summary<- clust.summary[,c(1,12,10,11, 13, 9,2,7,6,3,4,8,5,14:16)]
+# 
+# # add medians
+# all7c.med<- ddply(kmeans.plot, .(groups), numcolwise(median))
+# 
+# all7c.med<- all7c.med[, c(2,13,11,12,14,10,3,8,7,4,5,9,6)]
+
+
+```
+
+
+Very interesting, now want to optimise number of clusters- refer wards tutorial
+
+```{r optimise clustnum,include=FALSE}
+
+
+#try clustering a low number of numeric variables, trialling iffy ones to see which ones are good for clustering
+# clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+#                                       hrs.mlsto), 2, 20, iter= 100)
+# plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# client.totinv indicating about 4 clusters
+# Num.days - good, indicating 18 custers
+# hrs.mlsto - ok, heavy dip, good at about 17 clusters
+# pc.pro - 5 groups good, still iffy
+# mean.peeps - good at about 4 clusters
+# Num.disc - ok, inidicating 12 groups
+# timespan: not good for clustering
+# no.users: not good for clustering
+# hours.perday: no good for clustering
+
+## try out all iffy variables together, eliminate duds
+# clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+#                                       client.totinv, Num.days, hrs.mlsto, pc.pro, mean.peeps,
+#                                       Num.disc), 2, 20, iter= 100)
+# plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# # all together, no good
+# # smaller subset of variables I am most interested in that still works for clustering:
+# 
+# clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto, return.pdol,
+#                                       hrs.mlsto
+#                                       ), 2, 20, iter= 100)
+# plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+# 
+# # 17 clusters
+# # Cluster cohesion: create plots of SSE index (distance within clusters - sum of squared error) 
+# # then calinksi (index of cluster homogeneity and distance where higher number is better)
+# # calinski: between cluster distance/within cluster distance
+# ind.plot<- melt(clust.km$results)
+# ggplot(ind.plot %>% filter(Var1 == 'SSE'), aes(x=Var2, y=value, group=1)) + 
+#         geom_line( ) +
+#         theme(axis.text.x=element_text(angle=45,hjust=1))
+# ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) + 
+#         geom_line( )+
+#         theme(axis.text.x=element_text(angle=45,hjust=1))
+# 17 clusters should be good
+
+
+```
+
+Analysis shows that inv.mlsto, balance.mlsto, return.pdol, and hrs.mlsto should be used for clustering and that 17 clusters is ideal.
+I'm not completely happy with the clustering.
+I think I should now add a new variable: inv.mlsto x return.pdol
+This will give a 'success' scale, weighing large jobs even with a smaller return.pdol as quite good and tiny jobs with a good return.pdol as average to low.
+
+this means I will need to check normality, scale the variable before adding it to clust
+
+```{r new var, include=FALSE}
+#new variable for all7c - success
+# success= return.pdolxinv.mlsto
+
+all7c<- transform(all7c, suc= inv.mlsto*return.pdol)
+# all7c$suc %>% summary
+
+# all7c %>% arrange(-suc) %>% head
+
+qqPlot(all7c$return.pdol,
+       main='success')
+
+qqPlot(sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)}))
+
+#density plots - plain variables
+
+ggplot(all7c, aes_string(x='inv.vs.cost')) + geom_histogram(aes(y=..density..))
+
+#density plots - log transformed variables
+
+trial<- (sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)})) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+mean(trial$var)
+sd(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+# ggplot still looks bimodal after scaling
+
+## conclusion - lets take neglog of suc and scale it, add it to clust
+
+clust$suc<- sapply(all7c$suc, function(x){sign(x)*log(abs(x) + 1)})
+clust$suc<- clust$suc/sd(clust$suc)
+
+## should we make return.pdol bimodal??
+math.cbrt <- function(x) {
+        sign(x) * abs(x)^(1/3)
+}
+qqPlot(all7c$return.pdol %>% math.cbrt,
+       main='success')
+trial<- (all7c$return.pdol %>% math.cbrt) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+#take cube root of return.pdol and scale it to clust
+
+clust$return.pdol<- math.cbrt(all7c$return.pdol)
+clust$return.pdol<- all7c$return.pdol/sd(all7c$return.pdol)
+
+## should we make balance.mlsto bimodal??
+
+qqPlot(all7c$balance.mlsto,
+       main='balance')
+qqPlot(sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)}),
+       main='balance')
+trial<- (sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)})) %>% as.data.frame
+colnames(trial)[names(trial) %in% '.']<-'var'
+ggplot(trial, aes_string(x='var')) + geom_histogram(aes(y=..density..))
+skewness(trial$var)
+kurtosis(trial$var)
+trial$scale.var<- trial$var/sd(trial$var)
+ggplot(trial, aes_string(x='scale.var')) + geom_histogram(aes(y=..density..))
+#take cube root of return.pdol and scale it to clust
+
+clust$balance.mlsto<- sapply(all7c$balance.mlsto, function(x){sign(x)*log(abs(x) + 1)})
+clust$balance.mlsto<- clust$balance.mlsto/sd(clust$balance.mlsto)
+
+```
+
+
+Repeat clustering with new suc and revised bi-modal return.pdol
+
+```{r new successvar, echo=FALSE}
+
+#investigate new variable a little
+
+clust.km<- cascadeKM(clust %>% select(inv.mlsto, balance.mlsto), 2, 30, iter= 100)
+plot(clust.km, sortg = TRUE, grpmts.plot = TRUE)
+
+# 11 clusters
+# Cluster cohesion: create plots of SSE index (distance within clusters - sum of squared error) 
+# then calinksi (index of cluster homogeneity and distance where higher number is better)
+# calinski: between cluster distance/within cluster distance
+ind.plot<- melt(clust.km$results)
+ggplot(ind.plot %>% filter(Var1 == 'SSE'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( ) +
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+ggplot(ind.plot %>% filter(Var1 == 'calinski'), aes(x=Var2, y=value, group=1)) + 
+        geom_line( )+
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+
+# 16 clusters should be good
+
+# have a look at dendrogram with 16 clusters
+
+x<- dist(clust %>% select(inv.mlsto, balance.mlsto), 
+         method = 'euclidean')
+fit<- hclust(x, method = 'ward.D2')
+plot(fit)
+
+rect.hclust(fit, k=16, border='red')
+
+#looks good!
+
+```
+
+now want 16 clusters, based on k means optimisation, have a look at average characteristics
+
+```{r, echo=FALSE}
+
+k1<- kmeans(clust %>% select(inv.mlsto, balance.mlsto), 15)
+
+#try plotting means of actual values
+
+all7c$group.num<- k1$cluster
+kmeans.plot<- all7c %>% select(inv.mlsto, timespan, no.users, pc.pro, client.totinv,
+                         Num.disc, Num.days, mean.peeps, hours.perday, balance.mlsto, hrs.mlsto,
+                         cost.mlsto, return.pdol, suc, group.num)
+all7c.plot<- ddply(kmeans.plot, .(group.num), numcolwise(mean))
+all7c.plot$group.num<- rownames(all7c.plot)
+k2.melt<- melt(all7c.plot)
+
+#summary means of all numeric variables in 5 clusters
+clust.summary<- all7c.plot %>% select(-group.num) %>% round(2)
+tab<- table(all7c$group.num) %>% prop.table %>% as.data.frame
+bal<- sum(all7c$balance.mlsto)
+hrs<-  sum(all7c$hrs.mlsto)
+clust.summary$pc.jobs<- round( tab[,2]*100, 1)
+clust.summary$bal.pc<- ddply(all7c, .(group.num), summarise, bal.pc= round(sum(balance.mlsto)/bal*100, 1)) %>% 
+        select(2)
+clust.summary$hrs.pc<- ddply(all7c, .(group.num), summarise, hrs.pc= round(sum(hrs.mlsto)/hrs*100, 1)) %>% 
+        select(2)
+clust.summary$job.count<- table(all7c$group.num) %>% as.data.frame %>% select(Freq)
+
+clust.summary<- clust.summary %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto,
+                                         hrs.mlsto, hours.perday, timespan, Num.days, Num.disc,
+                                         no.users, pc.pro, mean.peeps, client.totinv, pc.jobs,
+                                         bal.pc, hrs.pc, job.count)
+
+# add medians
+all7c.med<- ddply(kmeans.plot, .(group.num), numcolwise(median)) %>% round(2)
+
+all7c.med<- all7c.med %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto, hrs.mlsto, hours.perday, timespan, Num.days, Num.disc, no.users, pc.pro, mean.peeps, client.totinv)
+
+clust.summary<- cbind(all7c.med %>% select(inv.mlsto, suc, return.pdol, cost.mlsto, balance.mlsto,
+                                     hrs.mlsto, hours.perday, timespan, Num.days, Num.disc,
+                                     no.users, pc.pro, mean.peeps, client.totinv),
+                      clust.summary %>% select(pc.jobs,bal.pc, hrs.pc, job.count))
+
+clust.summary$bal<- ddply(all7c, .(group.num), summarise, bal= round(sum(balance.mlsto), 1)) %>% 
+        select(2)
+
+#investigate clusters
+all7c[all7c$group.num == 12,] %>% select(inv.mlsto, suc, pc.majpos, majority.pos,
+                                         code.client, client.meaninv, code.director, code.ProjEng,
+                                         return.pdol, balance.mlsto, Year, timespan, pc.pro,
+                                         pc.director, JD.Second, Business, client.count, Discipline,
+                                         code.client, Billing.Type) %>% summary
+
+```
+
+Visualise confidence intervals in terms of 'success'
+
+```{r CI, echo=FALSE}
+
+# principal component analysis
+
+#add clust columns to all7c
+all7c$clust.inv<- clust$inv.mlsto
+all7c$clust.bal<- clust$balance.mlsto
+all7c$clust.cost<- clust$cost.mlsto
+all7c$clust.return<- clust$return.pdol
+all7c$clust.hours<- clust$hrs.mlsto
+all7c$clust.suc<- clust$suc
+
+
+#convert cluster groups to integer
+
+all7c$group.num<- as.integer(all7c$group.num)
+p<- prcomp(~clust.inv + clust.bal+ clust.cost, data=all7c, centre=T)
+# summary(p)
+biplot(p, xlabs = as.character(all7c$group.num))
+#putlers in-house biplot shows centroids
+# bpCent(p, clsAsgn = all7c$group.num, centroids=TRUE, xlabs = as.character(all7c$Business))
+
+##try ggbiplot
+
+#visualise clusters
+q<- ggbiplot(p, obs.scale = 1, var.scale = 1, 
+              groups = all7c$group.num %>% as.factor, ellipse = TRUE,
+             labels = all7c$group.num,
+              circle = TRUE)
+q <- q + scale_color_discrete(name = '')
+q <- q + theme(legend.direction = 'vertical', 
+               legend.position = 'right')
+q
+
+#visualise factors within clusters
+g<- ggbiplot(p, obs.scale = 1, var.scale = 1, 
+              groups = all7c$Business %>% as.factor(), ellipse = TRUE, 
+              circle = TRUE)
+g <- g + scale_color_discrete(name = '')
+g <- g + theme(legend.direction = 'vertical', 
+               legend.position = 'right')
+g
+
+#confusion matrix of groups vs. categorical variables
+#reorder cluster tag levels from most amount and neg to best
+all7c$group.num<- as.factor(all7c$group.num)
+levs<- data.frame('clust' = rownames(clust.summary), 'bal' = clust.summary$balance.mlsto)
+all7c$group.num <- factor(all7c$group.num, levels=levs[order(levs$bal),]$clust)
+
+#Business
+table(all7c$group.num, all7c$Business)
+#notes
+# only single NFP - combine to institution
+all7c[all7c$Business %in% 'NFP',]$Business<- 'institution'
+#combine person and friend
+all7c[all7c$Business %in% 'friend',]$Business<- 'person'
+#fabricator labelled manufactorer/supplier
+all7c[all7c$Business %in% 'fabricator',]$Business<- 'manufacturer/supplier'
+all7c[all7c$Business %in% 'membrane fabricator',]$Business<- 'manufacturer/supplier'
+#combine remedial building services to building services
+all7c[all7c$Business %in% 'remedial building service',]$Business<- 'building services'
+#combine gov and council
+all7c[all7c$Business %in% 'council',]$Business<- 'gov'
+all7c$Business<- droplevels(all7c$Business)
+
+#Biz.type
+table(all7c$group.num, all7c$Biz.type)
+#JD.Second table
+table(all7c$group.num, all7c$JD.Second)
+#combine JD.Second categories
+all7c$JD.Second<- as.character(all7c$JD.Second)
+#combine re-use (water) and recycled water
+all7c[all7c$JD.Second %in% 're-use (water)',]$JD.Second<- 'recycled water'
+#combine water cycle management and water management and water strategy and flood studies
+all7c[all7c$JD.Second %in% c('water cycle management', 'water strategy'),]$JD.Second<-
+        'water management'
+#combine apartments and townhouses and community housing
+all7c[all7c$JD.Second %in% c('townhouses','community housing','apartments'),]$JD.Second<- 'multi-dwelling'
+#combine childcare and community
+all7c[all7c$JD.Second %in% c('childcare', 'religious'),]$JD.Second<- 'community'
+#combine commercial shop and dining
+all7c[all7c$JD.Second %in% c('commercial shop','dining'),]$JD.Second<- 'dining/retail'
+all7c$JD.Second<- as.factor(all7c$JD.Second)
+all7c$JD.Second<- droplevels(all7c$JD.Second)
+
+#Biz.type
+table(all7c$group.num, all7c$Biz.type)
+```
+
+View counts of each category in each group as a heatmap
+
+Order groups by profitability and size
+
+```{r heatmaps, echo=FALSE}
+#function for heatmap
+
+heatmap<- function(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=FALSE){
+        
+        #order var levels by highest amount invoiced total
+        a = ddply(df, c(var), summarise, summ = sum(inv.mlsto))
+        df[,var] = factor(df[,var], levels= a[order(-a$summ),][,var]) 
+        
+        if(percentof_clust== FALSE){
+                #table with percentages within each category
+                tbl= round(prop.table(table(df[,clust],df[,var]),1)*100,2) %>% as.data.frame
+                p = ggplot(tbl, aes(x=Var2, y=Var1)) +
+                        geom_tile(aes(fill=Freq), colour = 'white') +
+                        scale_fill_gradient(low='white', high=colour, name = 'percent') + 
+                        labs(x='', y='', title= 'percentage of jobs in each cluster') +
+                        theme(axis.ticks=element_blank(),
+                              axis.text.x=element_text(angle=45,hjust=1))+
+                        scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0)) 
+        }
+        else{
+                #table with percentages within each cluster
+                tbl= round(prop.table(table(df[,clust],df[,var]),2)*100,2) %>% as.data.frame
+                p = ggplot(tbl, aes(x=Var2, y=Var1)) +
+                        geom_tile(aes(fill=Freq), colour = 'white') +
+                        scale_fill_gradient(low='white', high=colour, name = 'percent') + 
+                        labs(x='Profit measure', y='', title= 'percentage of jobs in each X-axis category') +
+                        theme(axis.ticks=element_blank(),
+                              axis.text.x=element_text(angle=45,hjust=1))+
+                        scale_x_discrete(expand = c(0, 0)) + scale_y_discrete(expand = c(0, 0))       
+        }
+        print(p)
+}
+
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'JD.Second', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Business', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Business', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Num.disc', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'majority.pos', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'majority.pos', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Billing.Type', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Discipline', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'Discipline', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.client', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.client', df=all7c, percentof_clust=TRUE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7c, percentof_clust=FALSE)
+heatmap(colour = 'deeppink3', clust = 'group.num', var = 'code.contact', df=all7c, percentof_clust=TRUE)
+
+```
+
+Say we are trying to retrieve the nearest neighbours.
+There will be two types of distances:
+
+* numerical nearest neighbours
+* categorical nearest neighbours
+
+Which numerical categories would we want to include in the nearest neighbour search?
+
+No NA:
+* inv.mlsto
+* timespan
+* no.users
+* Num.disc
+* pc.pro
+* client.totinv
+Discipline
+code.director
+Business
+Biz.type
+
+Many NA:
+
+* pc.majpos
+* Project.Value
+code.contact
+code.client
+JD.Second
+Post.Code
+code.ProjEng
+Billing.Type
+majority.pos
+
+Create reduced dataset and have a think about what you want to cluster against each otherim
+
+```{r final_var, include=FALSE}
+
+all7d<- all7c %>% select(mlsto, Year, inv.mlsto, timespan, no.users, Discipline, pc.pro, 
+                         client.totinv, code.director, 
+                         Num.disc, Business,
+                         Biz.type, code.contact, pc.majpos, dis.sc.mlsto
+                         code.client, Project.Value, JD.Second, Post.Code, code.ProjEng, 
+                         Billing.Type, majority.pos, return.pdol, cost.mlsto, hrs.mlsto, balance.mlsto)
+all7d$mlsto<- as.character(all7d$mlsto)
+
+write.csv(all7d,'all7d.csv')
+
+```
+
+Adjust inv.mlsto, cost.mlsto, balance.mlsto, for inflation!!!! 
+
+```{r, echo=FALSE}
+
+library('quantmod', lib= 'C:/Progra~1/R/R-3.2.2/library')
+getSymbols("CPIAUCSL", src='FRED') #Consumer Price Index for All Urban Consumers: All Items
+#[1] "CPIAUCSL"
+tail(CPIAUCSL)
+
+# make an df object of costs
+p<- data.frame('Year' = all7d$Year, 'inv.mlsto'= all7d$inv.mlsto, 'balance.mlsto' = all7d$balance.mlsto,
+               'cost.mlsto' = all7d$cost.mlsto, 'mlsto' = all7d$mlsto, 'dis.sc.mlsto'=all7d$dis.sc.mlsto)
+
+#calculate annual averave inflation since 2004
+avg.cpi <- apply.yearly(CPIAUCSL, mean)
+#ratio using 2014 as base year
+cf <- avg.cpi/as.numeric(avg.cpi['2014'])
+#create new cf column for date and extract year
+cf<- as.data.frame(cf)
+cf$Date<- rownames(cf)
+cf$Date<- cf$Date %>% as.Date()
+cf$Date<- format(cf$Date,"%Y")
+p<- merge(p, cf, by.x='Year', by.y= 'Date')
+#divide all dollar values by CPIAUCSL column
+p<- transform(p, adj.inv.mlsto = inv.mlsto/CPIAUCSL,
+          adj.balance.mlsto = balance.mlsto/CPIAUCSL,
+          adj.cost.mlsto = cost.mlsto/CPIAUCSL,
+          adj.dis.sc = dis.sc.mlsto/CPIAUCSL)
+#check
+s<- sample(1:nrow(all7d),10)
+p[s,]
+#replace existing all7d columns
+all7d<- merge(all7d, p %>% select(mlsto, adj.inv.mlsto, adj.balance.mlsto, adj.cost.mlsto, adj.dis.sc), by='mlsto')
+all7d<- all7d %>% select(-inv.mlsto, - balance.mlsto, -cost.mlsto, -dis.sc.mlsto)
+colnames(all7d)[names(all7d) %in% "adj.inv.mlsto"] <- "inv.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.balance.mlsto"] <- "balance.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.cost.mlsto"] <- "cost.mlsto"
+colnames(all7d)[names(all7d) %in% "adj.dis.sc"] <- "dis.sc.mlsto"
+
+write.csv(all7d, 'all7d.csv')
+
+```
+
+
+
+Retrieve nearest neighbour - numeric first
+
+```{r knn, echo=FALSE}
+#pretend you are predicting .. post code
+
+inv.knn<- function(df= all7d, predict= 'inv.mlsto', new.cases= c(1000), k=3){
+        invo.knn = knn(df[,predict], df[new.cases,predict],
+                df$pc.pro, k=k)
+        indices<- attr(invo.knn,  "nn.index")
+        #checkout the nearest neigbours!
+        df %>% slice(c(new.cases, indices[1,])) %>% return
+        
+}
+
+a<-inv.knn(df= all7d, predict= 'inv.mlsto', new.cases= 2000, k=3)
+
+
+```
+
+Retrieve nearest neighbour - categorical
+Need to create binary matrix!!
+
+```{r, echo=FALSE}
+# want to use the following cat variables for knn:
+# Discipline, Business, Biz.type, code.contact, code.client, JD.Second, Billing.Type
+# in order to use model.matrix, need to convert NA's to 'unknown' factor.
+
+#trial model.matrix function
+vars.vec<- c('Discipline','Business','Biz.type','code.contact', 'code.client', 'JD.Second', 'Billing.Type')
+
+binary.build<- function(vars= vars.vec, df= all7d){
+        options("contrasts")
+        #create final df bin.knn
+        bin.knn= NULL
+        #loop through each variable in vars vector
+        for(i in 1:length(vars.vec)){
+                temp = data.frame(df[, vars[i]])
+                colnames(temp)<- c(vars[i])
+                formula = paste('~',vars[i],'-1')
+                a= model.matrix( as.formula(formula), temp)
+                a= a[match(rownames(temp), rownames(a)),]
+                bin.knn= cbind(bin.knn,a)
+        }
+        
+        return(bin.knn)
+}
+
+knn.binary<- binary.build(vars= vars.vec, df= all7d)
+knn.binary<- as.data.frame(knn.binary)
+
+#NA values don't work in knn function so turn all NA into zeroes
+knn.binary[is.na(knn.binary)]<- 0
+knn.binary$pc.pro<- all7d$pc.pro
+knn.binary$mlsto<- all7d$mlsto
+
+
+```
+
+Have created binary matrix
+Turn into dataframe and then perform jaccard distance nearest neighbour
+
+```{r knn, echo=FALSE}
+#pretend you are predicting .. post code
+
+# First turn new case into giant binary dataframe using function from above
+new.case<- binary.build(vars= vars.vec, df= knn.binary %>% slice(2000))
+
+
+cat.knn<- function(df= all7d, nn.by= 'inv.mlsto', predict='pc.pro', case= c(1000), k=3, result.df= all7d){
+        invo.knn = knn(df[,nn.by], df[case,nn.by],
+                df[,predict], k=k)
+        indices= attr(invo.knn,  "nn.index")
+        dists= attr(invo.knn, 'nn.dist') %>% t %>% as.data.frame %>% round(2)
+        #checkout the nearest neigbours!
+        final = cbind(result.df %>% slice(c(indices[1,])), dists)
+        colnames(final)[names(final) %in% 'V1']<-'knn.dist'
+        
+        #final actions
+        assign('index', indices, envir=.GlobalEnv)
+        return(final)
+}
+
+bin<- knn.binary %>% select(-mlsto)
+b<- cat.knn(df= bin, nn.by= colnames(bin)[-length(colnames(bin))], predict = 'pc.pro', case= 60, k=5, result.df= all7d)
+
+
+```
+
+Combine two knn results
+
+```{r combine_knn, echo=FALSE}
+bin<- knn.binary %>% select(-mlsto)
+b<- cat.knn(df= bin, nn.by= colnames(bin)[!grepl('pc.pro', colnames(bin))], predict = 'pc.pro', case= 80, k=10, result.df= all7d)
+c<- inv.knn(df= b, predict= 'inv.mlsto', new.cases= 1, k=5) %>% slice(-1)
+c
+ #step 2 for user - option to sort by code.client?
+d<- b[b[,'code.contact'] %in% b[,'code.contact'][1], ]
+d
+e<- inv.knn(df= d, predict= 'inv.mlsto', new.cases= 1, k=5) %>% slice(-1)
+e
+
+head(all7d)
+
+```
+

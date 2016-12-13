@@ -1,0 +1,17 @@
+base
+plyr
+dplyr
+magrittr
+reshape2
+ggplot2
+survival
+lattice
+gbm
+randomForest
+caret
+pROC
+testthat
+purrr
+tidyr
+broom
+knitr

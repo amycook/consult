@@ -1,0 +1,374 @@
+---
+title: "R Notebook"
+output:
+  word_document: default
+  html_notebook: default
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('party')
+library('randomForest')
+library('RColorBrewer')
+library('pwr')
+library('scales')
+library(visdat)
+
+
+
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        # setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/report_data')
+}
+
+opts_chunk$set(fig.width=6.7, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE)
+```
+
+
+$odds = e^{\ln\  odds}$
+
+| Date    | Hours | Charge Amount (\$)| Cost Amount (\$)| Created By | Discipline | Job No. | Reconciled | Scope       |
+|---------|-------|---------------|-------------|------------|------------|---------|------------|-------------|
+| 2014/09/01 | 4     | 640           | 400         | P12        | Civil      | 1.2.300 | Yes        | Concept     |
+| 2014/09/03 | 4.5   | 720           | 450         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/03 | 2     | 480           | 320         | P34        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/08 | 7     | 1120          | 700         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/09 | 1     | 160           | 100         | P12        | Civil      | 1.2.300 | Yes        | Preliminary |
+| 2014/09/15 | 3     | 390           | 240         | P3         | Structural | 1.2.400 | Yes        | Site        |
+| ...     | ...   | ...           | ...         | ...        | ...        |         | ...        | ...         |\
+\\
+
+
+
+$Relative\ Profit_t = \frac{Profit_t}{\sum_{t = 1}^{n}\left|Profit_t\right|}$
+
+$$
+\begin{aligned}
+RMSE_b &= \textrm{baseline root mean squared error} \\
+n &= \textrm{number of data points} \\
+\widehat{y} &= \textrm{predicted values of the response variable} \\
+\bar y &= \textrm{mean 'return per dollar' for all projects} \\
+\end{aligned}
+$$
+
+$\Delta\ error = RMSE_b - RMSE$
+
+to losses of \$`r 156100 %>% format(digits = 2)`
+
+```{r}
+finance.plot = readRDS("plot_finance_100_4.rds" )
+
+finance.plot$method <- factor(finance.plot$method, 
+                                    levels=c("average", "simp.log","simp.boost",
+                                             "comp.boost","comp.rf", "FWLS","orig.log",
+                                             "orig.rf","orig.boost"))
+
+ggplot(finance.plot %>% filter(method == "average") %>% slice(43:63), 
+       aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) + 
+        geom_line() +
+        geom_point() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        theme(legend.position = "none", 
+              panel.background = element_rect(fill = 'grey95'),
+              panel.grid.minor = element_blank()) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Example Profit Curve for Simple Average Blended Model")
+
+```
+
+
+```{r reduced_violin, fig.height = 4.4, fig.width = 5.2, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Subsets of the data were used for Logistic Regression and randomForests in order to provide datasets without missing values.")}
+
+C1 = "darkred"
+C2 = "brown1"
+
+reduc.totAUC <- readRDS("reduc_df_auc.rds")
+
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(reduc.totAUC[[2]], reduc.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+reduc.totAUC = melt(reduc.totAUC)
+reduc.totAUC$sigdiff = ifelse(reduc.totAUC$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(reduc.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff), alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "white", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "white", 
+                     hjust = -.2, angle = 40, vjust = -.2, size = 3
+                     ) +
+        scale_fill_manual(values = c(C1, C2),
+                          name = "Significantly different from Boosted Trees") +
+        scale_colour_manual(values = c(C1, C2),
+                          name = "Significantly different from Boosted Trees") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 models of Each Method") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom")
+        
+
+        
+```
+
+```{r mice_violin, fig.height = 4.4, fig.width = 5.2, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.")}
+
+mice.totAUC <- readRDS("mice_df_auc.rds")
+
+#significant difference??
+index = c(1,3,4)
+pvals = data.frame("method" = c('log','rf','naiive'), 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(mice.totAUC[[2]], mice.totAUC[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+signif = pvals %>% filter(p_value < 0.05) %>% .$method
+mice.totAUC = melt(mice.totAUC)
+mice.totAUC$sigdiff = ifelse(mice.totAUC$L1 %in% signif, TRUE, FALSE)
+
+ggplot(mice.totAUC, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = sigdiff, colour = sigdiff), 
+                    alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "white", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "white", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
+        scale_fill_manual(values = c(C1, C2),
+                          name = "Significantly different from boosted trees") +
+        scale_colour_manual(values = c(C1, C2),
+                          name = "Significantly different from boosted trees") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 Models of Each Method - Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom", plot.title = element_text(size = rel(1)))
+```
+
+```{r all_violin, fig.height = 4.2, fig.width = 6, fig.cap = c("Combined violin plots comparing AUC results for each method predicting profit/loss using subsets of data vs. the full imputed data set.")}
+
+reduc.totAUC$Data_Source = "Original"
+mice.totAUC$Data_Source = "Imputed"
+combine.micer <- rbind(reduc.totAUC, mice.totAUC)
+
+combine.micer$Data_Source <- factor(combine.micer$Data_Source, 
+                                    levels=c("Original", "Imputed"))
+
+
+ggplot(combine.micer, aes(x= factor(L1), y= value)) +
+        geom_violin(aes(fill = Data_Source, colour = Data_Source)) +
+        # stat_summary(fun.y="mean", geom="point", colour = "gray60", shape =3) +
+        scale_fill_manual(values = c(C1, C2),
+                          name = "Data Source") +
+        scale_colour_manual(values = c(C1, C2),
+                          name = "Data Source") +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "Comparison of Original Data vs. Imputed Data") +
+        scale_x_discrete(labels = c("boost" = "Boosted Trees", 
+                         "log" = "Logistic Regression",
+                         "naiive" = "Naive Bayes", "rf" = "Random Forest")) +
+        theme(legend.position = "bottom")
+        
+        
+```
+
+```{r, fig.height = 3.8, fig.width = 5.5, fig.cap = c("Variable importance output from a Boosted Tree blended model. The results from the three best performing models were added as explanatory variables")}
+
+boost.varimp = readRDS("boostblend.rds")
+boost.varimp = add_rownames(boost.varimp)
+boost.varimp <- mutate(boost.varimp, rowname = revalue(rowname, 
+                                                       c("norm.log" = "log.pred",
+                                         "norm.rf" = "rf.pred",
+                                         "norm.boost" = "boost.pred")))
+# order levels
+boost.varimp$rowname <- factor(boost.varimp$rowname,
+                               levels= boost.varimp$rowname)
+
+#plot p-values
+ggplot(data=boost.varimp, aes(x=rowname, y=rel.inf)) +
+        theme(axis.text.x=element_text(angle=45,hjust=1),
+              panel.background = element_rect(fill = 'gray95')) +
+        geom_bar(stat='identity') +
+        labs(title = "Boosted Trees Variable Importance: Blended Model",
+             x ="", y = "Variable Importance Score")
+
+```
+
+
+```{r blend_violin, fig.height = 4.6, fig.width = 6, fig.cap = c("Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.")}
+
+auc.list <- readRDS("blend_auc2.rds")
+means = lapply(auc.list, mean) %>% unlist
+greater = means[means> means["orig.log"]] %>% names
+auc.melt = melt(auc.list)
+auc.melt$greater = ifelse(auc.melt$L1 %in% greater, TRUE, FALSE)
+
+
+ggplot(auc.melt, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = greater, colour = greater), 
+                    alpha = 0.8) + 
+        stat_summary(fun.y="mean", geom="point", colour = "white", 
+                     shape =4) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "white", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
+        theme(axis.text.x=element_text(angle=40,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 100 Blended Models of each Method") +
+        scale_x_discrete(labels = c("boost" = "BT Blend", 
+                         "log" = "FWLS", 
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR", 
+                         "rf" = "RF Blend",
+                         "simp.boost" = "Simple BT Blend",
+                         "simp.log" = "Simple LR Blend")) +
+        scale_fill_manual(values = c(C2, C1),
+                          name = "AUC Greater than Original Logistic Regression") +
+        scale_colour_manual(values = c(C2, C1),
+                          name = "AUC Greater than Original Logistic Regression") +
+        theme(legend.position = "bottom")
+
+
+```
+
+
+```{r, fig.height = 4.5, fig.width = 6, fig.cap = c("Violin plot illustrating the distribution of AUC values from the best three blending methods when predicting profit/loss. 150 models were built for each method to achieve a statistical power of 0.8.")}
+
+auc.150 = readRDS("blend_auc150.rds")
+
+index = c(2:3)
+pvals = data.frame("method" = names(auc.150)[c(2:3)], 'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]],
+                                  auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric }
+
+signif = pvals %>% filter(p_value<0.05) %>% .$method
+auc.150 = melt(auc.150)
+auc.150$signif = ifelse(auc.150$L1 %in% signif, TRUE, FALSE)
+
+
+ggplot(auc.150, aes(x= factor(L1), y= value)) + 
+        geom_violin(aes(fill = signif, colour = signif),
+                    alpha = .8) + 
+        stat_summary(fun.y = "mean", geom="point", 
+                     colour = "white", shape =3) +
+        stat_summary(aes(label = round(..y.., 3)), fun.y="mean",
+                     geom="text", colour = "white", size =3, 
+                     hjust = -.2, angle = 40, vjust = -.2
+                     ) +
+        theme(axis.text.x=element_text(angle=40,hjust=1)) +
+        labs(x = "Method", y = "Area Under Curve (AUC)",
+             title = "AUC Distribution from 150 Blended Models of Best Methods") +
+        scale_x_discrete(labels = c( 
+                         "average" = "Simple Average Blend",
+                         "orig.log" = "Orignal LR",
+                         "simp.log" = "Simple LR Blend")) +
+        scale_fill_manual(values = c(C2, C1),
+                          name = "AUC Significantly Greater than Original Logistic Regression") +
+        scale_colour_manual(values = c(C2, C1),
+                          name = "AUC Significantly Greater than Original Logistic Regression") +
+        theme(legend.position = "bottom") 
+
+
+
+```
+
+```{r profit_curve, fig.height = 4.7, fig.width = 5.4, fig.cap = c("Profit Curves summarising results from 100 models of 9 methods: 3 simple blends, 3 complex blends, and the original 3 best methods.")}
+
+finance.plot = readRDS("plot_finance_100_4.rds" )
+finance.plot$method <- factor(finance.plot$method, 
+                                    levels=c("average", "simp.log","simp.boost",
+                                             "comp.boost","comp.rf", "FWLS","orig.log",
+                                             "orig.rf","orig.boost"))
+
+ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) + 
+        # geom_point(alpha = 0.005, shape = 16, size = 1) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2) + 
+        geom_hline(yintercept = 0, colour = "darkgray", linetype = 1) +
+        stat_summary(fun.y = mean, 
+                     fun.ymin = function(x) mean(x) - 1.96*sd(x),
+                     fun.ymax = function(x) mean(x) + 1.96*sd(x),
+                     fill = "gray", geom= "ribbon", alpha = 0.7, colour = NA) +
+        stat_summary(fun.y = mean, geom="line") +
+        scale_y_continuous(breaks = seq(0,110, by = 20)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .2)) +  
+        theme(legend.position = "none",
+              panel.background = element_rect(fill = 'gray95')) +
+        labs(x = "Probability Threshold", 
+             y = "Ratio of Model Profit to Historical Profit (%)",
+             title = "Profit Curve for Blended and Individual Models") + 
+        facet_wrap(~method, 
+                   labeller = labeller( method = c("average" = "Simple Average Blend",
+                                       "orig.boost"= "Orig. Boosted Trees",
+                                       "orig.log" = "Orig. Logistic Regression",
+                                       "orig.rf" = "Orig. Random Forest",
+                                       "simp.log" = "Simple LR Blend",
+                                       "simp.boost" = "Simple BT Blend",
+                                       "comp.boost"= "Complex BT Blend",
+                                       "comp.rf"= "Complex RF Blend",
+                                       "FWLS" = "FWLS"
+                                       )))
+
+```
+
+```{r}
+miss <- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all9c.csv')
+
+miss <- rename(miss, Project_type = JD.Second,
+               Client_Business = Business,
+               Timespan_cat = b.timespan.cbrt,
+               Invoiced_cat = b.inv.log,
+               Team_size = no.users,
+               Loss_making = b.rpdol,
+               Client_inv = client.totinv.log, 
+               pc.majpos = pc.majpos.log)
+
+
+# summary(miss)
+vis_dat(miss %>% select(-code.client, -code.contact, -mlsto,
+                        -X, -Year, -timespan.cbrt, -inv.mlsto.log,
+                        -return.pdol, -Billing.Type)) +
+        scale_fill_brewer(palette ='Paired')
+
+```
+```{r}
+test <- read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+head(test)
+
+test %>% filter(mlsto == "2010.165")
+
+```
+
+
+

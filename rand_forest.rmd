@@ -1,0 +1,762 @@
+---
+title: "Regression"
+author: "Amy Cook"
+date: "August 15, 2015"
+output: word_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('ggplot2', lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("plyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library("dplyr",lib = 'C:/Progra~1/R/R-3.2.2/library')
+library('magrittr',lib='C:/Progra~1/R/R-3.2.2/library')
+library('reshape2',lib='C:/Progra~1/R/R-3.2.2/library')
+library('caret',lib='C:/Progra~1/R/R-3.2.2/library')
+library('randomForest',lib='C:/Progra~1/R/R-3.2.2/library')
+library('rpart',lib='C:/Progra~1/R/R-3.2.2/library')
+library('rpart.plot',lib='C:/Progra~1/R/R-3.2.2/library')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.2/library')
+library('car', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.2/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.2/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.2/library')
+
+
+library(devtools)
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+library('randomForest')
+library('caret')
+
+
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
+all7d.tree<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')[,-1]
+all7d.tree<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
+all7d.tree$Post.Code<- as.factor(all7d$Post.Code)
+
+```
+
+
+This file is to do a multi-step regression to predict RETURN PER DOLLAR.
+The reason for multistepping is to allow for multiple variables with lots of missing NA values.
+
+Variables to include:
+
+Full:
+
+inv.mlsto
+timespan
+no.users
+Discipline
+pc.pro
+client.totinv
+code.director
+Num.disc
+Business
+Biz.type
+code.ProjEng
+
+Many NA:
+
+code.contact
+code.client
+Project.Value
+JD.Second
+Post.Code
+Billing.Type
+majority.pos
+pc.majpos
+
+The 'Many NA' variables will be split into groups:
+
+* code.contact: 1652 NA
+* code.client: 422 NA
+* Project.Value: 2333 NA
+* JD.Second: 1057 NA
+* Post.Code: 356 NA
+* Billing.Type: 1314 NA
+* majority.pos: 377 NA
+* pc.majpos: 377 NA
+
+Will address each of the variables with many NA separately. 8 of these variables totally. run a separate lm for each of these
+
+No need to transform numeric variables - not required for trees
+
+Root mean square error as initial check.
+
+```{r, echo=FALSE}
+
+#predict Petal.Width using lm, find RMSE
+#answer will be return.pdol
+#guess will be response of prediction which is cube root
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        print(root.error)
+}
+
+```
+
+Now fit full variables to random forest, tune mtry and number of trees
+
+Try rpart first
+
+```{r, echo=FALSE}
+
+train_ind <- sample(seq_len(nrow(all7d.tree)), size = nrow(all7d.tree)*2/3)
+
+train <- all7d.tree[train_ind, ]
+test <- all7d.tree[-train_ind, ]
+
+#create tree with training data only
+tree.all7d.tree<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type + code.ProjEng, data=train, control = rpart.control(cp= 0.001))
+# summary(tree.all7d.tree)
+
+#have a look at cp values, automatic cross validation in rpart
+printcp(tree.all7d.tree)
+plotcp(tree.all7d.tree)
+#min cp = 0.013 will give simplest tree within 1 std of x-val rel error
+tree.all7d.tree<- rpart(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type + code.ProjEng, data=train,
+                  control = rpart.control(cp= 0.013))
+
+
+split.fun <- function(x, labs, digits, varlen, faclen){
+  # replace commas with spaces (needed for strwrap)
+  labs <- gsub(",", " ", labs)
+  for(i in 1:length(labs)) {
+    # split labs[i] into multiple lines
+    labs[i] <- paste(strwrap(labs[i], width=25), collapse="\n")
+    }
+  labs
+  }
+
+prp(tree.all7d.tree, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
+#make prediction with current tree
+tree.pred<-predict(tree.all7d.tree, test)
+#calculate RMSE for test data
+RMSE(test$return.pdol, tree.pred)
+# 49.8 cents, already close to regression..
+
+
+#try to make a rainbow tree
+heat.tree <- function(tree, low.is.green=FALSE, ...) { # dots args passed to prp
+  y <- tree$frame$yval
+  if(low.is.green)
+    y <- -y
+  max <- max(y)
+  min <- min(y)
+  cols <- rainbow(99, end=.36)[
+    ifelse(y > y[1], (y-y[1]) * (99-50) / (max-y[1]) + 50,
+           (y-min) * (50-1) / (y[1]-min) + 1)]
+  prp(tree, branch.col=cols, box.col=cols, ...)
+  }
+
+heat.tree(tree.all7d.tree, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
+
+
+```
+
+
+RMSE is 0.498 which is worse than regression in predicting return per dollar.
+
+Decision trees not affected by too many variables - leave all in
+
+Decision trees cannot handle pairwise interactions
+
+Let's try 10 fold cross validation and have a look at the error.
+Use caret package
+
+```{r, echo=FALSE}
+#10 fold cross validation using caret package
+#specify 10 fold
+tc <- trainControl("cv",10)
+#keep cp static at 0.011
+rpart.grid <- expand.grid(.cp=0.011)
+train.rpart <- train( return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type + code.ProjEng, data=all7d, method="rpart",trControl=tc,
+                  tuneGrid=rpart.grid)
+
+#RMSE = 0.505
+# Rsquared = 0.095, quite bad
+
+
+```
+
+
+Let's try adding more variables:
+
+```{r, echo=FALSE}
+#try adding code.client
+
+addone<- function(var= 'JD.Second', min.Year = 2008, df= all7d){
+        reduced = df[!(is.na(df[,var])) & df$Year > min.Year,]
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type", var, sep=" + ")
+        add.one = rpart(as.formula(formula), data = reduced)
+        
+        #select cp
+        cp.new = add.one$cptable[which.min(add.one$cptable[,"xerror"]),"CP"]-0.0002
+        add.one = rpart(as.formula(formula), data = reduced,
+                        control = rpart.control(cp= cp.new))
+        
+        #plot decision tree
+        print(
+          heat.tree(add.one, extra = 1, split.fun= split.fun, tweak=1, faclen =5, branch.type= 5)
+          )
+        
+        #perform 10 fold xval using caret package
+        tc = trainControl("cv",10)
+        #keep cp static at 0.011
+        rpart.grid = expand.grid(.cp=cp.new)
+        train.rpart = train(as.formula(formula), data=df, method="rpart",trControl=tc,
+                  tuneGrid=rpart.grid)
+        
+        
+        print(
+        train.rpart$results
+        )
+}
+
+#without additional variables, RMSE sits at 0.4759
+
+addone(var='JD.Second', min.Year = 2008, df=all7d)
+#RMSE = .528
+addone(var='Post.Code', min.Year = 2008, df=all7d)
+#RMSE = .499
+addone(var='majority.pos', min.Year = 2008, df=all7d)
+#RMSE = .49
+addone(var='pc.majpos', min.Year = 2008, df=all7d)
+#RMSE = .486
+addone(var='code.client', min.Year = 2008, df=all7d)
+#RMSE = .534
+addone(var='Billing.Type', min.Year = 2008, df=all7d)
+#RMSE = .502
+addone(var='code.contact', min.Year = 2008, df=all7d)
+#RMSE = .535
+
+# none of the extra variables actually appear in the revised trees except JD.Second
+# can only assume the different subsets are what is causing the variation in RMSE
+
+```
+
+
+Write a function that can plot a tree
+Limit Year
+choose additional variables to include.
+
+
+```{r, echo=FALSE}
+
+addmult<- function(var= c('JD.Second', 'code.client'), min.Year = 2008, df= all7d){
+        reduced = df[complete.cases(df[,var]) & df$Year>min.Year,]
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type")
+        
+        for(i in 1:length(var)){
+                formula = paste(formula, var[i], sep= " + ")
+        }
+
+        add.mult = rpart(as.formula(formula), data = reduced)
+        
+        #select cp
+        cp.new = add.mult$cptable[which.min(add.mult$cptable[,"xerror"]),"CP"]-0.0002
+        add.mult = rpart(as.formula(formula), data = reduced,
+                        control = rpart.control(cp= cp.new))
+        
+        #plot decision tree
+        print(
+          heat.tree(add.mult, extra = 1, split.fun= split.fun, tweak=1, faclen =6, branch.type= 5)
+          )
+        
+        #perform 10 fold xval using caret package
+        tc = trainControl("cv",10)
+        #keep cp static at 0.011
+        rpart.grid = expand.grid(.cp=cp.new)
+        train.rpart = train(as.formula(formula), data=df, method="rpart",trControl=tc,
+                  tuneGrid=rpart.grid)
+        
+        
+        print(
+        train.rpart$results
+        )
+        
+}
+
+#try Billing.Type with inv.mlsto.log
+## YES! print this one!! 
+addmult(var= c('pc.majpos', 'majority.pos'), min.Year = 2008, df= all7d)
+#RMSE at 48.6 cents
+
+addmult(var= c('pc.majpos', 'majority.pos','JD.Second'), min.Year = 2008, df= all7d)
+
+
+test<- all7d[complete.cases(all7d[,c('code.client','pc.majpos')]) &
+                     all7d$Year>2008 & all7d$Discipline == 'Structural',]
+test$code.client<- droplevels(test$code.client)
+test %>% str
+
+```
+
+Adding aditional variables is making everything worse.
+Try randomForest
+
+```{r, echo=FALSE}
+#perform 10 fold xval using caret package
+tc = trainControl("cv",5)
+rf.grid = expand.grid(mtry= 1:10)
+min.form= "return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type"
+train.rf = train(as.formula(min.form), data=all7d, method="rf",trControl=tc,
+                    tuneGrid=rf.grid)
+#result - use mtry= 5
+
+#make first single randomForest
+first.rf<- randomForest(as.formula(min.form),
+                  data=all7d,mtry=1,ntree=500,importance=TRUE)
+
+#already have made train and test set
+#try to predict medv
+rf.all<-randomForest(as.formula(min.form),data=all7d,mtry=1,ntree=500,importance=TRUE)
+
+#create vectors full of '0's
+oob.err<-double(7)
+test.err<-double(7)
+for(mtry in 1:7){
+        fit<-randomForest(as.formula(min.form),data=train, mtry=ntry, ntree=500)
+        oob.err[mtry]<-fit$mse[mtry]
+        test.err[mtry]<- mean((predict(fit,test)-test$return.pdol)^2) %>% sqrt()
+        cat(mtry," ")
+}
+
+qplot(1:mtry,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(1:mtry,oob.err),colour="blue")+
+        geom_point(aes(1:mtry,oob.err),colour="blue")
+
+#mtry = 3 is optimal! test RMSE of 48.2 cents ....
+oob.err<-double(5)
+test.err<-double(5)
+ntree = c(300,400,500,600,700)
+for(i in 1:5){
+        fit<-randomForest(as.formula(min.form),data=train, mtry=3, ntree=ntree[i])
+        oob.err[i]<-fit$mse[i]
+        test.err[i]<- mean((predict(fit,test)-test$return.pdol)^2) %>% sqrt()
+        cat(i," ")
+}
+
+qplot(ntree,test.err,geom=c("point","line"),color="pink")+
+        geom_line(aes(ntree,oob.err),colour="blue")+
+        geom_point(aes(ntree,oob.err),colour="blue")
+#doesn't really matter, use 400!
+
+#final forest with full variables
+
+full.forest<- randomForest(as.formula(min.form),data=all7d,mtry=5,ntree=500,importance=TRUE)
+plot(full.forest)
+importance(full.forest)
+varImpPlot(full.forest)
+
+
+full.forest<- randomForest(return.pdol ~ inv.mlsto + timespan + no.users + Discipline + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type +code.client, data= all7d[complete.cases(all7d$code.client),],
+                  mtry=5,ntree=500,importance=TRUE)
+
+```
+
+
+Try adding variables
+
+```{r, echo=FALSE}
+
+addmult<- function(var= c('pc.majpos','majority.pos', 'code.client', 'code.contact'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural"){
+        #subset data frame based on complete cases with additional variables
+        reduced = df[complete.cases(df[,var]) & df$Year>min.Year & df$Discipline == Disc,]
+        
+        if('code.client' %in% var){
+        sample = factor(sample(unique(reduced$code.client),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.client %in% sample,]
+
+        reduced$code.client= factor(reduced$code.client)
+        }
+        
+        if('code.contact' %in% var){
+        sample1 = factor(sample(unique(reduced$code.contact),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.contact %in% sample1,]
+
+        reduced$code.contact= factor(reduced$code.contact)
+        }
+        
+        #make formula
+        formula = paste("return.pdol ~ inv.mlsto + timespan + no.users + pc.pro + 
+                     client.totinv + code.director + 
+                  Num.disc + Business + Biz.type")
+        
+        for(i in 1:length(var)){
+                formula = paste(formula, var[i], sep= " + ")
+        }
+        
+        #make forest
+        red.forest= randomForest(as.formula(formula), data=reduced, mtry=5,ntree=500,importance=TRUE)
+        
+        print(
+                varImpPlot(red.forest)
+        )
+
+        
+        #perform 10 fold xval using caret package
+        tc = trainControl("cv",5)
+        #keep cp static at 0.011
+        rf.grid = expand.grid(mtry= 5)
+        train.rf = train(as.formula(formula), data=df, method="rf",trControl=tc,
+                  tuneGrid=rf.grid)
+        
+        
+        print(
+        train.rf
+        )
+        
+}
+
+addmult(var= c('pc.majpos','majority.pos', 'code.client'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural")
+
+#with code.client i'm still getting 48.9 cents RMSE! that sucks!!!! with linear regression i was getting
+
+addmult(var= c('pc.majpos','majority.pos','code.contact'), min.Year = 2008, df= all7d, 
+                   Disc= "Structural")
+#50.6 cents
+#importance levels of code.client and code.contact are up there but they're not THAT high. like midway out of all options.
+
+```
+
+
+Trial some scenarios:
+
+Run full variables plus
+
+Make a function to output:
+
+* var importances
+* RMSE
+
+based on a list of variables that you want to use
+
+```{r, echo=FALSE}
+
+sample<- all7d[1000,]
+sample<- sample[,!is.na(sample)]
+vars<- names(sample) 
+vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc','Biz.type','Post.Code',
+               'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
+vars
+
+
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        # print(root.error)
+}
+
+
+final.output<- function(df=all7d, samp = 800) {
+        #create sample df
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc',
+                                  'Biz.type','Post.Code','code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto',
+                                  'balance.mlsto','client.totinv.log','pc.majpos')]
+        variables = vars
+        
+        print(
+                list("sample case", t(sample %>% select(-Year, -timespan.cbrt, -inv.mlsto.log, -client.totinv.log, -pc.majpos.log)))
+        )
+        
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        print(
+                paste(nrow(reduced), "cases in full model")
+        )
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(i in 1:length(variables)){
+                formula = paste(formula, variables[i], sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'inv.mlsto.log' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*pc.pro', sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'code.client' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*code.client', sep= " + ")
+        }
+        
+        if('JD.Second' %in% variables &
+           'no.users' %in% variables){
+                formula = paste(formula, 'JD.Second*no.users', sep= " + ")
+        }
+
+        final = aov(as.formula(formula), data = reduced)
+        
+        fit= summary(final)
+        
+        ans= data.frame(answer= reduced$return.pdol, final.lm = predict(final, reduced, interval= 'predict'))
+        
+        # print(head(ans))
+
+        
+        #print variable importances for reduced lm just run
+        
+        imp= data.frame('vars'= rownames(fit[[1]]), 'F.val' = fit[[1]]$`F value`)
+        #remove white space from levels in imp$vars
+        levels(imp$vars)<- sub("\\s+$", "", levels(imp$vars))
+        #remove Residuals row
+        imp= imp[!(imp$vars %in% 'Residuals'),]
+        
+        #print variable importances
+        print(
+                list("variable importances",
+                     imp %>% arrange(-F.val) %>% head())
+        )
+        
+        
+        #print RMSE for cases that match certain categories only
+        #first subset predictions to cases that match the category
+        
+        reduced$predict= ans$final.lm.fit
+        
+        cats= c('code.client', 'code.contact', 'JD.Second', 'Business', 'Discipline', 'majority.pos')
+        
+        for(i in 1:length(cats)){
+                if(cats[i] %in% vars){
+                        cats.red = reduced[reduced[,cats[i]] %in% sample[,cats[i]],]
+                        cat.RMSE = RMSE(cats.red$return.pdol, cats.red$predict) %>% round(4)
+                        print(
+                                paste(cats[i], "RMSE =", cat.RMSE, sep= " "))
+                        print(
+                                paste("Number of cases =", nrow(cats.red), sep= " "))
+                        print(
+                                head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto','return.pdol','predict',cats[i])])
+                        )
+                        }
+        }
+        
+        final.RMSE= RMSE(ans$answer, ans$final.lm.fit) %>% round(4)
+        
+        print(
+        paste("Overall predicted RMSE=", final.RMSE , sep= " ")
+        )
+        
+        predict.rpdol = predict(final, sample) %>% round(3)
+        predict.rpdol = predict.rpdol[[1]]
+        predict.cost = sample$inv.mlsto/(1+predict.rpdol) %>% round(1)
+        print(
+               paste("return per dollar prediction", predict.rpdol, sep = " ")
+        )
+        
+        print(
+               paste("answer", sample$return.pdol %>% round(3), sep = " ")
+        )
+        
+        print(
+                paste("Invoiced= $", sample$inv.mlsto, ",   predicted cost= $", predict.cost %>% round(1), sep="")
+        )
+        
+        print(
+                paste("Actual cost= $", sample$cost.mlsto, sep="")
+        )
+
+        
+}
+
+final.output(df=all7d, samp = 500)
+
+```
+
+
+New analysis for thesis write up 
+
+```{r, echo=FALSE}
+
+sample<- all7d[1000,]
+sample<- sample[,!is.na(sample)]
+vars<- names(sample) 
+vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc','Biz.type','Post.Code',
+               'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
+vars
+
+#make new dataframe for future use with normalised variables and variables that you want to use only
+all8a<- all7d %>% select(no.users, Discipline, pc.pro, Business, code.client, JD.Second, timespan.cbrt,
+                         inv.mlsto.log,client.totinv.log, pc.majpos.log, code.contact, Billing.Type,
+                         majority.pos, return.pdol, mlsto, Year)
+write.csv(all8a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')
+all8a <- read.csv("~/OneDrive/shared files/Bligh Tanner/masters/data/all8a.csv")
+
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        return(root.error)
+}
+
+
+final.rf.output<- function(df=all8a, no.tests = 50, core = TRUE) {
+        
+        summary.tests = matrix(NA, nrow = no.tests, ncol = 3)
+        
+        for(i in 1:no.tests){
+        
+        if(core == FALSE){
+        samp = sample.int(nrow(df), 1)                        
+        #create sample df - use all variables that are complete from a sample row of data
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol')]
+        variables = vars
+        } else{
+                variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
+                              'no.users', 'pc.pro', 'Business')
+        }
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        if('code.client' %in% variables){
+        sample = factor(sample(unique(reduced$code.client),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.client %in% sample,]
+
+        reduced$code.client= factor(reduced$code.client)
+        }
+        
+        if('code.contact' %in% variables){
+        sample1 = factor(sample(unique(reduced$code.contact),size=53,
+                                     replace=FALSE))
+        reduced= reduced[reduced$code.contact %in% sample1,]
+
+        reduced$code.contact= factor(reduced$code.contact)
+        }
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(j in 1:length(variables)){
+                formula = paste(formula, variables[j], sep= " + ")
+        }
+        
+        
+        samp_size = floor(0.75*nrow(reduced))
+        create.train = base::sample.int(nrow(reduced), samp_size)
+        train.df = reduced[create.train,]
+        test.df = reduced[-create.train,]
+
+        cats = c('code.client', 'code.contact', 'JD.Second', 'Business', 'majority.pos')
+        for(k in seq_along(cats)){
+                if(cats[k] %in% variables){
+                test.df = test.df[test.df[,cats[k]] %in% unique(train.df[,cats[k]]),]
+        }
+        }
+
+        final = randomForest(as.formula(formula), data= train.df, mtry=5,ntree=500, importance=FALSE)
+        
+        ans = data.frame(answer= test.df$return.pdol, final.lm = predict(final, test.df))
+        
+        #print RMSE for cases that match certain categories only
+        #first subset predictions to cases that match the category
+        
+        test.df$predict= ans$final.lm
+
+        
+        #random RMSE
+        r= mean(reduced$return.pdol)
+        random.RMSE= RMSE(reduced$return.pdol, r) %>% round(3)
+        
+        #final RMSE for all rows in reduced in a regression
+        final.RMSE= RMSE(ans$answer, ans$final.lm) %>% round(3)
+        
+        summary.tests[i,1]= random.RMSE
+        summary.tests[i,2]= final.RMSE
+        summary.tests[i,3]= nrow(test.df)
+        
+        #track progress
+        cat(i," ")
+        }
+        summary.tests = as.data.frame(summary.tests)
+        names(summary.tests) = c('random.RMSE', 'final.RMSE', 'test.nrow')
+        return(summary.tests)
+}
+
+#how many tests required? power calculation
+n.samples = function(data = results.core$diff, type.calc = 'one.sample', alt = 'greater'){
+        d.calc = abs(mean(data))/sd(data)
+        pow_pow = pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c(type.calc), alternative = alt)
+        return(ceiling(pow_pow$n))
+}
+
+n.samples(data = results.core$diff)
+n.samples(data = results$diff)
+
+# 3 tests required for results.core
+
+
+results = final.rf.output(df=all8a, no.tests = 100, core = FALSE)
+results = results %>% mutate(diff = random.RMSE - final.RMSE)
+results = results %>% filter(diff>-25)
+results.core = final.rf.output(df=all8a, no.tests = 50, core = TRUE)
+results.core = results.core %>% mutate(diff = random.RMSE - final.RMSE)
+saveRDS(results, "~/Documents/github/consult/finalwriteup/report_data/reg_rf.rds")
+saveRDS(results.core, "~/Documents/github/consult/finalwriteup/report_data/reg_rf_core.rds")
+
+
+results.core %>% ggplot(., aes(x = test.nrow, y = final.RMSE)) + geom_point()
+
+#histogram of difference
+results %>% ggplot(., aes(x =diff, y = ..density..)) + geom_histogram() + geom_density()
+
+# t- test
+t_test = t.test(results$diff, alternative = "greater", mu = 0)
+str(t_test)
+t_test$p.value
+```
+
+
+
+
+
+
+
+
+

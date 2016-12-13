@@ -1,0 +1,805 @@
+---
+title: "test_imputed"
+author: "Amy Cook"
+date: "October 27, 2015"
+output: word_document
+---
+
+Test on random forest, logistic regression and naiive bayes :)
+Compare:
+
+* subset 9c data
+* rf imputed
+* rfMICEd imputed
+* subset 9a data (uncompressed JD.Second and Business)
+* rf imputed with 9a
+* rfMICE imputed with 9a
+
+Out of the best from above, can experiment with adding in client and contact.
+
+Load 3 datasets:
+
+```{r, echo=FALSE}
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('caret')
+library('pROC')
+library('e1071')
+library('randomForest')
+library('party')
+
+setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+
+
+all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
+all10rf<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10rf.csv')[,-1]
+all9c<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9c.csv')[,-1]
+all9c<- read.csv('all9c.csv')[,-1]
+all9a<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all9a.csv')[,-1]
+
+#VARS::::
+# no.users, Discipline, pc.pro, Business, code.client,JD.Second, majority.pos, b.timespan.cbrt,
+# inv.mlsto.log, client.totinv.log, pc.majpos.log, code.contact, Billing.Type, mlsto, Year, b.rpdol
+
+all10a<- all9c %>% select(no.users, Discipline, pc.pro, Business,
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol)
+all10a<- all10a[complete.cases(all10a),]
+# 2280 cases - 10 vars
+
+all10b<- all9c %>% select(no.users, Discipline, pc.pro, Business,
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
+all10b<- all10b[complete.cases(all10b),]
+# 1987 cases - 12 vars
+
+all10c<- all9c %>% select(no.users, Discipline, pc.pro, Business, JD.Second,
+                         b.timespan.cbrt, b.inv.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
+all10c<- all10c[complete.cases(all10c),]
+# 1106 cases - 13 vars
+
+#make 3 new data sets from all9a instead of all9c. Ie long winded Business and JD.Second levels
+all10d<- all9a %>% select(no.users, Discipline, pc.pro, Business,
+                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol)
+all10d<- all10d[complete.cases(all10d),]
+# 2280 cases
+
+all10e<- all9a %>% select(no.users, Discipline, pc.pro, Business,
+                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
+all10e<- all10e[complete.cases(all10e),]
+# 1987 cases
+
+all10f<- all9a %>% select(no.users, Discipline, pc.pro, Business, JD.Second,
+                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol, majority.pos, pc.majpos.log)
+all10f<- all10f[complete.cases(all10f),]
+# 1106 cases
+
+
+```
+
+First tune random forest parameters with caret package.
+Try tuning with all 3 datasets
+
+```{r, echo=FALSE}
+
+# set seeds
+set.seed(123)
+seeds <- vector(mode = "list", length = 51)
+for(i in 1:50) seeds[[i]] <- sample.int(1000, 22)
+## For the last model:
+seeds[[51]] <- sample.int(1000, 1)
+
+d.sets <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
+
+# must turn outcome into two level factor
+for( i in 1:length(d.sets)){
+        df = get(d.sets[i])
+        df$f.rpdol<- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol)=="0"] <- "profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol)=="1"] <- "loss"
+        assign(d.sets[i], df, envir = .GlobalEnv)
+}
+
+#function for running caret..
+
+caret.all <- function(df = all10rf){
+        set.seed(100)
+        sample<- sample(1:nrow(df), 2/3*nrow(df), replace=F)
+        train<- df[sample,]
+        test<- df[-sample,]
+        
+        if(nrow(df) == 2364){
+                formula<- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type"
+                
+        } else{
+                if(nrow(df) <= 2300){
+                        formula<- "f.rpdol ~ . -Year - mlsto -b.rpdol"
+                }
+        }
+        
+        
+        cv.Control <- trainControl(method = "cv",
+                           number = 10,
+                           seeds= seeds
+                           , summaryFunction= twoClassSummary,
+                           classProbs=TRUE
+                           )
+        gbmGrid <- expand.grid(mtry = c(3,4,5,6,7))
+
+        set.seed(2)
+        gbmFit <- train(as.formula(formula), data= train,
+                method = "rf", trControl = cv.Control, verbose = FALSE,
+                tuneGrid = gbmGrid,
+                metric = 'ROC', allowParallel = T, ntree= 1000)
+
+        plot(gbmFit)
+        
+}
+
+caret.all(df = all10rf) # mtry = 4, AUC = 0.7545 
+caret.all(df = all10mice) # mtry = 5, AUC = 0.757
+caret.all(df = all10a) # mtry = 3, AUC = 0.719
+caret.all(df = all10b) # mtry = 4, AUC = 0.771
+caret.all(df = all10c) # mtry =4, AUC = 0.7735
+
+
+
+# all10c is performing best! let's make a function that runs each df through the test set?
+df.list <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
+        
+test.roc <- function(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "log", x.folds = 5,
+                     extra.var = NULL, mult = 1){
+        
+        auc<- rep(list(rep(0, length(dfs))), length(dfs))
+        colours <- topo.colors(x.folds*mult)
+
+
+        for(i in 1:length(dfs)){
+                df = get(dfs[i])
+                
+                # mlsto is spinning errors, get rid of
+                df = df[, !(names(df) %in% 'mlsto')]
+                set.seed(seed)
+                
+                # create f.rpdol
+                df$f.rpdol <- as.factor(df$b.rpdol)
+                levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <- "profit"
+                levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <- "loss"
+                
+                #set up 10 fold cv using caret function
+                folds <- createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+                #now have folds[[1]] through folds[[10]] list of rows to exclude
+                
+                if(mult > 1){
+                        for(k in 2:mult){
+                                set.seed(sample(1:1000,1))
+                                folds.temp = createFolds(df$f.rpdol, k = x.folds, list = T, returnTrain = F)
+                                folds = append(folds, folds.temp)
+                        }
+                }
+                
+                
+                
+                #if extra.var not found in names(df), change to NULL
+                if(!is.null(extra.var)){
+                        if(!(extra.var %in% names(df))) extra.var = NULL
+                }
+
+                
+                #define formula for algorith methods, either rf, log, boost
+                
+                if(nrow(df) == 2364){
+                        if(is.null(extra.var)){
+                                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+                                
+                        } else {
+                                formula<- paste("f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second", "+", extra.var, sep = " ")
+                        }
+                
+                } else{
+                if(nrow(df) <= 2300){
+                        # include code.client, code.contact, Billing.Type
+                        formula<- "f.rpdol ~ . -Year -b.rpdol "
+                }
+                }
+                
+                if(method %in% 'boost') {
+                        #no JD.Second
+                        formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+
+                }
+                
+                if(method %in% 'naiive') {
+                        formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type + JD.Second"
+
+                }
+                
+                #for loop for each fold
+                
+                for (j in 1:length(folds)) {
+                        
+                        #turn predictors and response into 'ordered' variables for roc() to work
+                        test<- df[folds[[j]],]
+                        levels(test$f.rpdol) <- c('profit', 'loss')
+                        test$f.rpdol <- ordered(test$f.rpdol)
+                        
+                        
+                        if(method %in% 'rf'){
+                                fit <- randomForest(as.formula(formula), data = df[-folds[[j]],], 
+                                            mtry = mtrys[i], ntree = 1000)
+                                pred <- predict(fit, test, type = "prob")
+                                pred <- pred[,2]
+                                
+                        }
+                        
+                        if(method %in% 'log'){
+                                fit<- glm(as.formula(formula), 
+                                          data = df[-folds[[j]],], family = binomial())
+                                pred <- predict(fit, test,
+                                                type = "response")
+                        } 
+                        if(method %in% 'boost'){
+                                fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                           distribution = "bernoulli", n.trees = 10000,
+                                           shrinkage = 0.001, interaction.depth = 5,
+                                           n.minobsinnode = 20)
+                                
+                                pred <- predict(fit, test, n.tree = 10000, type = "response")
+                        }
+                        
+                        if(method %in% 'naiive'){
+                                fit<- naiveBayes( as.formula(formula), df[-folds[[j]],])
+                                pred <- predict(fit, test, type = 'raw')
+                                pred<- pred[,2]
+                        }
+
+                        
+                        #pROC
+                        pred.p <- pROC::roc(test$f.rpdol, pred)
+                        
+                        if (i == 1 & j== 1) {
+                        plot.roc(pred.p, col = colours[i], print.thres = F)
+                        
+                        } else{
+                        plot.roc(
+                        pred.p, col = colours[j], add = TRUE , print.thres = F)
+                        }
+                        
+                        auc[[i]][j]<- auc(pred.p)
+                        names(auc)[[i]] = method
+                        
+                        #print j value
+                        cat(j, " ")
+                        
+                        }
+
+                print(i)
+                
+        }
+        
+        assign("auc.func", auc, envir = .GlobalEnv)
+        assign("formula", formula, envir = .GlobalEnv)
+       
+}
+
+df.list <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
+test.roc(dfs = df.list, seed = 100, mtrys = c(4,5,3,4,4), method = "rf")
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+test.roc(dfs = df.list, seed = 400, mtrys = c(4,5,3,4,4), method = "rf")
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+#significant difference??
+auc<- melt(auc.func)
+t.test(auc$value[1:10], auc$value[11:20])
+
+# for random forest, the all10rf performs second/third best and most consistently, about AUC = 0.765
+```
+
+Now run logistic regression
+
+```{r, echo= FALSE}
+
+df.list <- c("all10rf", "all10mice", "all10a", "all10b", "all10c")
+test.roc(dfs = df.list, seed = 400, mtrys = c(4), method = "log",
+         x.folds = 5, extra.var = NULL, mult = 1)
+names(auc.func) = df.list
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+#significant difference??
+auc<- melt(auc.func)
+t.test(auc$value[1:10], auc$value[11:20])
+
+# logistic regression does well! with all10mice, AUC = 0.775
+
+```
+
+
+Try naiive bayes - try full NA dataset, all9c
+
+```{r naiive bayes, echo=FALSE}
+
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + JD.Second + pc.majpos.log + Billing.Type + JD.Second"
+
+df = all10mice
+df = all9c
+
+set.seed(sample(1:1000,1))
+sample<- sample(1:nrow(df), 2/3*nrow(df), replace=F)
+train<- df[sample,]
+test<- df[-sample,]
+
+
+fit<- naiveBayes( as.formula(formula), train)
+pred <- predict(fit, test, type = 'raw')
+pred<- pred[,2]
+
+pred.p <- roc(test$b.rpdol, pred)
+plot.roc(pred.p, col = colours[i], print.thres = T)
+
+
+#naiive bayes can do about 0.71 at best!! logistic regression, random forest and  boosted trees are
+# definitely doing something!!! 
+
+```
+
+Test if data sets subset from all9a (full original Business and JD.Second) instead of all9c perform better
+
+```{r, echo=FALSE}
+
+#create factor profit/loss variable
+d.sets<- c("all10d", "all10e", "all10f")
+
+for( i in 1:length(d.sets)){
+        df = get(d.sets[i])
+        df$f.rpdol<- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol)=="0"] <- "profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol)=="1"] <- "loss"
+        assign(d.sets[i], df, envir = .GlobalEnv)
+}
+
+#perform 10 fold cv with same parameters as 10a, 10b, 10c
+df.list <- c( "all10a", "all10b", "all10c", "all10d", "all10e", "all10f")
+test.roc(dfs = df.list, seed = 100, mtrys = c(3,4,4,3,4,4), method = "rf")
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+
+#try log reg
+test.roc(dfs = df.list, seed = 100, mtrys = c(3,4,4,3,4,4), method = "log")
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+#performed much better with compacted categories
+
+```
+
+Experiment without JD.Second:
+
+```{r, echo=FALSE}
+df.list <- c("all10rf", "all10mice")
+test.roc(dfs = df.list, seed = 100, mtrys = c(4,5), method = "log")
+with.JDauc<- melt(auc.func)
+
+#remove 'JD.Second' from formula and re-run test.roc
+test.roc(dfs = df.list, seed = 100, mtrys = c(4,5), method = "log")
+witho.JDauc<- melt(auc.func)
+
+all.JDauc<- rbind(with.JDauc, witho.JDauc)
+all.JDauc[21:30,]$L1<- 3
+all.JDauc[31:40,]$L1<- 4
+
+ggplot(all.JDauc, aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+#significant difference??
+t.test(all.JDauc$value[1:10], all.JDauc$value[21:30])
+t.test(all.JDauc$value[11:20], all.JDauc$value[31:40])
+
+#JD.Second really doesn't matter, pretty much just noise, meh keep it in.
+
+```
+
+
+See what effect including clients has on random forest and log.
+It did not help boosted trees.
+Experiment on all10mice dataset.
+
+Create five experimental datasets:
+
+1. all10mice.c1: complete cases of all10mice once added code.client
+2. all10mice.c2: only include clients with over 20 count. rest become 'unknown'
+3. all10mice.c3: only include clients with over 40 count. rest become 'unknown'
+4. all10mice.c4: only include clients with over 60 count. rest become 'unknown'
+5. all10mice.c5: only include clients with over 70 count. rest become 'unknown'
+
+
+```{r, echo=FALSE}
+#create data frame of client codes and their counts, as well as contacts
+client.count<- ddply(all10mice, .(code.client), nrow)
+client.count<- arrange(client.count, -V1)
+contact.count<- ddply(all10mice, .(code.contact), nrow)
+contact.count<- arrange(contact.count, -V1)
+
+#all10mice.c1
+client.count2<- client.count[1:53,]
+all10mice.c1<- all10mice %>% filter(code.client %in% client.count2$code.client)
+all10mice.c1<- all10mice.c1 %>% select(no.users, Discipline, pc.pro, Business,
+                         b.timespan.cbrt, inv.mlsto.log, client.totinv.log, 
+                         mlsto, Year, b.rpdol, JD.Second, majority.pos, pc.majpos.log,
+                         Billing.Type, code.client, f.rpdol)
+all10mice.c1 <- all10mice.c1[complete.cases(all10mice.c1),]
+all10mice.c1$code.client<- droplevels((all10mice.c1$code.client))
+all10mice.c1$reduc.client<- all10mice.c1$code.client 
+
+
+#four new data frames for different client thresholds
+
+all10mice.c2 <- all10mice
+all10mice.c3 <- all10mice
+all10mice.c4 <- all10mice
+all10mice.c5 <- all10mice
+
+add.clientvar<- function(df = c('all10mice.c2', 'all10mice.c3', 'all10mice.c4', 'all10mice.c5'), 
+                         thresh = c(20, 40, 60, 70), thresh.contact = c(5,8,13,20)) {
+        
+        for (i in 1:length(thresh)) {
+                
+                df.temp = get(df[i])
+                threshold = thresh[i]
+                
+                #client code first
+                client.count2 <- client.count[client.count$V1 > threshold &
+                                                      !is.na(client.count$code.client),]
+                
+                df.temp$code.client <- as.character(df.temp$code.client)
+                df.temp$reduc.client <- ifelse(df.temp$code.client %in% client.count2$code.client,
+                                             df.temp$code.client,
+                                             'unknown')
+                df.temp$code.client <- as.factor(df.temp$code.client)
+                df.temp$reduc.client <- as.factor(df.temp$reduc.client)
+                
+                
+                #contact code second
+                contact.count2 <- contact.count[contact.count$V1 > thresh.contact[i] &
+                                                      !is.na(contact.count$code.contact),]
+                
+                df.temp$code.contact <- as.character(df.temp$code.contact)
+                df.temp$reduc.contact <- ifelse(df.temp$code.contact %in% contact.count2$code.contact,
+                                             df.temp$code.contact,
+                                             'unknown')
+                df.temp$code.contact <- as.factor(df.temp$code.contact)
+                df.temp$reduc.contact <- as.factor(df.temp$reduc.contact)
+                
+                assign(df[i], df.temp, envir = .GlobalEnv)
+                
+                }
+        }
+
+add.clientvar(df = c('all10mice.c2', 'all10mice.c3', 'all10mice.c4', 'all10mice.c5'), 
+                         thresh = c(20, 40, 60, 70), thresh.contact = c(5,8,13,20))
+
+#now have 5 datasets to compare, all derived from client count and all10mice
+# want to run each of these through 10 fold cross validation to see if we get better/worse results
+
+#tune first
+caret.all(df = all10mice.c1)
+
+#10 fold test/train cv for code.client
+df.list<- c('all10mice', 'all10mice.c2', 'all10mice.c3', 'all10mice.c4', 'all10mice.c5')
+test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "rf",
+         extra.var = 'reduc.client')
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+ 
+test.roc(dfs = df.list, seed = 100, mtrys = rep(5,5), method = "log",
+         extra.var = 'reduc.client')
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+
+#10 fold test/train cv for code.contact
+df.list<- c('all10mice', 'all10mice.c2', 'all10mice.c3', 'all10mice.c4', 'all10mice.c5')
+test.roc(dfs = df.list, seed = 100, mtrys = rep(5,5), method = "rf",
+         extra.var = 'reduc.contact')
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+test.roc(dfs = df.list, seed = 100, mtrys = rep(5,5), method = "log",
+         extra.var = 'reduc.contact')
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+
+#significant difference??
+auc<- melt(auc.func)
+t.test(auc$value[1:10], auc$value[11:20])
+
+# including client.code really doesnt matter.
+# including contact.code seems to make it marginally worse
+# leave.. code.contact out, leave code.client in maybe.
+
+#save all10mice.c4 for BN trial
+write.csv(all10mice.c4, 'C:/Users/n9232371/Documents/Consultbusiness/data/all10mice_c4.csv')
+
+```
+
+
+Compare 
+
+* logistic regression
+* random forest
+* boosted tree
+
+```{r, echo = FALSE}
+
+all10mice.c4 <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice_c4.csv')
+df.list<- c('all10mice')
+
+#logistic regression with all10mice
+test.roc(dfs = 'all10mice.c4', seed = 100, mtrys = c(5), method = "log",
+         extra.var = NULL, mult = 3)
+auc.log.noBil = auc.func
+auc.log = auc.func
+auc.log.nocli = auc.func
+
+#random forest with all10mice
+test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "rf",
+         extra.var = NULL, mult = 3)
+auc.rf = auc.func
+
+#boosted tree with all10mice
+test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 3)
+auc.boost = auc.func
+
+auc.func<- list(auc.log, auc.rf, auc.boost, auc.log.noBil, auc.log.nocli)
+
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+#significant difference??
+auc<- melt(auc.func)
+t.test(auc$value[61:90], auc$value[91:120])
+
+
+# no significant difference. I'm leaning towards boosted tree.
+```
+
+
+Look at variable importance
+
+```{r, echo= FALSE}
+formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+
+#random forest
+fit.rf <-randomForest(as.formula(formula), data = all10mice,
+        mtry = 5, ntree = 1000, importance = T)
+imp<- as.data.frame(importance(fit.rf))
+imp<- imp[order(imp$MeanDecreaseAccuracy,decreasing=TRUE), ]
+
+#logistic regression
+fit.log <- glm(as.formula(formula),
+           data = all10mice, family = binomial())
+
+summary(fit.log)
+
+
+#boosted tree
+formula<- formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+
+fit.boost <-  gbm(as.formula(formula), data = all10mice,
+        distribution = "bernoulli", n.trees = 10000,
+        shrinkage = 0.001, interaction.depth = 4,
+        n.minobsinnode = 20)
+
+summary(fit.boost)
+saveRDS(fit.boost, 'C:/Users/n9232371/Documents/Consultbusiness/data/fit_boost.rds')
+fit.boost<- readRDS('C:/Users/n9232371/Documents/Consultbusiness/data/fit_boost.rds')
+
+#partial dependence plots
+fit.boost$var.names
+plot.gbm(fit.boost, 3, type="response")
+biz<- plot.gbm(fit.boost, 7, type="response")
+
+
+##
+### cforest
+formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+
+system.time(
+fit.cforest<- cforest(as.formula(formula),
+        data= all10mice
+        )
+)
+
+var.imp<- varimp(fit.cforest) %>% as.data.frame
+colnames(var.imp)[names(var.imp) %in% '.']<-'imp'
+var.imp$var <- rownames(var.imp)
+#reorder levels for bar plot
+var.imp <- within(var.imp, 
+                    var <- factor(var,levels=
+                                            var.imp[order(-abs(var.imp$imp)),]$var))
+
+q<- ggplot(data=var.imp, aes(x=var, y=imp)) + theme(axis.text.x=element_text(angle=45,hjust=1))
+a<- q + geom_bar(stat='identity')
+
+ggsave(a, filename="cfor_all10mice.png", path=
+               'C:/Users/n9232371/Documents/github/consult/finalwriteup/images/cforest_all10mice')
+
+```
+
+
+
+Look at results
+
+```{r, echo = F}
+
+#random forest
+set.seed(200)
+sample<- sample(1:nrow(all10mice), 2/3*nrow(all10mice), replace=F)
+train<- all10mice[sample,]
+test<- all10mice[-sample,]
+
+formula <- "f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+
+#random forest
+fit.rf <-randomForest(as.formula(formula), data = train,
+        mtry = 5, ntree = 1000, importance = T)
+pred.rf <- predict(fit.rf, test, type = "prob")
+imp<- as.data.frame(importance(fit.rf))
+imp<- imp[order(imp$MeanDecreaseAccuracy,decreasing=TRUE), ]
+
+#logistic regression
+fit.log <- glm(as.formula(formula),
+           data = train, family = binomial())
+pred.log <- predict(fit.log, test,
+                type = "response")
+summary(fit.log)
+
+
+#boosted tree
+formula<- "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+
+fit.boost <-  gbm(as.formula(formula), data = train,
+        distribution = "bernoulli", n.trees = 10000,
+        shrinkage = 0.001, interaction.depth = 4,
+        n.minobsinnode = 20)
+        
+pred.boost <- predict(fit.boost, test, n.tree = 10000, type = "response")
+pred.p <- roc(test$b.rpdol, pred.boost)
+
+plot.roc(pred.p, col = 'red', print.thres = T)
+summary(fit.boost)
+
+
+
+# look at test data and predictions
+test.review <- test 
+test.review$pred <- pred.boost 
+test.review<- arrange(test.review, -pred)
+
+write.csv(test.review, 'C:/Users/n9232371/Documents/Consultbusiness/data/test_review.csv')
+```
+
+Create plot for final report
+Boosted tree
+
+```{r}
+df.list<- c('all9c')
+test.roc(dfs = df.list, seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 1, x.folds = 10)
+auc.func
+
+ggplot(melt(auc.func), aes(x= factor(L1), y= value)) + geom_boxplot() + geom_point() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+```
+
+Create loop through each method - 20 models - compile AUC results
+
+```{r}
+test.roc(dfs = c('all10a'), seed = 100, mtrys = c(5), method = "log",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = auc.func
+
+test.roc(dfs = c('all9c'), seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+test.roc(dfs = c('all10c'), seed = 100, mtrys = c(4), method = "rf",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+test.roc(dfs = c('all9c'), seed = 100, mtrys = c(4), method = "naiive",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc = append(tot.auc,auc.func)
+
+saveRDS(tot.auc,"~/Documents/github/consult/finalwriteup/report_data/reduc_df_auc.rds")
+
+
+ggplot(melt(tot.auc), aes(x= factor(L1), y= value)) + geom_violin() + geom_jitter() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+# n.samples function is defined in 'draft.rmd'
+index = c(1,3,4)
+ns = NULL
+for(i in seq_along(index)){
+        temp = n.samples(data = tot.auc[c(2, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i] = temp
+}
+ns
+
+```
+
+Re-run with MICE imputed data
+
+```{r}
+
+all10mice_f = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "log",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = auc.func
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(5), method = "boost",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(4), method = "rf",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+test.roc(dfs = c('all10mice_f'), seed = 100, mtrys = c(4), method = "naiive",
+         extra.var = NULL, mult = 10, x.folds = 10)
+tot.auc.m = append(tot.auc.m,auc.func)
+
+saveRDS(tot.auc.m,"~/Documents/github/consult/finalwriteup/report_data/mice_df_auc.rds")
+
+
+ggplot(melt(tot.auc.m), aes(x= factor(L1), y= value)) + geom_violin() + geom_jitter() +
+        stat_summary(fun.y="mean", geom="point", colour = "red")
+
+# n.samples function is defined in 'draft.rmd'
+index = c(1,3,4)
+ns = NULL
+for(i in seq_along(index)){
+        temp = n.samples(data = reduc.totAUC[c(2, index[i])], type.calc = 'two.sample', alt = 'two.sided')
+        ns[i] = temp
+}
+ns
+
+```
+
+
+
+
+
+
+
+Checking p value for BN
+
+```{r}
+reduc.totAUC <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reduc_df_auc.rds")
+BN = read.csv("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/BN_AUCs.csv")
+
+n.samples(data = list(reduc.totAUC[[2]][1:20], BN$AUC), type.calc = 'two.sample', alt = 'two.sided')
+
+# only 5 samples required according to power calculation
+
+```
+
+
+
+

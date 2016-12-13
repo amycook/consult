@@ -1,0 +1,838 @@
+---
+title: "Regression"
+author: "Amy Cook"
+date: "August 15, 2015"
+output: word_document
+---
+
+```{r, echo=FALSE, include=FALSE}
+
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('caret')
+library('pwr')
+# library("rpart",lib = 'C:/Program Files/R/R-3.2.1/library')
+library('car')
+# library('e1071', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('corrgram', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('party', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('randomForest', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library('fpc', lib='C:/Progra~1/R/R-3.2.1/library')
+# library('vegan', lib = 'C:/Progra~1/R/R-3.2.1/library')
+# library(devtools,lib='C:/Progra~1/R/R-3.2.1/library')
+
+
+library(devtools)
+library('ggbiplot')
+library('fpc')
+library('vegan')
+library('knitr')
+library('ggplot2')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library("rpart")
+library('car')
+library('e1071')
+library('corrgram')
+
+
+# 
+# setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+opts_knit$set(root.dir= "~/OneDrive/shared files/Bligh Tanner/masters/data")
+# opts_knit$set(root.dir= "C:/Users/n9232371/Documents/Consultbusiness/data")
+all7d<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')[,-1]
+all7d<- read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all7d.csv')[,-1]
+all7d$Post.Code<- as.factor(all7d$Post.Code)
+
+```
+
+
+This file is to do a multi-step regression to predict RETURN PER DOLLAR.
+The reason for multistepping is to allow for multiple variables with lots of missing NA values.
+
+Variables to include:
+
+Full:
+
+inv.mlsto
+timespan
+no.users
+Discipline
+pc.pro
+client.totinv
+code.director
+Num.disc
+Business
+Biz.type
+code.ProjEng
+
+Many NA:
+
+code.contact
+code.client
+Project.Value
+JD.Second
+Post.Code
+Billing.Type
+majority.pos
+pc.majpos
+
+The 'Many NA' variables will be split into groups:
+
+* code.contact: 1652 NA
+* code.client: 422 NA
+* Project.Value: 2333 NA
+* JD.Second: 1057 NA
+* Post.Code: 356 NA
+* Billing.Type: 1314 NA
+* majority.pos: 377 NA
+* pc.majpos: 377 NA
+
+
+
+
+```{r echo=FALSE}
+some <- all7d %>% select(return.pdol, mlsto, inv.mlsto, timespan,no.users,Discipline,pc.pro,
+                         client.totinv,code.director,Num.disc,Business,Biz.type,
+                         code.contact,code.client,Project.Value,JD.Second,Post.Code,code.ProjEng,Billing.Type,
+                         majority.pos,
+                         pc.majpos)
+
+#heatmap of any similar NA value ranges
+
+experiment<- sapply(some, function(x) is.na(x))
+NA.plot<- melt(experiment)
+NA.plot$mlsto<- rep(all7d$mlsto, ncol(experiment))
+#reorder levels for ggplot by total number of NA TRUE
+# table(NA.plot$Var2, NA.plot$value)[,'TRUE']
+NA.plot <- within(NA.plot, 
+                         Var2 <- factor(Var2, 
+                                               levels=names(sort(table(NA.plot$Var2, NA.plot$value)[,'TRUE'], 
+                                                                 decreasing=FALSE))))
+
+ggplot(NA.plot, aes(x=Var2, y=mlsto)) +
+        geom_tile(aes(fill = value)) + 
+        theme(axis.text.x=element_text(angle=45,hjust=1))
+
+
+```
+
+Will address each of the variables with many nA separately. 8 of these variables totally. run a separate lm for each of these
+
+Need to transform some numeric variables:
+
+Full:
+
+return.pdol - cube root
+inv.mlsto - log
+timespan - cube root
+pc.pro - leave alone
+client.totinv - log
+
+Many NA:
+
+Project.Value - log
+pc.majpos - log
+
+```{r, echo=FALSE}
+
+#write a function for testing transformations
+
+trans<- function(var= 'timespan', df= all7d, transform = 'cbrt'){
+        #initial q plot
+        init<- qqPlot(df[,var], 
+                       main = 'untouched variable')
+        print(init)
+        
+        #make trial dataframe
+        trial = sapply(df[,var], function(x){
+                if(transform == 'log'){
+                        log(x)
+                } else
+                
+                if(transform == 'neglog')
+                        {
+                        sign(x)*log(abs(x) + 1)
+                } else
+                        
+                if(transform == 'sqrt')
+                {
+                        sqrt(x)
+                } else
+                        if(transform == 'cbrt')
+                {
+                        sign(x) * abs(x)^(1/3)
+                } else
+                { x^2 }
+                
+                }) %>% 
+                as.data.frame
+        
+        colnames(trial)[names(trial) %in% '.']<-'trans.var'
+        
+        #qplot for transformation
+        qqtrans<- qqPlot(trial$trans.var, 
+                         main = 'transformed')
+        print(qqtrans)
+        
+        ##move on to density plots
+        
+        #original variable
+        dens<- ggplot(df, aes_string(x=var)) + geom_histogram(aes(y=..density..))
+        print(dens)
+        
+        #transformed variable
+        dens.trans<- ggplot(trial, aes_string(x='trans.var')) + geom_histogram(aes(y=..density..))
+        print(dens.trans)
+}
+
+trans(var= 'timespan', df= all7d, transform = 'cbrt')
+trans(var= 'inv.mlsto', df= all7d, transform = 'log')
+trans(var= 'return.pdol', df= all7d, transform = 'cbrt')
+trans(var= 'pc.majpos', df= all7d, transform = 'log')
+trans(var= 'client.totinv', df= all7d, transform = 'log')
+trans(var= 'Project.Value', df= all7d, transform = 'log')
+
+
+```
+
+Have now decided on transformations for numeric variables.
+
+Create all7d ready for linear regression analysis
+
+```{r, echo=FALSE}
+
+math.cbrt <- function(x) {
+        sign(x) * abs(x)^(1/3)
+}
+
+all7d$timespan.cbrt<- math.cbrt(all7d$timespan)
+all7d$inv.mlsto.log <- log(all7d$inv.mlsto)
+all7d$client.totinv.log <- log(all7d$client.totinv)
+all7d$Project.Value.log <- log(all7d$Project.Value)
+all7d$pc.majpos.log <- log(all7d$pc.majpos)
+
+
+```
+
+Root mean square error as initial check. Write code which transforms response variable back to original format by cubing, then finds RMSE.
+
+```{r, echo=FALSE}
+
+#predict Petal.Width using lm, find RMSE
+#answer will be return.pdol
+#guess will be response of prediction which is cube root
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        print(root.error)
+}
+
+```
+
+
+Now fit full variables to linear regression
+
+```{r, echo=FALSE}
+
+full = lm(return.pdol ~ 
+                  inv.mlsto.log + timespan.cbrt + no.users + Discipline + pc.pro + client.totinv.log + code.director + 
+                  Num.disc + Business + Biz.type + code.ProjEng,
+          data = all7d)
+summary(full)
+
+#have a look at the residuals
+
+res<- resid(full)
+plot(all7d$inv.mlsto.log, res)
+abline(0,0)
+
+plot(density(res))
+qqPlot(res)
+
+#compare some of the answers
+ans<- data.frame(answer= all7d$return.pdol, full.lm = predict(full, all7d, interval= 'predict'))
+
+RMSE(ans$answer, ans$full.lm.fit)
+
+```
+
+RMSE is 0.4768 which isn't great in terms of predicting return per dollar.
+R^2 is 0.1905
+
+Let's try deleting some full variables
+
+```{r, echo=FALSE}
+full.2<- update(full, .~. -client.totinv.log)
+summary(full.2)
+full.3<- update(full.2, .~. -code.director)
+summary(full.3)
+full.4<- update(full.3, .~. -Num.disc)
+summary(full.4)
+full.5<- update(full.4, .~. -code.ProjEng)
+summary(full.5)
+full.6<- update(full.5, .~. -Biz.type + Discipline)
+summary(full.6)
+
+#RMSE check
+
+ans<- data.frame(answer= all7d$return.pdol, full.lm = predict(full.6, all7d, interval= 'predict'))
+
+RMSE(ans$answer, ans$full.lm.fit)
+
+
+```
+
+Feels better. That leaves us with 
+
+* inv.mlsto.log
+* Discipline
+* timespan.cbrt
+* no.users
+* pc.pro
+* Discipline
+* Business
+
+RMSE = 0.48266
+
+
+Going back to full  variables, lets try pairwise multiplying.. 
+
+```{r, echo=FALSE}
+#try diff pairs
+
+pairs.lm<- lm(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users + pc.pro + Business + 
+                      inv.mlsto.log*pc.pro + inv.mlsto.log*Business,
+              data=all7d)
+
+summary(pairs.lm)
+pairs<- predict(pairs.lm, all7d)
+ans<- data.frame(answer= all7d$return.pdol, pairs.lm = pairs)
+
+RMSE(ans$answer, ans$pairs.lm)
+
+#down to 0.4759
+
+```
+
+Let's try adding more variables:
+
+```{r, echo=FALSE}
+#try adding code.client
+
+addone<- function(var= 'JD.Second', df= all7d){
+        reduced = df[!(is.na(df[,var])),]
+        formula = paste("return.pdol ~ inv.mlsto.log + timespan.cbrt + no.users + Discipline + pc.pro + inv.mlsto.log*pc.pro + inv.mlsto.log*Business", var, sep=" + ")
+        add.one = lm(as.formula(formula), data = reduced)
+        
+        print(summary(add.one))
+        
+        ans= data.frame(answer= reduced$return.pdol, addone.lm = predict(add.one, reduced, interval= 'predict'))
+        
+        print(head(ans))
+        
+        print(
+        paste("RMSE=", RMSE(ans$answer, ans$addone.lm.fit) %>% round(4), sep= " ")
+        )
+        
+}
+
+#without additional variables, RMSE sits at 0.4759
+
+addone(var='JD.Second', df=all7d)
+#RMSE = .4709
+addone(var='Post.Code', df=all7d)
+#RMSE = .4353
+addone(var='majority.pos', df=all7d)
+#RMSE = .4541
+addone(var='pc.majpos.log', df=all7d)
+#RMSE = .4553
+addone(var='code.client', df=all7d)
+#RMSE = .4394
+addone(var='Billing.Type', df=all7d)
+#RMSE = .4579
+addone(var='code.contact', df=all7d)
+#RMSE = .3972
+
+#dont use post code ever. 
+#JD.Second doesn't help that much. acutally makes RMSE worse.
+
+```
+
+Delete Post.Code option
+
+Billing.Type should be paired with inv.mlsto and maybe Discipline
+
+maybe client should be paired with inv.mlsto
+maybe JD.Second should be paired with inv.mlsto and code.client and timespan and pc.pro and no.users?? which ever one does something.
+
+majority.pos pair with inv.mlsto
+pc.majpos pair with inv.mlsto
+
+Write a function that lists the extra variable you're trying and write out the interaction.
+
+
+```{r, echo=FALSE}
+
+addmult<- function(var= c('JD.Second', 'code.client'), combos= c('JD.Second*inv.mlsto.log'), df= all7d){
+        reduced = df[complete.cases(df[,var]),]
+        formula = paste("return.pdol ~ inv.mlsto.log + timespan.cbrt + no.users + Discipline + pc.pro + inv.mlsto.log*pc.pro + inv.mlsto.log*Business")
+        
+        for(i in 1:length(var)){
+                formula = paste(formula, var[i], sep= " + ")
+        }
+        
+        for(i in 1:length(combos)){
+                formula = paste(formula, combos[i], sep= " + ")
+        }
+
+        add.one = lm(as.formula(formula), data = reduced)
+        
+        print(summary(add.one))
+        
+        ans= data.frame(answer= reduced$return.pdol, addone.lm = predict(add.one, reduced, interval= 'predict'))
+        
+        print(head(ans))
+        
+        print(
+        paste("RMSE=", RMSE(ans$answer, ans$addone.lm.fit) %>% round(4), sep= " ")
+        )
+        
+}
+
+#try Billing.Type with inv.mlsto.log
+addmult(var= c('Billing.Type'), combos= c('Billing.Type*inv.mlsto.log'), df= all7d)
+# no
+
+#try code.client*inv.mlsto.log
+addmult(var= c('code.client'), combos= c('code.client*inv.mlsto.log'), df= all7d)
+#made a difference, brought RMSE down to .4076 :)!
+
+#try JD.Second with inv.mlsto.log (no), code.client (too intense), timespan (no), pc.pro (no), no.users (yes)?
+addmult(var= c('JD.Second'), combos= c('JD.Second*no.users'), df= all7d)
+#add JD.Second*no.users
+
+addmult(var= c('majority.pos'), combos= c('majority.pos*inv.mlsto.log'), df= all7d)
+#no
+
+addmult(var= c('pc.majpos.log'), combos= c('pc.majpos.log*inv.mlsto.log'), df= all7d)
+#no
+
+
+```
+
+It is worthwhile to include:
+
+* code.client by inv.mlsto.log because brought down RMSE from 0.4394 (code.client) to 0.4076 (code.client + code.client by inv.mlsto.log)
+* JD.Second by no.users. Brought down RMSE from 0.4709 to 0.4612...
+
+
+Now look at cross validation for full variable set:
+
+```{r, echo=FALSE}
+
+#using caret package
+tc <- trainControl("cv",10,savePred=F)
+fit<- train(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users + pc.pro + Business + 
+                      inv.mlsto.log*pc.pro + inv.mlsto.log*Business,
+              data=all7d,
+            method = 'lm', trControl = tc)
+
+#RMSE = 0.49246
+#compared to non-cross validated
+# RMSE = 0.4759
+
+#try using caret package on code.client
+fit<- train(return.pdol ~ inv.mlsto.log + Discipline + timespan.cbrt + no.users + pc.pro + Business + 
+                      inv.mlsto.log*pc.pro + inv.mlsto.log*Business + code.client,
+              data=all7d,
+            method = 'lm', trControl = tc)
+
+```
+
+Not really trying to tune anything via cross validation, however RMSE increased from 0.4759 to 0.49246.
+
+Not THAT bad.
+
+Now, how to get variable importance from lm..
+
+```{r, echo=FALSE}
+
+#variable importance for full variables only - pairs.lm
+#use varImp from caret package - uses t-test statistic
+
+imp<- varImp(pairs.lm, scale=FALSE)
+imp$variable<- rownames(imp)
+imp<- imp %>% select(variable, Overall)
+imp %>% arrange(-Overall) %>% head()
+
+sum(imp$Overall)
+
+```
+
+
+Trial some scenarios:
+
+Run full variables plus
+
+Make a function to output:
+
+* var importances
+* RMSE
+
+based on a list of variables that you want to use
+
+```{r, echo=FALSE}
+
+sample<- all7d[1000,]
+sample<- sample[,!is.na(sample)]
+vars<- names(sample) 
+vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc','Biz.type','Post.Code',
+               'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
+vars
+
+#make new dataframe for future use with normalised variables and variables that you want to use only
+all8a<- all7d %>% select(no.users, Discipline, pc.pro, Business, code.client, JD.Second, timespan.cbrt,
+                         inv.mlsto.log,client.totinv.log, pc.majpos.log, code.contact, Billing.Type,
+                         majority.pos, return.pdol, mlsto, Year)
+write.csv(all8a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')
+
+RMSE<- function(answer, guess, print= TRUE){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        if(print == TRUE){
+        print(root.error)
+        }
+}
+
+
+final.output<- function(df=all7d, samp = 800) {
+        #create sample df
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc',
+                                  'Biz.type','Post.Code','code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto',
+                                  'dis.sc.mlsto',
+                                  'balance.mlsto','client.totinv.log','pc.majpos')]
+        variables = vars
+        
+        print(
+                list("sample case", t(sample %>% select(-Year, -timespan.cbrt, -inv.mlsto.log, -client.totinv.log)))
+        )
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[-samp,]
+        reduced = reduced[complete.cases(reduced[,variables]),]
+        
+        print(
+                paste(nrow(reduced), "cases in full model")
+        )
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(i in 1:length(variables)){
+                formula = paste(formula, variables[i], sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'inv.mlsto.log' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*pc.pro', sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'code.client' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*code.client', sep= " + ")
+        }
+        
+        if('JD.Second' %in% variables &
+           'no.users' %in% variables){
+                formula = paste(formula, 'JD.Second*no.users', sep= " + ")
+        }
+
+        final = aov(as.formula(formula), data = reduced)
+        
+        fit= summary(final)
+        
+        ans= data.frame(answer= reduced$return.pdol, final.lm = predict(final, reduced, interval= 'predict'))
+        
+        # print(head(ans))
+
+        
+        #print variable importances for reduced lm just run
+        
+        imp= data.frame('vars'= rownames(fit[[1]]), 'F.val' = fit[[1]]$`F value`)
+        #remove white space from levels in imp$vars
+        levels(imp$vars)<- sub("\\s+$", "", levels(imp$vars))
+        #remove Residuals row
+        imp= imp[!(imp$vars %in% 'Residuals'),]
+        
+        #print variable importances
+        print(
+                list("variable importances",
+                     imp %>% arrange(-F.val) %>% head())
+        )
+        
+        
+        #print RMSE for cases that match certain categories only
+        #first subset predictions to cases that match the category
+        
+        reduced$predict= ans$final.lm.fit
+        
+        cats= c('code.client', 'code.contact', 'JD.Second', 'Business', 'no.users', 'majority.pos')
+        
+        for(i in 1:length(cats)){
+                if(cats[i] %in% vars){
+                        cats.red = reduced[reduced[,cats[i]] %in% sample[,cats[i]],]
+                        cat.RMSE = RMSE(cats.red$return.pdol, cats.red$predict) %>% round(4)
+                        print(
+                                paste(cats[i], "RMSE =", cat.RMSE, sep= " "))
+                        print(
+                                paste("Number of cases =", nrow(cats.red), sep= " "))
+                        print(
+                                head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto','return.pdol','predict',cats[i])])
+                        )
+                        }
+        }
+        
+        num.cats= c('timespan.cbrt', 'inv.mlsto.log', 'pc.pro')
+        
+        for(i in 1:length(num.cats)){
+                if(num.cats[i] %in% vars){
+                        span = 0.05*(max(reduced[,num.cats][i])-min(reduced[,num.cats[i]]))
+                        range = c(df[samp,num.cats[i]]-span, 
+                                  df[samp,num.cats[i]]+span)
+                        cats.red = reduced[reduced[,num.cats[i]]<range[2] & reduced[,num.cats[i]]>range[1],]
+                        cat.RMSE = RMSE(cats.red$return.pdol, cats.red$predict) %>% round(4)
+                        print(
+                                paste(num.cats[i], "RMSE =", cat.RMSE, sep= " "))
+                        print(
+                                paste("Number of cases =", nrow(cats.red), sep= " "))
+                        print(
+                                if(num.cats[i] == 'pc.pro'){
+                                        head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto','return.pdol','predict',
+                                                 num.cats[i])])} 
+                                else if(num.cats[i] == 'timespan.cbrt'){
+                                                head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto',
+                                                                 'return.pdol','predict', 'timespan')])}
+                                else {
+                                        head(cats.red[,c('mlsto','inv.mlsto','cost.mlsto',
+                                                                 'return.pdol','predict')])
+                                }
+                                
+                        )}
+        }
+        
+        #random RMSE
+        r= mean(reduced$return.pdol)
+        random.RMSE= RMSE(reduced$return.pdol, r, print=T) %>% round(3)
+        
+        print(
+        paste("Random Guess RMSE=", random.RMSE , sep= " ")
+        )
+        
+        #final RMSE for all rows in reduced in a regression
+        final.RMSE= RMSE(ans$answer, ans$final.lm.fit) %>% round(3)
+        
+        print(
+        paste("Overall predicted RMSE=", final.RMSE , sep= " ")
+        )
+        
+        predict.rpdol = predict(final, sample) %>% round(3)
+        predict.rpdol = predict.rpdol[[1]]
+        predict.cost = sample$inv.mlsto/(1+predict.rpdol) %>% round(1)
+        print(
+               paste("return per dollar prediction", predict.rpdol, sep = " ")
+        )
+        
+        print(
+               paste("answer", sample$return.pdol %>% round(3), sep = " ")
+        )
+        
+        print(
+                paste("Invoiced= $", sample$inv.mlsto %>% round(2), ",   predicted cost= $", predict.cost %>% round(1), sep="")
+        )
+        
+        print(
+                paste("Actual cost= $", sample$cost.mlsto %>% round(2), sep="")
+        )
+
+        
+}
+
+final.output(df=all7d, samp = 800)
+
+```
+
+
+new analysis for thesis write up - include cross validation and delete all the printing
+
+```{r, echo=FALSE}
+
+sample<- all7d[1000,]
+sample<- sample[,!is.na(sample)]
+vars<- names(sample) 
+vars<- vars[! vars %in% c('mlsto','Year','inv.mlsto','timespan','client.totinv','code.director','Num.disc','Biz.type','Post.Code',
+               'code.ProjEng','return.pdol','cost.mlsto','hrs.mlsto','balance.mlsto','client.totinv.log','pc.majpos')]
+vars
+
+#make new dataframe for future use with normalised variables and variables that you want to use only
+all8a<- all7d %>% select(no.users, Discipline, pc.pro, Business, code.client, JD.Second, timespan.cbrt,
+                         inv.mlsto.log,client.totinv.log, pc.majpos.log, code.contact, Billing.Type,
+                         majority.pos, return.pdol, mlsto, Year)
+write.csv(all8a, 'C:/Users/n9232371/Documents/Consultbusiness/data/all8a.csv')
+
+RMSE<- function(answer, guess){
+        error= answer-guess
+        root.error= sqrt(mean(error^2))
+        return(root.error)
+}
+
+
+final.output<- function(df=all8a, no.tests = 50, core = TRUE) {
+        
+        summary.tests = matrix(NA, nrow = no.tests, ncol = 3)
+        
+        for(i in 1:no.tests){
+        
+        if(core == FALSE){
+        samp = sample.int(nrow(df), 1)                        
+        #create sample df - use all variables that are complete from a sample row of data
+        sample = df[samp,]
+        sample = sample[,!is.na(sample)]
+        vars= names(sample)
+        vars = vars[! vars %in% c('mlsto','Year','return.pdol')]
+        variables = vars
+        } else{
+                variables = c('inv.mlsto.log', 'Discipline', 'timespan.cbrt',
+                              'no.users', 'pc.pro', 'Business')
+        }
+
+
+        #make reduced dataset with complete cases for all variables we want to use
+        reduced = df[complete.cases(df[,variables]),]
+        
+        formula = paste("return.pdol ~ ")
+        
+        for(j in 1:length(variables)){
+                formula = paste(formula, variables[j], sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'pc.pro' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*pc.pro', sep= " + ")
+        }
+        
+        if('inv.mlsto.log' %in% variables &
+           'code.client' %in% variables){
+                formula = paste(formula, 'inv.mlsto.log*code.client', sep= " + ")
+        }
+        
+        if('JD.Second' %in% variables &
+           'no.users' %in% variables){
+                formula = paste(formula, 'JD.Second*no.users', sep= " + ")
+        }
+        
+        samp_size = floor(0.75*nrow(reduced))
+        create.train = base::sample.int(nrow(reduced), samp_size)
+        train.df = reduced[create.train,]
+        test.df = reduced[-create.train,]
+
+        cats = c('code.client', 'code.contact', 'JD.Second', 'Business', 'majority.pos')
+        for(k in seq_along(cats)){
+                if(cats[k] %in% vars){
+                test.df = test.df[test.df[,cats[k]] %in% unique(train.df[,cats[k]]),]
+        }
+        }
+
+        final = aov(as.formula(formula), data = train.df)
+        
+        fit= summary(final)
+        
+        ans = data.frame(answer= test.df$return.pdol, final.lm = predict(final, test.df))
+        
+        #print RMSE for cases that match certain categories only
+        #first subset predictions to cases that match the category
+        
+        test.df$predict= ans$final.lm
+
+        
+        #random RMSE
+        r= mean(reduced$return.pdol)
+        random.RMSE= RMSE(reduced$return.pdol, r) %>% round(3)
+        
+        #final RMSE for all rows in reduced in a regression
+        final.RMSE= RMSE(ans$answer, ans$final.lm) %>% round(3)
+        
+        summary.tests[i,1]= random.RMSE
+        summary.tests[i,2]= final.RMSE
+        summary.tests[i,3]= nrow(test.df)
+        }
+        summary.tests = as.data.frame(summary.tests)
+        names(summary.tests) = c('random.RMSE', 'final.RMSE', 'test.nrow')
+        return(summary.tests)
+}
+
+
+
+#how many tests required? power calculation
+d.calc = mean(results.core$diff)/sd(results.core$diff)
+pwr.t.test(n = NULL, d = d.calc , sig.level = 0.05, power = .8, type = c("one.sample"), alternative = 'greater')
+# 3 tests required for results.core
+
+
+results = final.output(df=all8a, no.tests = 100, core = FALSE)
+results = results %>% mutate(diff = random.RMSE - final.RMSE)
+results = results %>% filter(diff>-25)
+results.core = final.output(df=all8a, no.tests = 50, core = TRUE)
+results.core = results.core %>% mutate(diff = random.RMSE - final.RMSE)
+saveRDS(results, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reg_lm.rds")
+saveRDS(results.core, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/reg_lm_core.rds")
+
+
+results %>% ggplot(., aes(x = test.nrow, y = final.RMSE)) + geom_point()
+
+#histogram of difference
+results %>% ggplot(., aes(x =diff)) + geom_histogram()
+
+# t- test
+t_test = t.test(results$diff, alternative = "greater", mu = 0)
+str(t_test)
+t_test$p.value
+
+```
+
+Check what RMSE would be for random guess
+
+```{r, echo=F}
+
+m<- mean(all7d$return.pdol)
+
+
+
+
+RMSE(all7d$return.pdol, m, print=T)
+
+
+```
+
+RMSE from random guess is 53 cents.
+
+# delete any code.client or contact. client which has less than 3 entries!
+# need to revisit how i got my inv.mlsto, balance.mlsto, cost.mlsto for job 2013.301.2
+
+
+
+
+
+
+
+

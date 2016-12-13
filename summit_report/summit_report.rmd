@@ -1,0 +1,93 @@
+---
+title: "BT_insights"
+author: "Amy Cook"
+date: "October 7, 2016"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r loadpackages, echo=FALSE, include=FALSE}
+library('knitr')
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('randomForest')
+library('caret')
+library('pROC')
+library('testthat')
+library('purrr')
+library(tidyr)
+library(broom)
+
+opts_chunk$set(fig.width=6.7, fig.height = 5.5, dpi = 300, warning = FALSE, message = FALSE, echo = FALSE, warning = FALSE)
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+```
+
+
+
+```{r, include = FALSE}
+if(.Platform$OS.type == 'windows'){
+        all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        source("C:/Users/n9232371/Documents/github/consult/functions.R")
+} else{
+        all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        source("/Users/yam/Documents/github/consult/functions.R")
+
+}
+
+```
+
+
+The output below plots the tendency for a project to be loss making (y-axis) against an explanatory variable (x-axis).
+
+The further up the y-axis a point sits, the more likely the project is to be loss-making is the simplest way of thinking about it.
+
+On the x-axis, some of the category labels are missing, so I've printed out all the categories in the line below.
+
+Also, some of the variable names on the x-axis are complicated, so I've added a comment after each plot which will help you interpret the x axis.
+
+
+
+
+```{r, cache = TRUE, }
+
+formula <-"b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + b.inv.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+
+fit <- gbm(as.formula(formula), data = all10mice,
+                                   distribution = "bernoulli", n.trees = 10000,
+                                   shrinkage = 0.001, interaction.depth = 5,
+                                   n.minobsinnode = 20)
+
+comments <- c(
+        Discipline = "striaghtforward",
+        pc.pro = "% of hours completed by an engineer on a project",
+        b.timespan.cbrt = "timespan category - timespan of a project from first hour logged til last",
+        no.users = "number of employees that worked on a project",
+        b.inv.log = "total invoiced amount for a project ($) - ignore x-axis title",
+        client.totinv.log = "average amount invoiced in total for a client across all jobs with them. 
+        You need to take the natural exponent of the numbers on the x axis (i.e. e^6 = $403)",
+        Business = "business category of the client, i.e. architect",
+        majority.pos = "position of employee that completed the majority number of hours on a project.
+        'tech' refers to drafters, 'pro' refers to engineers",
+        pc.majpos.log = "% of hours completed by the main employee on the project. You need to take the natural 
+        exponent of these values on the x-axis, i.e. e^4 = 55%",
+        JD.second = "category of the project, i.e. subdivisions",
+        Billing.Type = 'self explanatory'
+        
+)
+
+# partial dependency plots
+for(i in 1:11){
+        plot.gbm(fit, i, type="response")
+        print(fit$var.levels[[i]])
+        print(paste("\n"))
+        print(comments[i])
+}
+
+
+```
+

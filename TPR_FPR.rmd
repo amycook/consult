@@ -1,0 +1,254 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('randomForest')
+library('caret')
+library('pROC')
+library('testthat')
+library('purrr')
+library(tidyr)
+library('broom')
+library('stringr')
+library('knitr')
+
+# detect OS
+if(.Platform$OS.type == 'windows'){
+        setwd("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/")
+        opts_knit$set(root.dir= "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/")
+} else{
+        # setwd("~/OneDrive/shared files/Bligh Tanner/masters/data")
+        # setwd("~/Documents/github/consult/finalwriteup/report_data")
+        opts_knit$set(root.dir= '~/Documents/github/consult/finalwriteup/')
+}
+
+
+```
+
+Want to calculate TPR, FPR etc for an 'average' blended model. Find an average model from plot_finance_100_3 data frame
+
+```{r}
+if(.Platform$OS.type == 'windows'){
+best.fin<- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/best_fin.rds")
+plot.fin <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/plot_finance_100_4.rds")
+} else{
+best.fin<- readRDS("~/Documents/github/consult/finalwriteup/report_data/best_fin.rds")
+plot.fin <- readRDS("~/Documents/github/consult/finalwriteup/report_data/plot_finance_100_4.rds")
+}
+
+
+head(plot.fin)
+# join best thresholds to plot.fin
+plot.fin <- inner_join(plot.fin, best.fin[,c('threshold','method','mean_profit_ratio')], by = "method")
+# filter for thresholds == best. thresholds
+plot.fin <- plot.fin %>% filter(threshold.x == threshold.y)
+plot.fin <- plot.fin %>% filter(abs(profit.ratio- mean_profit_ratio)<=.5)
+#subset first one from each method
+iter.key <- plot.fin %>% mutate(diff = abs(profit.ratio - mean_profit_ratio)) %>%
+        group_by(method) %>% arrange(diff) %>% slice(1) %>% ungroup()
+
+#iter.key lists the iterations I want to extract for each method from compile.results (finance_results)
+#may need to compile all my .. compile.results
+if(.Platform$OS.type == 'windows'){
+CR <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+joined <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/joined.rds")
+
+} else{
+CR<- readRDS("~/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+joined <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/joined.rds")
+
+}
+
+#flatten list
+CR <- bind_rows(CR, .id = "id") %>% as_data_frame
+# create new dataframe of CR, filtered by iter.key
+# use map_df
+key.CR <- iter.key %>% filter(method %in% c('average','comp.boost','comp.rf','FWLS','simp.log', 'simp.boost'))
+new.CR <- data.frame(CR[1:nrow(joined[[1]]),c('balance.mlsto','b.rpdol')])
+for(i in 1:nrow(key.CR)){
+        col = CR %>% filter(id == key.CR$method[i]) %>% select_(key.CR$iteration[i])
+        names(col) <- key.CR$method[i]
+        new.CR = cbind(new.CR, col)
+}
+
+#now want to cbind optimal original results, stored in 'joined'
+key.oCR <- iter.key %>% filter(grepl('orig', method))
+key.oCR$index <- sapply(key.oCR$iteration, grep, colnames(CR)) - 2
+key.oCR$method <- gsub("orig.","", key.oCR$method)
+for(i in 1:nrow(key.oCR)){
+        col = joined[[key.oCR$index[i]]] %>% select_(key.oCR$method[i])
+        names(col) <- paste("orig.", key.oCR$method[i], sep = "")
+        new.CR = cbind(new.CR, col)
+}
+
+#now have all mean outputs for each method
+# want to create a confusion matrix for each
+# need to append answers.. 
+conf.CR <- new.CR
+
+#push all probabilities one way or the other
+for(p in seq_along(iter.key$method)){
+        vec = conf.CR[,iter.key$method[p]]
+        vec <- ifelse(vec < iter.key[iter.key$method == iter.key$method[p],]$threshold.x, 0, 1)
+        conf.CR[,iter.key$method[p]] <- vec
+}
+
+
+```
+Make confusion matricies
+
+
+```{r}
+
+# sub all 1's for loss and 0's for profit
+conf.CR[,2:11] <- apply(conf.CR[,2:11], 2, function(x) ifelse(x < 0.5, "profit", "loss")) %>% as.data.frame
+
+#generate list of tables
+methods = iter.key$method
+confs = vector(mode = 'list', length(methods))
+for(m in seq_along(methods)){
+        confs[[m]] = (table(conf.CR[, methods[m]], conf.CR$b.rpdol) %>% prop.table(2)*100) %>% round(1)
+}
+names(confs) <- methods
+
+conf.plot <- as.data.frame(confs) %>% melt
+conf.plot <- conf.plot[,17:20]
+names(conf.plot)[1:4] <- c("model.pred","actual","method","pc")
+conf.plot$method <- gsub('.Freq',"",conf.plot$method)
+
+# saveRDS(conf.plot, "~/Documents/github/consult/finalwriteup/report_data/conf_plot.rds")
+
+```
+
+Investigate which jobs were deemed unprofitable
+Use simple logistic regression blend
+
+```{r}
+if(.Platform$OS.type == 'windows'){
+        all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+} else{
+        all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+
+}
+
+#iOS
+all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
+all6$mlsto <- as.character(all6$mlsto)
+all10mice = left_join(all10mice, all6)
+head(all10mice)
+
+#merge simp.log
+head(new.CR)
+all10mice<- cbind(all10mice, new.CR %>% select(simp.log))
+all10mice$f.rpdol <- as.factor(all10mice$b.rpdol)
+levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "0"] <-"profit"
+levels(all10mice$f.rpdol)[levels(all10mice$f.rpdol) == "1"] <-"loss"
+
+#for simp.log 0.6 is the threshold, so summarise everything above 0.6
+all10mice %>% filter(simp.log >= 0.6) %>% summary
+reject <- all10mice %>% filter(simp.log >= 0.6)
+reject$compare <- "reject"
+
+#want to understnad the comparison of perentages between full dataset and rpob>0.6 dataset
+all10mice$compare <- "full"
+all10mice <- rbind(all10mice, reject)
+
+# saveRDS(all10mice, '/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/reject_plot.rds')
+
+
+#create % column for factor variable
+# count number of cases for each 
+
+cols = c(1:11,13,14,18,19,22)
+
+#wot function saves plots to folder in onedrive
+wot <- function( compare.cols = compare.cols){
+        
+        for (i in seq_along(compare.cols)){
+        print(i)
+        
+        if(class(all10mice[,compare.cols[i]]) %in% c('numeric','integer')){
+                p <- ggplot(all10mice, aes_string(x = names(all10mice)[compare.cols[i]])) + 
+                        geom_density() +
+                        facet_wrap(~compare)
+        }
+        
+        if(class(all10mice[,compare.cols[i]]) %in% c('factor')){
+                p <- ggplot(all10mice, aes_string(x = names(all10mice)[compare.cols[i]])) + 
+                        geom_bar(aes(y = (..count..)/tapply(..count..,..PANEL..,sum)[..PANEL..])) +
+                        facet_wrap(~compare) + 
+                        theme(axis.text.x=element_text(angle=30, hjust=1)) +
+                        scale_y_continuous(labels = scales::percent)
+
+        }
+                ggsave(p, filename = paste(names(all10mice)[compare.cols[i]], 'compare.png', sep = ""), 
+                       path = '/Users/yam/OneDrive/shared files/Bligh Tanner/masters/barplots/compare_simplog/', 
+                       width = 5, height = 4)
+}}
+
+wot(compare.cols = cols)
+
+#plot of profit size broken up by job
+head(reject)
+
+ggplot(reject, aes(x = f.rpdol, y = abs(balance.mlsto), fill = mlsto)) +
+        geom_bar(stat = "identity") + 
+        theme(legend.position="none") +
+        scale_fill_manual(values = rep(c('blue', 'yellow'), 59)) + 
+        scale_y_continuous(labels = scales::dollar)
+```
+
+
+
+
+```{r}
+
+groups <- (rbinom(32, n = 5, prob = 0.4))
+tapply(groups, groups, sum) #- is almost the same as
+table(groups)
+
+ind <- list(c(1, 2, 2), c("A", "A", "B"))
+table(ind)
+tapply(1:3, ind) #-> the split vector
+tapply(1:3, ind, sum)
+
+```
+
+Making Shiny visualisation
+What is the spread in probability values like?
+
+```{r}
+CR$mean <- apply(CR[,3:102], 1, mean) 
+CR$sd <- apply(CR[,3:102], 1, sd) 
+CR <- mutate(CR, conf_95 = sd*1.96*2)
+summary(CR$conf_95)
+# median conf interval for a probability is 0.11, mean is 0.137, just say 0.12 spread
+ggplot(CR, aes(y = conf_95, x = mean)) + geom_point()
+#find mean conf_95 per bin of mean
+CR$mean_bins <- cut(CR$mean, 10)
+ddply(CR, .(mean_bins), summarise, mean_conf = median(conf_95))
+
+# probability outputs for log.reg
+ggplot(new.CR, aes(y = simp.log, x = "potato")) + geom_boxplot()
+max(new.CR$simp.log)
+exp <- new.CR
+all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+exp <- cbind(exp, return.pdol = all10mice$return.pdol)
+ggplot(exp, aes(x = simp.log, y = return.pdol)) + geom_point()
+
+```
+
+
+

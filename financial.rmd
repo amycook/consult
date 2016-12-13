@@ -1,0 +1,634 @@
+---
+title: "Financial_Analysis"
+author: "Amy Cook"
+date: "October 21, 2015"
+output: word_document
+---
+
+#Assess financial implications for a predictive model
+
+We typically get a confusion matrix built from probabilities
+
+
+```{r loadpackages, echo=FALSE, include=FALSE}
+
+library("plyr")
+library("dplyr")
+library('magrittr')
+library('reshape2')
+library('ggplot2')
+library('gbm')
+library('randomForest')
+library('caret')
+library('pROC')
+library('testthat')
+library('purrr')
+library(tidyr)
+library(broom)
+
+# setwd("C:/Users/n9232371/Documents/Consultbusiness/data")
+```
+
+Load data 
+
+```{r, echo=FALSE}
+
+test.pred <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/test_review.csv')
+all7d <- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all7d.csv')
+test.pred<- merge(test.pred, all7d %>% select(mlsto, balance.mlsto), by = "mlsto")
+
+```
+
+
+Create vector of profit points
+
+
+```{r, echo=FALSE}
+
+threshold<- seq(0,1, by=.05)
+fin.prof<- rep(0, length(threshold))
+
+for(i in 1:length(threshold)){
+        prof<- data.frame("balance" = test.pred$balance.mlsto, 
+                  "pred" = test.pred$pred,
+                  "ans" = test.pred$b.rpdol)
+        #pred = probabilities
+        prof$conf <- rep(0, nrow(prof))
+        prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 1, 'TP', prof$conf)
+        prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 0, 'FP', prof$conf)
+        # if model marks it as a positive (greater than threshold), eliminate any balance
+        prof$profit<- rep(0, nrow(prof))
+        prof$profit<- ifelse(prof$conf %in% "TP", -prof$balance, prof$profit)
+        prof$profit<- ifelse(prof$conf %in% "FP", -prof$balance, prof$profit)
+
+        fin.prof[i] = sum(prof$profit)
+        
+}
+
+prof.plot<- data.frame("threshold" = threshold, "final.profit" = fin.prof)
+
+ggplot(prof.plot, aes(x=threshold, y=final.profit)) + geom_point() + geom_line()
+
+# if say no to all jobs with higher than prob of 0.5, save $500,000
+
+head(prof)
+
+
+####
+# SUMMARY STATS
+####
+
+# would dismiss 56 jobs
+prof %>% filter(pred>=0.5) %>% nrow
+
+# would dismiss 19 profitable jobs
+prof %>% filter(pred >= 0.5 & balance > 0) %>% nrow
+#out of 607
+prof %>% filter(balance > 0) %>% nrow
+
+# would dismiss 37 losing jobs
+prof %>% filter(pred >= 0.5 & balance < 0) %>% nrow
+#out of 135
+prof %>% filter(balance < 0) %>% nrow
+
+#without algorithm, balance would be $1,475,642
+orig.bal<- sum(prof$balance)
+
+# without any losing jobs, balance would be $2,516,246
+orig.prof<- prof %>% filter(balance > 0) %>% sum
+
+# without any profitable jobs, balance would be -$1,040,322
+orig.loss<- prof %>% filter(balance < 0) %>% sum
+
+#how much real profit would you be dismissing? $82631
+prof.dismis<- prof %>% filter(pred >= 0.5 & balance > 0) %>% select(balance) %>% sum
+#how much real loss would you be avoiding? $566,481.6
+loss.dismis<- prof %>% filter(pred >= 0.5 & balance < 0) %>% select(balance) %>% sum
+# total benefit = $483,850
+algor.prof<- -(loss.dismis + prof.dismis)
+
+# total balance would be $1,959,492
+sum(prof$balance) + algor.prof
+
+# a 32.8% improvement
+algor.prof/sum(prof$balance)
+
+```
+
+Write function for making 10 boosted trees and checking the predictions/savings for each!
+
+```{r, echo=FALSE}
+
+all10mice<- read.csv('C:/Users/n9232371/Documents/Consultbusiness/data/all10mice.csv')[,-1]
+
+profit.cv<- function(df.string = "all10mice", method = "boost", seed = 300, k.folds = 3){
+        
+        results = data.frame('orig.bal' = rep(0, k.folds), 'orig.prof' = rep(0, k.folds), 
+                             'orig.loss' = rep(0, k.folds),
+                             'prof.dismis' = rep(0, k.folds), 'loss.dismis' = rep(0, k.folds), 
+                             'algor.prof' = rep(0, k.folds),
+                             'improv' = rep(0, k.folds), 'thresh' = rep(0, k.folds),
+                             'auc' = rep(0, k.folds))
+        colours <- c("red", "yellow", "green", "blue", "purple")
+        
+        
+        df = get(df.string)
+        set.seed(seed)
+        
+        # create f.rpdol
+        df$f.rpdol <- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <-"profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <-"loss"
+        
+        #set up 10 fold cv using caret function
+        folds <- createFolds(df$f.rpdol, k = k.folds, list = T, returnTrain = F)
+        #now have folds[[1]] through folds[[10]] list of rows to exclude
+        
+        
+        if(method %in% 'boost') {
+                        formula = "b.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log"
+        } else {
+                formula <-"f.rpdol ~ Discipline + pc.pro + b.timespan.cbrt + no.users + inv.mlsto.log + client.totinv.log + Business + majority.pos + pc.majpos.log + JD.Second + Billing.Type"
+        }
+        
+        
+        for (j in 1:length(folds)) {
+                        
+                        #turn predictors and response into 'ordered' variables for roc() to work
+                        test<- df[folds[[j]],]
+                        levels(test$f.rpdol) <- c('profit', 'loss')
+                        test$f.rpdol <- ordered(test$f.rpdol)
+                        
+                        
+                        if(method %in% 'rf'){
+                                fit <- randomForest(as.formula(formula), data = df[-folds[[j]],], 
+                                            mtry = 5, ntree = 2000)
+                                pred <- predict(fit, test, type = "prob")
+                                pred <- pred[,2]
+                                
+                        } else {
+                                if(method %in% 'log'){
+                                        fit<- glm(as.formula(formula), 
+                                                  data = df[-folds[[j]],], family = binomial())
+                                        pred <- predict(fit, test,
+                                                        type = "response")
+                                } else {
+                                        fit <- gbm(as.formula(formula), data = df[-folds[[j]],],
+                                                   distribution = "bernoulli", n.trees = 10000,
+                                                   shrinkage = 0.001, interaction.depth = 4,
+                                                   n.minobsinnode = 20)
+                                                
+                                                pred <-predict(fit, test, 
+                                                               n.tree = 10000, type = "response")
+                                                }
+                        }
+                        
+                        #pROC
+                        pred.p <- roc(test$f.rpdol, pred)
+                        # plot.roc(pred.p, col= colours[i], print.thres=T)
+                        
+                        results$auc[j] <- auc(pred.p)
+                        
+                        ##
+                        #create full test df
+                        test$pred<- pred
+                        test.pred <- merge(test, all7d %>% select(mlsto, balance.mlsto), by = "mlsto")
+                        
+                        
+                        #create vector of profit points
+                        
+                        threshold = seq(0,1, by = .05)
+                        fin.prof = rep(0, length(threshold))
+                        
+                        for (i in 1:length(threshold)) {
+                                prof <- data.frame("balance" = test.pred$balance.mlsto,
+                                "pred" = test.pred$pred,
+                                "ans" = test.pred$b.rpdol)
+                                
+                                #pred = probabilities
+                                prof$conf <- rep(0, nrow(prof))
+                                prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 1, 'TP', prof$conf)
+                                prof$conf <- ifelse(prof$pred >= threshold[i] & prof$ans == 0, 'FP', prof$conf)
+                                prof$profit <- rep(0, nrow(prof))
+                                prof$profit <- ifelse(prof$conf %in% "TP",-prof$balance, prof$profit)
+                                prof$profit <- ifelse(prof$conf %in% "FP",-prof$balance, prof$profit)
+                                
+                                fin.prof[i] = sum(prof$profit)
+                                
+                                }
+                        
+                        prof.plot<- data.frame("threshold" = threshold, "final.profit" = fin.prof)
+                        
+                        print(
+                        ggplot(prof.plot, aes(x=threshold, y=final.profit)) + geom_point() + geom_line()
+                        )
+                        
+                        best.thresh = arrange(prof.plot, -final.profit)[1,1]
+                        results$thresh[j] = best.thresh
+                        
+                        ####
+                        # SUMMARY STATS
+                        ####
+                        
+                        #without algorithm, balance would be $1,475,642
+                        results$orig.bal[j] = sum(prof$balance)
+                        # without any losing jobs, balance would be $2,516,246
+                        results$orig.prof[j] = prof %>% filter(balance > 0) %>% sum
+                        # without any profitable jobs, balance would be -$1,040,322
+                        results$orig.loss[j] = prof %>% filter(balance < 0) %>% sum
+                        #how much real profit would you be dismissing? $82631
+                        temp<- prof %>% filter(pred >= best.thresh & balance > 0)
+                        results$prof.dismis[j] = ifelse(nrow(temp)>0, temp %>% select(balance) %>% sum,
+                                                        0)
+                        #how much real loss would you be avoiding? $566,481.6
+                        results$loss.dismis[j] = prof %>% filter(pred >= best.thresh & balance < 0) %>% 
+                                select(balance) %>% sum
+                        
+                        #print j value
+                        cat(j, " ")
+                        
+        }
+        
+        # total benefit = $483,850
+        results = transform(results, algor.prof = -(loss.dismis + prof.dismis))
+        results = transform(results, improv = algor.prof/orig.bal)
+        
+        return(results)
+
+
+}
+
+results.1 <- profit.cv(df.string = "all10mice", method = "log", seed = 400, k.folds = 5)
+results.2 <- profit.cv(df.string = "all10mice", method = "boost", seed = 400, k.folds =5)
+results.3 <- profit.cv(df.string = "all10mice", method = "rf", seed = 300, k.folds = 3)
+
+
+```
+
+
+Need a new function for final analysis! comparing two blending methods
+Can i get rid of boosted tree model? that would speed things up a lot
+
+Need to try simple average and log reg without boosted trees. Reduces spread but doesnt improve mean. i'd like to keep the wide spread because you reach greater heights (and lower lows)
+
+```{r}
+if(.Platform$OS.type == 'windows'){
+        all10mice = read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        source("C:/Users/n9232371/Documents/github/consult/functions.R")
+} else{
+        all10mice = read.csv('~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')[,-1]
+        source("/Users/yam/Documents/github/consult/functions.R")
+
+}
+
+# #clean up some JD.SEcond categories!
+# summary(all10mice$JD.Second)
+# # all Subdivision sohould be under civBldg_subdiv_sewer
+# all10mice$JD.Second <- as.character(all10mice$JD.Second)
+# all10mice$JD.Second <- ifelse(all10mice$JD.Second == "Subdivision", "civBldg_subdiv_sewer",
+#                               all10mice$JD.Second)
+# all10mice$JD.Second <- as.factor(all10mice$JD.Second)
+# # mlsto 20090.238 should be flood harvest
+# all10mice[all10mice$mlsto == "2009.238",]$JD.Second <- 'flood_h2o_harvest'
+# write.csv(all10mice, '~/OneDrive/shared files/Bligh Tanner/masters/data/all10mice_May16.csv')
+
+
+profit <- function(df = all10mice, method = c("average","simp.log","simp.boost","orig.log","orig.rf","orig.boost"), 
+                   seed = 400, 
+                   k.folds = 5, # number of folds in initial model.blend generation
+                   max.iter = 5, #max number of iterations from initial model.blend generation
+                   k.folds.2 = 5, # number of folds for second step blended model development
+                   tot.tests = 500 # total number of results to create
+                   ){
+        
+        length.k.folds = ceiling(tot.tests/k.folds.2)*k.folds.2
+        
+        set.seed(seed)
+        
+        # create f.rpdol
+        df$f.rpdol <- as.factor(df$b.rpdol)
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "0"] <-"profit"
+        levels(df$f.rpdol)[levels(df$f.rpdol) == "1"] <-"loss"
+        
+        # testthat check
+        expect_equal(levels(df$f.rpdol), c("profit", "loss"))
+        
+        #loop through however many versions of df.blend are required
+        compile.results = NULL
+        
+        #store results of three original models in list for each iteration
+        joined <- assemble(methods = c("log", "rf", "boost"), df.assem = df, x.folds.assem = 5,
+                    iterations = ceiling(tot.tests/k.folds.2))
+        
+        # saveRDS(joined, "/Users/yam/Documents/github/consult/finalwriteup/report_data/joined2.rds")
+        # run blended models on each of the 100 outputs from original models stored
+        # in joined list. Store as new list 'compile.results' for each blending method
+        for(m in 1:ceiling(tot.tests/max.iter)){
+        
+        print(
+                paste("m =", m, "of", ceiling(tot.tests/max.iter),"\n", sep = ' ') %>% cat()
+        )        
+                
+        # create complete set using mth list item in joined
+        df.blend = full_join(df %>% mutate(rown = 1:nrow(df)), joined[[m]], 
+                                by = c('rown'='rownames'))
+        df.blend <- df.blend %>% select(-rown)
+        
+        # df.blend = assemble(methods = c("log","rf","boost"), df.assem = df, x.folds.assem = 5)
+        
+        
+        df.blend = mutate(df.blend, norm.log = sign(log) * abs(log)^(1/3))
+        df.blend = mutate(df.blend, norm.rf = rf^0.5)
+        df.blend = mutate(df.blend, norm.boost = log(boost))
+        
+        # saveRDS(df.blend, "C:/Users/n9232371/Documents/github/consult/dfblend.rds")
+        # df.blend <- readRDS("/Users/yam/Documents/github/consult/dfblend.rds")
+        
+        saveit <- iter.auc(mult = max.iter/k.folds.2, x.folds.iter = k.folds.2,
+                           methods = c(
+                                  "simp.log","average",
+                                  "orig.log","orig.rf","orig.boost",
+                                  "comp.rf","comp.boost","FWLS",
+                                   "simp.boost"
+                                  ),
+                           df.iter = df.blend)
+
+        dontknow = map(saveit, function(x) spread(x, iteration, pred))
+        
+        if(m == 1){
+                compile.results = dontknow
+        } else {
+                compile.results = map2(compile.results, dontknow, function(x,y) merge(x, y, by = 'index'))
+        }
+        
+        }
+        
+        # saveRDS(compile.results, "/Users/yam/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+        # compile.results <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+        
+        
+        ####
+        # now have a suite of predictions - merge with original all10.blend$balance.mlsto
+        df.blend$index = rownames(df.blend) %>% as.numeric
+        # load balances
+        if(.Platform$OS.type == 'windows'){
+        all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        } else{
+        all6 <-read.csv('/Users/yam/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+        }
+        #iOS
+        all6 <- all6 %>% select(mlsto, balance.mlsto) %>% distinct()
+        all6$mlsto <- as.character(all6$mlsto)
+        df.blend = left_join(df.blend, all6)
+        compile.results <- map(compile.results, function(x) 
+                left_join(x, df.blend %>% select(index, balance.mlsto, b.rpdol))) 
+
+                        
+        #create vector of profit points
+        threshold = seq(0, 1, by = .05)
+
+        # set up list of blank dataframes for profit calcs for each iteration: prof.results
+        colnames = names(compile.results[[1]])[grepl('iter', names(compile.results[[1]]))]
+        new.df = matrix(NA, nrow = length(threshold), ncol = ceiling(tot.tests/max.iter) + 1) %>% as.data.frame
+        colnames(new.df) <- c('threshold', colnames)
+        new.df$threshold = threshold 
+        prof.results = list(new.df,new.df,new.df,new.df,new.df,new.df,new.df,new.df,new.df)
+        names(prof.results) = names(compile.results)
+        
+         
+        # try eliminating outliers of balance over $200,000
+        # comp.results.2 <- lapply(compile.results, function(x) x = x %>% filter(abs(balance.mlsto)<200000))
+        
+        prof.results <- map2(compile.results, prof.results, function(x,y) {
+                
+                for(n in 2:ncol(y)){
+                        
+                        for (p in 1:length(threshold)) {
+                        
+                        # sum the balance.mlsto of all jobs that fall below the cut off threshold
+                        # this equals the total profits (or losses!) across all jobs that were completed
+                        # given that you reject any job over the threshold
+                                
+                        prof <- x[x[,n] < y$threshold[p], 'balance.mlsto']
+                                
+                        y[p, n] = sum(prof)
+                                
+                }
+                        
+                }
+                
+                return(y)
+                
+        })
+        
+        prof.results <- map2(prof.results, names(prof.results), function(x,y) {
+                x$method = y
+                return(x)})
+        
+        assign("prof.results", prof.results, envir = .GlobalEnv)
+                        
+}
+
+#function below assigns results to 'prof.results' object in global env
+profit(df = all10mice, method = c("average","simp.log",'simp.boost','FWLS','comp.boost','comp.rf', "orig.log","orig.rf","orig.boost"),
+                   seed = 300,
+                   k.folds = 5, # number of folds in initial model.blend generation
+                   max.iter = 5, #max number of iterations from initial model.blend generation
+                   k.folds.2 = 5, # number of folds for second step blended model development
+                   tot.tests = 500 # total number of results to create
+                   )
+
+# gather results for plotting
+plot.results = rbind_all(prof.results)
+plot.results = gather(plot.results, key = iteration, value = profit, -method, - threshold)
+
+# censor actual profit amount as fraction of historical profit level
+orig.prof = plot.results %>% filter(threshold == 1) %>% .$profit %>% .[1]
+plot.results = mutate(plot.results, profit.ratio = (profit/orig.prof*100) %>% round(1))
+
+saveRDS(plot.results,"C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/plot_finance_100_4.rds" )
+saveRDS(plot.results,"/Users/yam/Documents/github/consult/finalwriteup/report_data/plot_finance_100_4.rds" )
+
+bind <- bind %>% filter(!method %in% 'FWLS')
+bind <- rbind(bind, plot.results)
+
+ggplot(plot.results, aes(x= threshold, y= profit.ratio, colour = method)) + 
+        geom_point(alpha = 0.1, shape = 16) + 
+        stat_smooth() +
+        scale_y_continuous(breaks = seq(0,110, by = 10)) + 
+        scale_x_continuous(breaks = seq(0,1, by = .1)) + 
+        geom_hline(yintercept = 100, colour = "darkgray", linetype = 2)
+
+
+# why is it so shit? calc average prob for each iteration
+mean.prob = apply(compile.results[['average']], 1, function(x) mean(x[2:11])) 
+analysis = data.frame(index = 1:length(mean.prob), mean.prob = mean.prob, 
+                      bal = compile.results[['simp.log']]$balance.mlsto)
+analysis %>% arrange(mean.prob) %>% head(10)
+ggplot(analysis, aes(x = mean.prob, y = bal)) + geom_point()
+        
+```
+
+
+Now need to check how mnay experiments to do.. power calc. 
+
+```{r}
+
+#power calc - where should I do it from? 
+
+```
+
+Check for significant difference between samples
+
+```{r t_test}
+plot.results
+
+index = c(2:8)
+pvals = data.frame("method" = levels(plot.results$method %>% as.factor)[c(2:8)], 
+                   "threshold" = 
+                   'p_value' = NA)
+for(i in seq_along(index)){
+        pvals$p_value[i] = t.test(auc.150[[1]], 
+                                  auc.150[[index[i]]])$p.value %>%
+                format(digits = 2) %>% as.numeric
+}
+
+```
+
+
+
+
+
+Check what happens when you increase the amount you invoiced by a certain percentage
+
+```{r}
+
+# what if you find for jobs over a certain threshold, increase fee by ?% still do all jobs
+compile.results <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/finance_results.rds")
+####
+# now have a suite of predictions - merge with original all10.blend$balance.mlsto
+df.blend$index = rownames(df.blend) %>% as.numeric
+# load balances
+all6 <-read.csv('C:/Users/n9232371/OneDrive/shared files/Bligh Tanner/masters/data/all6.csv')
+all6 <- all6 %>% select(mlsto, balance.mlsto, inv.mlsto, cost.mlsto) %>% distinct()
+all6$mlsto <- as.character(all6$mlsto)
+df.blend = left_join(df.blend, all6)
+compile.results <- map(compile.results, function(x) {
+        left_join(x, df.blend %>% select(index, balance.mlsto, b.rpdol, inv.mlsto, cost.mlsto))}) 
+                        
+#create vector of profit points
+threshold = seq(0, 1, by = .05)
+
+# set up list of blank dataframes for profit calcs for each iteration: prof.results
+colnames = names(compile.results[[1]])[grepl('iter', names(compile.results[[1]]))]
+new.df = matrix(NA, nrow = length(threshold), ncol = ceiling(tot.tests/max.iter) + 1) %>% as.data.frame
+colnames(new.df) <- c('threshold', colnames)
+new.df$threshold = threshold 
+prof.results = list(new.df, new.df, new.df, new.df, new.df)
+names(prof.results) = names(compile.results)
+
+        
+prof.results <- map2(compile.results, prof.results, function(x,y) {
+                
+        for(n in 2:ncol(y)){
+                        
+                for (p in 1:length(threshold)) {
+                        
+                # sum the balance.mlsto of all jobs - you do them all
+                # then sum a 10% increase in what you charge for all jobs above a certain threshold
+                                
+                        prof <- x[, 'balance.mlsto']
+                        increase <- x[x[,n] > y$threshold[p], 'inv.mlsto']*0.1
+                                
+                        y[p, n] = sum(prof) + sum(increase)
+                                
+                }
+                        
+        }
+                return(y)
+})
+        
+prof.results <- map2(prof.results, names(prof.results), function(x,y) {
+        x$method = y
+        return(x)})
+        
+assign(prof.results, "prof.results", envir = .GlobalEnv)
+
+
+# gather results for plotting
+plot.results = rbind_all(prof.results)
+plot.results = gather(plot.results, key = iteration, value = profit, -method, - threshold)
+
+ggplot(plot.results, aes(x= threshold, y= profit, colour = method)) + 
+        geom_point(alpha = 0.1, shape = 16) + 
+        stat_smooth()
+
+# doesn't reveal much - better off doing a simple check once decided threshold.
+
+# I like simp.log best. 
+
+simp.l <- compile.results[['simp.log']]
+simp.l$mean.iter <- rowMeans(simp.l[,2:101])
+
+saveRDS(simp.l, "/Users/yam/Documents/github/consult/finalwriteup/report_data/finance_average_model.rds")
+
+# How many jobs are above threshold of 0.65?
+simp.l %>% filter(mean.iter>0.65) %>% nrow
+# 74 - not many
+
+#how much was lost above 0.65?
+initial = simp.l %>% filter(mean.iter>0.65) %>% .$balance.mlsto %>% sum
+# $600000
+# what if increased invoice amount by 0.1?
+costs = simp.l %>% filter(mean.iter>0.65) %>% .$cost.mlsto %>% sum
+simp.l %>% filter(mean.iter>0.65) %>% mutate(frac = inv.mlsto*0.27) %>% .$frac %>% sum
+
+# would have to increase all the jobs which rated above 0.65 by 27% to break even.
+# would have to increase all the jobs which rated above 0.65 by 46% to generate a 15% profit.
+# this is probably impractical - hard to compete or argue for it. could also go for Hourly rate billing
+
+profit.15 = costs*.15
+
+
+```
+
+
+```{r}
+
+wot <- each.fold(methods = c("log", "rf", "boost"), df.assem = all10mice, x.folds.assem = 5,
+                 iterations = 100, seed = 200)
+
+saveRDS(wot, "C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+
+if(.Platform$OS.type == 'windows'){
+        ind_folds <- readRDS("C:/Users/n9232371/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+} else{
+        ind_folds <- readRDS("/Users/yam/Documents/github/consult/finalwriteup/report_data/indiv_folds.rds")
+}
+
+
+#plot profit curves for each fold
+names(ind_folds) <- c(1:100)
+folds_plot <- bind_rows(ind_folds, .id = "id")
+folds_plot <- gather(folds_plot, key = iteration, value = profit, -threshold, - id)
+
+temp = gsub("([:0-9:])", "\\1~", folds_plot$iteration, ignore.case = TRUE) %>% strsplit(., "~")
+
+
+folds_plot$iteration = sapply(temp, function(x) x[1])
+folds_plot$method = sapply(temp, function(x) x[2])
+
+ggplot(folds_plot, aes(x = threshold, y = profit, colour = id)) +
+        facet_wrap(~method) +
+        geom_point()+
+        # geom_line(aes(group = id)) +
+        theme(legend.position = "none")
+
+
+```
+
+
+
+
+
+
