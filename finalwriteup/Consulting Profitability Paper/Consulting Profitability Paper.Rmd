@@ -35,7 +35,6 @@ library('reshape2')
 library("rpart")
 library('car')
 library('e1071')
-library('party')
 library('randomForest')
 library('RColorBrewer')
 library('pwr')
@@ -62,28 +61,24 @@ opts_chunk$set(fig.width=6.7, dpi = 200, warning = FALSE, message = FALSE, echo 
 Clearly state the research question and objectives of the work. Briefly provide any necessary
 background to frame the research question. Concisely summarize the major findings/results.
 
+Depending on the industry, some consulting projects can be financialy risky endeavors for the consultant. Engineering consultanting companies in the construction industry complete a wide range of complex projects in a competitive enviroment. Because of the way contracts are structured, many of these projects result in losses. The purpose of this study was to test whether these loss making projects could be predicted by statistical and machine learning algorithms using the information available at project conception. The second question is whether the predictive algorithm could improve a company's profitability. Project data from a case study engineering company was used to answer these questions.    
+
 
 1 page
 
-Intro - pick out bits from thesis
 
 #### 1.1 Problem motivation
 
-for consulting businesses that solve complex problems, similar time estimation errors determine their financial well-being.  
-This thesis focuses on the risk taken by a consulting company when offering a fixed fee. Clients commonly seek fixed price quotes from several consultants before selecting one or negotiating further. Hence, quoted fees must be competitive. 
-The way a consulting manager calculates a fixed price varies from industry to industry and even company to company. Typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb
-- amount of losses, sources
-A study across 1471 IT projects showed that 27% of projects ran over budget, and one in 6 of those projects were more than 200% over budget [@Flyvbjerg2011].
+Financial risk most commonly falls upon a consulting company when they must offer a fixed fee for a project. In competitive climates, clients request fixed price quotes for project completion from several consultants before a project is awarded. Hence, initial quoted fees must be competitive but also accurately cover consultant salaries and business costs. 
+
+How do consultants make this accurate yet competitive fee estimate? This varies from industry to industry, but typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb. Unfortunately, some projects priced using this method can blow out of budget, causing significant losses to the consultant.
+
+A review of 6 IT project surveys between 1984 and 1994 by Moløkken & Jørgensen (2003) revealed that 60-80% of IT projects encountered effort and/or schedule overruns, where the average overrun was by 30 to 40%.
 A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by an average of 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% [@Flyvbjerg2007].
-Smaller consulting companies in competitive industries, such as the construction industry, experience similar difficulties in forecasting their project costs.
-losses = low employee morale, elevated stress, low work quality to improve speed, possibly redundancies
-@Lovallo2003 delved into the psychology behind why executives so often severely underestimate costs of larger projects such as manufacturing plant construction, mergers and acquisitions, large infrastructure and software development. Their theory stemmed from Kahneman's work on decision-making that won him the Nobel Prize for economics in 2002. His research argued that a person's natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project. A manager optimistically sees challenges in a project as something that can be overcome by the team's high skill level, and downplays or ignores the risk of problems that are out of the team's control. all complex projects are at risk of encountering a multitude of problems that the manager could never foresee. Each problem has a low chance of occurring, but in combination the risk is much greater [@Lovallo2003].
 
-Unfortunately, limited research is available that documents the methods industry uses for complex-projects.
-The construction cost estimation study by @Akintoye2000 surveyed 84 UK construction contractors - detailed analysis and experience based models
-A survey by @Moores1992 of 54 software developing companies found that detailed project planning tools were used by most companies as opposed to cost estimation tools
+Kahneman won a nobel prize in 2002 for his research into decision making on this topic. He argued that a person's natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project [@Lovallo2003]. To counter this phenomenon, research by Flyvbjerg [-Flyvbjerg2011] advised that managers should be confronted by the financial performance of similar projects to the one being costed so that they take on a more realistic view of their abilities. This was based off a body of findings where people made better predictions about themselves after being exposed to facts about other people. For example, subjects were asked to predict their skill levels before and after being exposed to a summary of other people's skills, and their predictions after were significantly more accurate [@Lovallo2003].
 
-Detailed analysis remains the most prevalent method for construction cost estimation despite the industry having a long history of projects running over time and budget using the same technique [@Shane2009].
+This work aims to provide a manager with this more realistic view by predicting whether the new project will be profitable or not, based on a suite of previous project data from the same company. The manager could then take multiple actions including not tendering for a project predicted to be loss-making, providing a high fixed price, or restructuring the contract so that it is not 100% fixed price. This research tests the simple case of rejecting all projects predicted as loss-making.
 
 
 #### 1.2 Case Study
@@ -107,6 +102,8 @@ A Customer Relationship Management software package (CRM) is currently employed 
 missing data due to how the data collection changed over time and some fields were not mandatory.
 
 
+To assess whether the model would improve the case study company's profitability, a simple managerial decision framework was applied: if the algorithm predicted the project to be loss making, the project was considered 'rejected' and all profits or *losses* of rejected projects were discarded. The remaining projects' profits and losses were summed to give a revised overall profit over the last 12 years of projects. This was compared to the summed profits and losses from all projects completed over the last 12 years. The best algorithm rejected enough loss-making projects to improve overall profits by 9%.
+
 - aim
 **General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. 
 The project outcomes are intended to assist the business in predicting project profitability before engagement. Several statistical and machine learning techniques were tested, compared and refined.
@@ -116,8 +113,6 @@ A statistical or machine learning model based on historical project data can pre
 
 **Hypothesis 2**
 The predictive model built from Hypothesis 1 can be shown to have a positive impact on the overall profit earned by the case study business. The overall profit is represented by the following equation:
-
-- brief summary of major findings/results 
 
 
 2. Literature Review
