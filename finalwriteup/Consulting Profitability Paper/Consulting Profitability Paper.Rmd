@@ -61,126 +61,78 @@ opts_chunk$set(fig.width=6.7, dpi = 200, warning = FALSE, message = FALSE, echo 
 Clearly state the research question and objectives of the work. Briefly provide any necessary
 background to frame the research question. Concisely summarize the major findings/results.
 
-Depending on the industry, some consulting projects can be financialy risky endeavors for the consultant. Engineering consultanting companies in the construction industry complete a wide range of complex projects in a competitive enviroment. Because of the way contracts are structured, many of these projects result in losses. The purpose of this study was to test whether these loss making projects could be predicted by statistical and machine learning algorithms using the information available at project conception. The second question is whether the predictive algorithm could improve a company's profitability. Project data from a case study engineering company was used to answer these questions.    
-
+Many consulting projects can be financialy risky endeavors for the consultant, often depending on the industry. Engineering consultanting companies in the construction industry complete a wide range of complex projects in a competitive enviroment. Because of the way contracts are structured, many of these projects result in losses. The purpose of this study was to test whether these loss making projects could be predicted by statistical and machine learning algorithms using the information available at project conception. Secondly, could the predictive algorithm improve a company's profitability? Predictive models and value frameworks were built using project data from a case study engineering company to answer these questions.    
 
 1 page
 
 
 #### 1.1 Problem motivation
 
-Financial risk most commonly falls upon a consulting company when they must offer a fixed fee for a project. In competitive climates, clients request fixed price quotes for project completion from several consultants before a project is awarded. Hence, initial quoted fees must be competitive but also accurately cover consultant salaries and business costs. 
+Financial risk is taken on by a consulting company when they offer a fixed fee to complete a project. In competitive climates, clients are in the position to request fixed price quotes from several consultants before a project is awarded. Hence, initial quoted fees must be competitive but also accurately cover consultant salaries and business costs. 
 
-How do consultants make this accurate yet competitive fee estimate? This varies from industry to industry, but typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, comparison to past projects, and rules of thumb. Unfortunately, some projects priced using this method can blow out of budget, causing significant losses to the consultant.
+How do consultants make this accurate yet competitive fee estimate? This varies from industry to industry, but typically a consulting manager has experience in the type of project they are quoting and, after reviewing the project details, can use a combination of intuition, analysis of project details, and rules of thumb. Unfortunately, some projects priced using this method can blow out of budget, causing significant financial losses to the consultant.
 
-A review of 6 IT project surveys between 1984 and 1994 by Moløkken & Jørgensen (2003) revealed that 60-80% of IT projects encountered effort and/or schedule overruns, where the average overrun was by 30 to 40%.
+Cost blowouts of complex projects has a history, particularly documented in the It and construction industry. A review of 6 IT project surveys between 1984 and 1994 by Moløkken & Jørgensen (2003) revealed that 60-80% of IT projects encountered effort and/or schedule overruns, where the average overrun was by 30 to 40%.
 A study on large-scale infrastructure projects over the past seventy years revealed that cost forecasts consistently underestimated the cost of rail projects by an average of 44.7%, the cost of bridge and tunnel projects by 33.8% and the cost of road projects by 20.4% [@Flyvbjerg2007].
 
 Kahneman won a nobel prize in 2002 for his research into decision making on this topic. He argued that a person's natural optimistic view of their own skills leads to consistent underestimation of the time and risks involved in a project [@Lovallo2003]. To counter this phenomenon, research by Flyvbjerg [-Flyvbjerg2011] advised that managers should be confronted by the financial performance of similar projects to the one being costed so that they take on a more realistic view of their abilities. This was based off a body of findings where people made better predictions about themselves after being exposed to facts about other people. For example, subjects were asked to predict their skill levels before and after being exposed to a summary of other people's skills, and their predictions after were significantly more accurate [@Lovallo2003].
 
-This work aims to provide a manager with this more realistic view by predicting whether the new project will be profitable or not, based on a suite of previous project data from the same company. The manager could then take multiple actions including not tendering for a project predicted to be loss-making, providing a high fixed price, or restructuring the contract so that it is not 100% fixed price. This research tests the simple case of rejecting all projects predicted as loss-making.
+This work aims to help managers provide better fixed price quotes by predicting whether a new project will be profitable or not, based on an algorithm trained on all previous project data from the same company. The manager could take multiple actions based on the algorithms output including not tendering for a project predicted to be loss-making, providing a high fixed price, or restructuring the contract so that it is not 100% fixed price. This research tests the simple case of rejecting all projects predicted as loss-making.
 
 
 #### 1.2 Case Study
 
-This thesis focuses on a single case study consulting company in the construction industry.
-twelve years of passively collected data that described each project in terms of their clients, invoice history, employee hours and technical details.
-labour is the chief cost and the long traditional history of this industry mandates fixed price projects as the norm. 20% of projects are loss making.
-Fees calculated via detailed analysis
-A Customer Relationship Management software package (CRM) is currently employed to collect and store project data. A CRM is a popular type of software used by businesses to record client and project details as well as employee time sheet records. In the case study business, the CRM is available to all employees over the company intranet, and each employee completes daily time sheets allotting their hours to certain projects. Additionally, technical information is recorded against each project
+Project data from a single case study consulting company in the construction industry was used to build the predictive algorithm, trial several methods, and test their impact on the company's bottom line. Twelve years of passively collected data that described each project in terms of their clients, invoice history, employee hours and technical details was scraped from the company's internal database. Customer relationship management (CRM) software provided accesses to the database to all employees. Employees completed daily timesheets, alotting their hours to certian projects. Project managers input technical information and client details for each project, while the finance team tracked invoicing and additional project costs such as printing and transport in the same system. On top of this information, the CRM had the hourly cost of each level of employee. The cleaned dataset consisted of 2364 projects between 2004 and 2012. 70% of projects were fixed price and 20% of all projects made a loss after taking into account business costs.
 
-* Employee time sheet hours with dates
-* Other project costs (taxis, printing)
-* Client information/characteristics
-* Client identification code
-* Invoiced amounts for each project and dates
-* Employee costs
-* Employee charge out rates
-* Project description
+Once several methods were built, to assess whether the model would improve the case study company's profitability, a simple managerial decision framework was applied: if the algorithm predicted the project to be loss making, the project was considered 'rejected' and all profits or *losses* of rejected projects were discarded. The remaining projects' profits and losses were summed to give a revised overall profit over the last 12 years of projects. This was compared to the summed profits and losses from all projects completed over the last 12 years. The best algorithm rejected enough loss-making projects to improve overall profits by 9%.
 
-2364 past projects are available.
-missing data due to how the data collection changed over time and some fields were not mandatory.
+<!-- **General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients.  -->
+<!-- The project outcomes are intended to assist the business in predicting project profitability before engagement. Several statistical and machine learning techniques were tested, compared and refined. -->
 
+<!-- **Hypothesis 1** -->
+<!-- A statistical or machine learning model based on historical project data can predict the profitability of a new project with greater accuracy than a baseline predictor. A baseline predictor for this project is one that predicts the average of a numeric response variable for all cases or, if the response variable is categorical, randomly assigned categories for each case, where the proportion of assigned categories matches the true categorical proportions. -->
 
-To assess whether the model would improve the case study company's profitability, a simple managerial decision framework was applied: if the algorithm predicted the project to be loss making, the project was considered 'rejected' and all profits or *losses* of rejected projects were discarded. The remaining projects' profits and losses were summed to give a revised overall profit over the last 12 years of projects. This was compared to the summed profits and losses from all projects completed over the last 12 years. The best algorithm rejected enough loss-making projects to improve overall profits by 9%.
-
-- aim
-**General Aim** Use statistical techniques to model the profitability of projects for consulting businesses using their internal CRM data. Research will focus on a case study Engineering consulting company that offers their expert advice (in the currency of time) to business clients. 
-The project outcomes are intended to assist the business in predicting project profitability before engagement. Several statistical and machine learning techniques were tested, compared and refined.
-
-**Hypothesis 1**
-A statistical or machine learning model based on historical project data can predict the profitability of a new project with greater accuracy than a baseline predictor. A baseline predictor for this project is one that predicts the average of a numeric response variable for all cases or, if the response variable is categorical, randomly assigned categories for each case, where the proportion of assigned categories matches the true categorical proportions.
-
-**Hypothesis 2**
-The predictive model built from Hypothesis 1 can be shown to have a positive impact on the overall profit earned by the case study business. The overall profit is represented by the following equation:
+<!-- **Hypothesis 2** -->
+<!-- The predictive model built from Hypothesis 1 can be shown to have a positive impact on the overall profit earned by the case study business. The overall profit is represented by the following equation: -->
 
 
 2. Literature Review
 ====================
 
-Summary of Key Related Research 
-This section should include a brief summary of key related research. Emphasis should be on demonstrating the foundation for the current investigation. Specifically, the goal is to 
-clearly delineate a gap or missing link that the current 
-research fills. Authors should avoid presenting a litany of past research and should focus
-on prior work necessary to demonstrate the
-existence of the research gap addressed in the manuscript.
+<!-- Summary of Key Related Research  -->
+<!-- This section should include a brief summary of key related research. Emphasis should be on demonstrating the foundation for the current investigation. Specifically, the goal is to  -->
+<!-- clearly delineate a gap or missing link that the current  -->
+<!-- research fills. Authors should avoid presenting a litany of past research and should focus -->
+<!-- on prior work necessary to demonstrate the -->
+<!-- existence of the research gap addressed in the manuscript. -->
 
-1 page
+For the case study company, training the algorithm to predict actual fee was not possible because the projects were too varied, and there was inadequate information describing the size and scope of each project in the database. However, in the literature, similar studies typically did attempmt to predict project costs of IT consutling projects and final construction costs of buildings and infrastructure.
 
 #### 2.1 Cost estimation in the Construction Industry and IT Industry
 
-The bulk of research to date has been performed with project data in either the construction industry or software development.
-Research in the construction industry has primarily focused on predicting the final building cost of construction.
-Over the past few decades, significant research has been dedicated to creating predictive models that present the 'outside view' of a project. This was done by statistically comparing a new project to a collection of similar projects and their characteristics. It has been shown that these models improve cost estimation accuracy, however industry has not adopted them.
+Previous studies in the literature have focussed on reporting the predictive accuracy of their cost estimation models for IT or construction projects using data from multiple businesses or governments around the world. In contrast, this research is focussed on determining how or if models predicting project profitability can improve the bottom line for a case study business, given data the company has internally generated. 
 
-##### 2.1.1 Construction Industry
-@Elfaki2014 completed a review of cost estimation research from 2004 to 2014. They found that artificial Neural Networks and SVM's were the most common machine learning techniques.
-Neural Networks and SVM's received significant attention in the 1990's for their ability to accurately predict construction costs with limited detailed information [@Shin2015; @Kim2004].
-@Shin2015 pioneered the application of Boosted Trees to cost estimation in construction projects.
-Often, Linear Regression was the only model assessed, without comparison to other methods such as Neural Networks, which first started appearing in literature in the 1990's [@Kim2004]
-Some studies showed that Neural Networks outperform Regression, however other studies established they are approximately equal [@Kim2004; @Attalla2003].
+Reviewing a range of individual studies show that cost estimation models have generally been built from at most 530 projects [@Kim2004] [@Finnie1997] - 299 software development[@Pai2013] - 163 software [@Shin2015] - 234 building projects, and often under 100 projects [@Finnie1997] [@Chan2005] 87 buildings. Sometimes it is not stated where the project data came from, and some studies specified the information came from surveys, with responses from companies and governments around the world. In this study, the dataset originates from a single company's database, which means the data is easily accessible to the company and there are 2364 projects, which is much more than previous studies. A study by @Mendes2004 demonstrated that using within company data was also more accurate than across company data. Their dataset consisted of 67 across company web projects and 14 within company projects. 
 
-Variety of variables used: [@Chan2005][@Akintoye2000; @Trost2003; @Pinto1988]
-the studies all generally reported their mean absolute error or a similar metric from the tested models, and results were generally positive. 
-Furthermore, the existing studies collected data from many businesses for a single study
+Almost all past studies analysed their model performance by predictive accuracy (reported as R^2 or RMSE) of cost predictions [@llist some stff] and compared these statistics bewteen methods. However, these results were not translated into a business case for the impact these models could have on an institution or how the model could be practically integrated into decision making. For example, if an institution used the model, how would it be applied to their decision making process and what magnitude of benefits could they expect? Saradhi & Palshikar's [-@Saradhi2011] work on employee churn, where 'churn' refers to the number of individuals moving out of a group within a certain time, presented a good framework for implementing their model. Theirsupport vector machine (SVM) predictive model identified employees at high risk of churn. Then a method for determining the value of each employee in terms of their importance to projects and their monthly chargeability was described, which enabled high risk employees to be ranked. Managers then had a clear direction for who to target first to prevent churn. This extension provided a comprehensive framework for how business managers could adopt a machine learning algorithm to improve business operations. It was a valuable addition that is absent from most cost estimation research, but will be included in this work.
 
-##### 2.1.2 Software Industry
+#### 2.2 Methods used in Cost Estimation and Other Business Applications
 
-In the software industry, the main component of cost is *effort* as opposed to the cost of building materials in the construction industry.
+Cost estimation literature tended to apply linear regression, neural networks and sometimes SVM methods, while predictive methods applied to other business problems investigated a wider range. This study aims to compare a wider range of methods to past cost estimation studies.
 
-Similar to the construction industry, expert judgment or detailed analysis, is the most widely practiced method for effort estimation [@Shepperd1996; @Molokken2003]
+In the construction industry, often only one method was assessed, such as linear regression, without comparison to other methods [@Chan2005; @Elfaki2014]. Neural Networks started appearing in literature in the 1990's and @Elfaki2014's review of cost estimation methods from 2004 to 2014 found that artificial Neural Networks and SVM's were the most popular machine learning techniques, but studies tended to only test one method. Some studies showed that Neural Networks outperformed Linear Regression, however other studies established they are approximately equal [@Kim2004; @Attalla2003]. To the authors' knowledge @Shin2015 documented the only application of ensemble tree methods (Boosted Trees) to cost estimation in construction projects. They found Boosted Trees slightly outperformed Neural Networks, but not significanatly.
 
-Multiple studies have shown that Neural Networks definitively outperform regression models in effort estimation, although Regression is the most popular method [@Finnie1997; @Pai2013; @Matson1993].
+In the software cost estimation literature, Linear Regression was the most popular method, however multiple studies showed that Neural Networks definitively outperform regression models  [@Finnie1997; @Pai2013; @Matson1993]. Despite the higher performance, Neural Networks were criticised for not providing reasoning or structure behind their predictions (black-box predictor) [@Finnie1997].
 
- Interestingly, several studies have found that even if 15 or so variables are included, often only one variable contributes significantly to the model's accuracy: size (or funciton point) [@Shepperd1996; @Finnie1997; @Pai2013]
- 
- A study by @Mendes2004 demonstrated using 67 web projects that cross-company models were significantly less accurate than a within company model [@Shepperd1996]
- Again, Neural Networks were criticised for their inability to explain their results [@Finnie1997].
- The software industry is unique in that agile methods of delivery are changing the contractual approach of consulting [@Badenfelt2011]. Software development is a relatively new field in comparison to construction, where the tradition of fixed fee structures is difficult to reinvent. 
+The review of methods applied to the construction and IT industry highlighted the use of Linear Regression, Neural Networks, SVM's and in one case Boosted Trees, however research on other business problems utilised a wider range of methods. In financial credit scoring, a study by @Brown2012 found that Random Forests and Boosted Trees consistently outperformed Neural Networks in classification. In addition, ensemble trees such as Random Forests and Boosted Trees can output partial dependency plots and variable importance measures that provide insight into the model's calculations. This is a valuable asset oer black box predictors. @Kumar2007 performed a detailed review of statistical and machine learning techniques applied over 37 years in the context of bankruptcy prediction in banks and reported that although SVM's performed well, they are often complex and slow, requiring a great deal of memory. They also assessed method blending techniques, which refers to combinations of two completely different algorithms, and found they can often outperform individual methods such as Linear Regression or Boosted Trees alone.
 
-#### 2.2 Methods used in other business applications
-
-The review of methods applied to the construction and IT industry highlighted the use of Linear Regression, Neural Networks, SVM's and in one case Boosted Trees, however research on other business problems utilised a wider range of methods. These included Naive Bayes, Random Forests, and machine learned Bayesian Networks.
-
-Although SVM's performed the best, as discussed, they are often complex and slow, requiring a great deal of memory [@Kumar2007].
-@Kumar2007 performed a detailed review of statistical and machine learning techniques that were applied over 37 years in the context of bankruptcy prediction in banks.
-
-For example in financial credit scoring, a study by @Brown2012 found that Random Forests and Boosted Trees consistently outperformed Neural Networks in classification.
-Kumar and Ravi's [-@Kumar2007] review also assessed ensemble techniques, which refers to combinations of two completely different algorithms, and found they can often outperform individual methods.
-
-An exception is Saradhi & Palshikar's [-@Saradhi2011] study on employee churn, where 'churn' refers to the number of individuals moving out of a group within a certain time. Naive Bayes, Random forests (an ensemble decision tree method) and SVM's were built.
-determining the value of each employee in terms of the importance of the projects they were on and their monthly chargeability. This allowed them to rank employees identified as 'high risk of churn' by value and provided a clear ranking for manager's to act upon. This extension of the study provided a comprehensive framework for how business managers could adopt their findings to improve business operations. It was a valuable addition that is absent from most cost and effort estimation research.
+To date, Linear Regression, Neural Networks, and Support Vector Machines (SVM's) have been comprehensively applied to cost estimation. This research does not test black-box predictors (Neural Networks and SVM's) because insight into the model's predictions is crucial for facilitating user uptake in the case study company. Ensemble tree methods such as Random Forests and Boosted Trees will be used instead, as they can perform as well as Neural Networks while providing insight to their output [@Caruana2006]. Blending of multiple predictive models is also applied in this work and has not yet been done in cost estimation. 
 
 #### 2.3 Gaps
 
-In comparison to previous studies, this project advances the body of work on cost estimation in three ways: the data set is larger than other studies and sourced from a single company's CRM database, ensemble tree methods and model blending was tested, and the prediction results were integrated into a decision framework for the business.
-In past research, cost estimation data sets generally consisted of <300 of projects from a range of a companies and even countries. This thesis case study only had access to the company's internal data but this contained over 2,000 past jobs
-Furthermore, the problem of cost estimation is applied to a consulting company in the construction industry, which differs from other studies in the construction industry that estimate actual construction costs. Consulting in the construction industry can be likened more to software development effort estimation although the nature of the work differs considerably.
+In comparison to previous studies, this project advances the body of work on cost estimation in two ways. First, it focusses on building a model that is practical and profitable for a business to implement by using the case study's interenal database as well as testing a managerial decision framework based off the model output. This framework presents a clear measure of expected benefits provided by adopting the profitability model into a business' decision process. Secondly, advanced predictive methods are trialled which have been minimally tested on this problem. These include ensemble decision tree methods, such as Random Forests and Boosted Trees, and blends of multiple models built from different methods.
 
-ensemble tree methods and blended methods are applied which have been minimally tested on this problem. To date, Linear Regression, Neural Networks, Case Based Reasoning (CBR), and Support Vector Machines (SVM's) have been used to predict cost/effort even though ensemble tree methods can perform as well as Neural Networks and generally outperform Linear Regression [@Caruana2006]. Another benefit of ensemble trees is the output types available, such as partial dependency plots and variable importance plots that provide insight into the model's calculations. This contrasts Neural Networks and SVM's, which are 'black-box' predictors.
-
-Finally, this study propels the predictive model one step further than other studies by analysing bottom-line profit improvements that could result from the research.
-final profit increases are evaluated. This kind of thought experiment is designed to present a clear case for industry when evaluating if and how to adopt cost estimation models. 
+ 
 
 3. Prediction Methods
 =====================
