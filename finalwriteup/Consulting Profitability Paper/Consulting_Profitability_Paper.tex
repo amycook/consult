@@ -357,271 +357,253 @@ Should provide sufficient detail to allow the work to be reproduced.
 Methods already published should be indicated by a reference: only
 relevant method modifications should be described.
 
-Neural Netowrks and SVM were not purusued because black box A previously
-mentioned disadvantage is that the NN algorithm is a black box because
-the internal structure is too complex for interpretation. They also
-require a lot of training data relative to other methods.
-
-Also, SVM's can be very slow to train and therefore not suitable for
-industry purposes (Auria and Moro 2008). Because it is so important to
-engage decision makers with a model that can explain its results, these
-two methods are not appropriate for the effort estimation problem.
+A range of simple and complex, linear and non-linear methods were
+applied to the problem including Logistic Regression, Random Forests,
+Gradient Boosted Trees, and Naiive Bayes. Furthermore, logistic
+regression, random forests, boosted trees and simple averaging were used
+to blend predictions from individual models. A brief description of each
+method is provided below.
 
 \paragraph{3.1 Predictive methods}\label{predictive-methods}
 
-binary classification problems, where the objective is to predict the
-probability of an event occurring. Probability is a continuous response
-variable, however predictions from a linear regression would not be
-bound by 0 and 1.
+The aim of this research is to build a model that predicts whether a
+consulting project will be profitable or not. Therefore each method must
+be capable of binary classifcation. Binary classification output from a
+model is the probability, between 0 and 1, of an event occuring. In this
+case, the event is a project being loss-making.
 
 \subparagraph{3.1.1 Logistic Regression}\label{logistic-regression}
 
-Because of the linear relationship, an equation can be fit to the log
-odds of the binary response variable against each of the explanatory
-variables using linear regression. Then, the linear equation describing
-the log odds can be transformed back to probability by taking the
-inverse log i.e.~the exponential and rearranging (Macdonald 1975):
+Logisitic regression models a linear relationship bewteen the log odds
+of a binary response variable and each of the explanatory variables.
+This is performed similarly to linear regression, but is transformed to
+probability of an event occuring by taking the inverse log of the log
+odds and rearranging (Macdonald 1975):
 
-The result in a sigmoidal function bound by 0 and 1. The sigmoidal
-function originates from a linear fit of the log odds in the data.
-Assume linear relationship between covariates and response variable
+\[
+\begin{aligned}
+\log(odds) &= \beta_0 + X_1\beta_1 \\
+\log\left(\frac{p}{1-p}\right) &= \beta_0 + X_1\beta_1 \\
+-\log\left(\frac{1-p}{p}\right) &= \beta_0 + X_1\beta_1 \\
+-\log\left(\frac{1}{p} - 1\right) &= \beta_0 + X_1\beta_1 \\
+\log\left(\frac{1}{p} - 1\right) &= -\beta_0 - X_1\beta_1 \\
+\exp\left(\log\left(\frac{1}{p} - 1\right)\right) &= \exp(-\beta_0 - X_1\beta_1) \\
+\frac{1}{p} - 1 &= \exp(-\beta_0 - X_1\beta_1) \\
+\frac{1}{p} &= 1 + \exp(-\beta_0 - X_1\beta_1) \\
+p &= \frac{1}{1 + \exp(-\beta_0 - X_1\beta_1)}
+\end{aligned}
+\]
 
-A coefficient represents the change in the log odds of the response
-variable for each unit increase in an explanatory variable. Therefore,
-taking the exponential of the coefficient is the change in odds of the
-response variable. If the change in odds was 2, then if the explanatory
-variable increased by 1, the response variable event would be twice as
-likely to occur.
-
-Logistic Regression is a good benchmark to compare other binary
-predictive models due to its simplicity and speed (Moore and McCabe
-1989). single linear relationship means Not prone to overfitting
+The result in a sigmoidal function bound by 0 and 1. A coefficient
+represents the change in the log odds of the response variable for each
+unit increase in an explanatory variable. Logistic Regression is a good
+benchmark to compare other binary predictive models due to its
+simplicity and speed (Moore and McCabe 1989). Addittionally, because of
+the simple, single linear relationship, the method is not prone to
+overfitting (Perlich, Provost, and Simonoff 2003).
 
 \subparagraph{3.1.2 Random Forests}\label{random-forests}
 
-single decision trees also suffer from low predictive accuracy and
-instability, so to combat these problems, ensemble tree methods were
-pioneered in the 1990's (Breiman 1996).
+Ensemble tree methods were pioneered in the 1990's to combat the low
+predictive accuracy and instability of individual decision trees.
+Combining hundreds or thousands of trees transform decision trees into
+high performing, stable predictors (Breiman 1996).
 
-The three methods of combining hundreds or thousands of trees turn
-decision trees into high performing, stable predictors.
-
-training multiple trees from the same data by sampling bootstrapped
-training sets with replacement. However, when creating each tree, a
-random subset of attributes (variables) is considered at each split. The
-reduced subset of attributes is resampled for each split in the tree.
-This allows dominant variables to be suppressed for a fraction of the
-splits, allowing the algorithm to explore signals in weaker variables
-(Breiman 2001).
-
-Additionally, ensemble tree methods are faster than SVM's and Neural
-Networks but can perform just as well and even provide insights such as
-variable importance and variable relationships (Sealfon and Gymrek
-2012).
+The Random Forests algorithm works by training multiple trees from the
+bootstrapped samples of a dataset. Additionally, when creating each
+tree, a random subset of attributes (covariates) is considered at each
+split. The reduced subset of covariates is resampled for each split in
+the tree. Dominant covariates are then suppressed for a fraction of the
+splits, allowing the algorithm to explore signals in weaker covariates
+(Breiman 2001). Performance statistics and tests run within the
+algorithm provide insights to the modeller, such as variable importance
+and variable relationships (Sealfon and Gymrek 2012).
 
 \subparagraph{3.1.3 Gradient Boosted
 Trees}\label{gradient-boosted-trees}
 
-Lastly, the boosted decision tree approach applies gradient descent
-theory to a series of decision trees. The trees are limited to a certain
-depth to maintain simplicity, and each tree models the residuals (or
-errors) of the preceding tree. By modeling the errors, misclassified
-cases are weighted higher than correctly classified cases and influence
-the structure of the latest tree more (Hastie, Tibshirani, and Friedman
-2009). This increased weighting on errors is why the algorithm is called
-boosting. The limited depth of each tree prevents overfitting at each
-stage and the combined result of up to thousands of trees is very
-powerful (Elith, Leathwick, and Hastie 2008).
+The boosted decision tree approach applies gradient descent theory to a
+series of decision trees. Performance tends to be higher if individual
+trees are limited to a certain depth to maintain simplicity and prevent
+overfitting (Elith, Leathwick, and Hastie 2008). Unlike Random Forests,
+the trees are sequential, where each tree models the residuals (or
+errors) of the preceding tree.
 
+By modeling the errors, misclassified cases are weighted higher than
+correctly classified cases and influence the structure of the next tree
+more (Hastie, Tibshirani, and Friedman 2009). This increased weighting
+of error cases is called boosting. The successive results of up to
+thousands of trees is very powerful (Elith, Leathwick, and Hastie 2008).
 Caruana and Niculescu-Mizil (2006) tested Boosted Trees, Random Forests,
 Neural Networks, SVM's, Logistic Regression and Naive Bayes on 11 binary
 classification problems and found that Boosted Trees performed best,
-followed by Random Forests. This demonstrates how ensemble tree methods
-are capable of competing with high-level machine learning algorithms.
-
-Trees are not built on a probabilistic framework, and therefore their
-results cannot be provided in this framework (Louppe and Prettenhofer
-2014).
+followed by Random Forests. This demonstrates how capable ensemble tree
+methods are of competing with high-level machine learning algorithms.
 
 \subparagraph{3.1.4 Naive Bayes}\label{naive-bayes}
 
-The Naive Bayes method works by making conditional independence
-assumptions about the explanatory variables in order to simplify
-probability calculations for the response variable (the response
-variable must be categorical).
+Naive Bayes is a simple, fast method included in this work as it
+provides a good baseline method against which to compare complex methods
+(Caruana and Niculescu-Mizil 2006). It works by making conditional
+independence assumptions about the explanatory variables in order to
+simplify probability calculations for a categorical response variable.
+For example, if predicting a binary variable, \(R\) (with classes 0 or
+1) given two covariates \(X_1\) and \(X_2\), the equations for the
+probability of both outcomes is as follows:
+
+\(p(R = 1|X_1 X_2) = p(X_1|R = 1) \cdot p(X_2|R = 1) \cdot p(R = 1)\)
+
+\(p(R = 0|X_1 X_2) = p(X_1|R = 0) \cdot p(X_2|R = 0) \cdot p(R = 0)\)
 
 These equations are simple to compute given the data, and the class with
 the highest probability can then be chosen (F. Provost and Fawcett
-2013).
-
-The advantages of this method are that the conditional independence
-assumption enables very fast calculations and predictions. The method
-can perform well in real world tasks because the assumption of
-independence does not significantly damage predictions (F. Provost and
-Fawcett 2013). Assumptions of independence genearlly not true
-(correlated variables). This is fine for ranking but the output
+2013). The method can perform well in real world tasks because the
+assumption of independence does not significantly damage predictions,
+but amplifies the magnitude of the probability (F. Provost and Fawcett
+2013). This is fine for ranking class 0 against 1 but the output
 probabilities are not accurate statistical probabilities (Caruana and
 Niculescu-Mizil 2006).
 
-Naive Bayes method generally provides a good benchmark to compare
-against more complex models that should outperform it (Caruana and
-Niculescu-Mizil 2006).
+\subparagraph{3.1.5 Model Blending}\label{model-blending}
 
-\subparagraph{3.1.5 Bayesian Networks}\label{bayesian-networks}
+Several research groups involved in the high profile data science
+competition, Netflix Prize, developed sophisticated methods of model
+stacking, otherwise known as ensemble methods or model blending (Sill et
+al. 2009). In this paper, the term `blending' will be used to avoid
+confusion with ensemble tree methods. Model blending combines
+predictions from several models that used methods with different
+theoretical foundations. In this way, the strengths of each method can
+be combined. Since the 1990's research in statistics has shown that
+averaging results from different methods can provide better predictive
+accuracy than any single model (Madigan and Raftery 1994).
 
-A Bayesian Network is a graphical probabilistic model that illustrates
-the conditional dependencies between variables in a data set. The model
-is visually represented by a directed acyclic graph (DAG) and is capable
-of linking the conditional dependency between any variable to another
-variable (Heckerman 1998). The conditional relationships are Bayesian,
-where the probabilities in one node are conditional upon values in nodes
-directed towards it as well as preceding nodes
-
-Bayesian Networks reduce computations required to find the probability
-of a unique combination given other explanatory variable values while
-still taking into account many conditional dependencies that Naive Bayes
-(Barber 2012)
-
-Naive Bayes is the simplest form of a Bayesian Network (Zhang 2004)
-
-Network relationships can be learned from the data, however this is not
-widely included as part of the suite of machine learning methods. The
-conditional variable dependencies are calculated from the data, which in
-turn can define the graph structure. Some conditional dependencies can
-be set before the structure is learned (Barber 2012).
-
-Drawbacks of Bayesian Networks include the difficulty for them to
-process continuous variables.
-
-Bayesian networks have found success in combining deterministic models
-with observed data as well as expert knowledge.(Kragt 2009)
+Six blending methods, ranging from simple to complex, were chosen. These
+included simple averaging of the individual model results, building a
+Logistic Regression model and Boosted Tree model using individual model
+results only, feature weighted linear stacking (FWLS), Random Forests,
+and Boosted Trees. The first two models are simply the average, and
+weighted average of predictions from separate individual models. For
+example, if the Logistic Regression model output a probability of 0.6
+for one case, while a Boosted Tree output 0.7, a simple blended average
+for that case would be a probability of 0.65. The last three methods are
+more complex, and take advantage of potentially meaningful interactions
+between the individual model predictions and the original covariates
+describing each case (called meta-features in the model blending
+literature) (Sill et al. 2009). For example, if the Logistic Regression
+model predicted profitability better than the Boosted Tree model for
+projects with only one team member, the complex blending methods would
+take advantage of this interaction. In summary, in the complex methods,
+the probability outputs from each model are interacted with each of the
+original covariates. Model blending has the potential to elevate output
+from the original methods by combining each of their strengths.
 
 \paragraph{3.2 Procedure}\label{procedure}
 
-It includes first how the data was obtained, the lengthy cleaning
-process, Projects varied from total invoiced amounts of \$500 to over
-\$1,000,000 a project could have thousands of rows of relevant data that
-needed to be converted into a single row per project. 10 engineered
-variables describing timesheets: Percent of hours performed by
-`professional' employees as opposed to `technical' employees, Position
-of the employee that completed the most hours on each project 3
-engineered from invoicing data: 4 from project data: number of projects
-completed with each client text analysis of project titles to develop
-project classifications
+The raw data from the case study company's database consisted of three
+separate datasets: one describing the client and technical details for
+each project, another with each employee's time sheet entries, and
+another with all past invoices. This data was combined, cleaned, and
+rearranged so that each project was described within one row. From the
+timesheet data, 10 variables were engineered including the percent of
+hours performed by `professional' employees as opposed to `technical'
+employees, and the position of the employee that completed the most
+hours on each project. 3 variables were engineered from the invoicing
+data such as total amount invoiced for a project and mean invoice size
+for a client. Finally, from the project dataset, 2 variables were
+engineered including the number of projects completed with a client, and
+project category. Text analysis of the project description determined
+the project category variable. The response variable, whether the
+project was profitable or not, was calculated by subtracting the cost of
+employee hours from the timesheets from the sum of the paid invoices for
+a project. The total amount invoiced for projects ranged from \$500 to
+over \$1,000,000.
 
-Discretisation was performed by generating a hierarchical dendrogram of
-each variable to visualise the clusters.
-
-Limiting the predictive model to a concise set of meaningful variables
-reduces noise and improves predictions. Less variables and a simpler
-model is easier for stakeholders to understand (Weisberg 2005). followed
-by variable importance analysis, variable selection: varialbe importance
-aalyses done with linear regression, random forest, cforest to represent
-the range of algroithms that were trialled. 11 variables chosen:
-
-trials of selected predictive algorithms. binary classification problem
-predicting profit or loss. Complex models should be measured against
-simple models that can be built at a fraction of the computational cost.
+34 covariates made up the full dataset, and these were narrowed down to
+11 in order to reduce predictive noise and provide a simple model that
+is comprehendable for stakeholders (Weisberg 2005). Variable selection
+methods included linear regression, random forests, and cforests and the
+final variables are listed below.
 
 \begin{itemize}
 \tightlist
 \item
-  Regression - baseline model
+  \% of Hours Completed by a Professional-level Employee
 \item
-  Naive Bayes - baseline model
+  Time span
 \item
-  Bayesian Network - grabage.
+  Number of Employees on Project
 \item
-  Random Forest
+  Amount Invoiced for Project
 \item
-  Gradient Boosted Trees
+  Business Category of Client
+\item
+  Project Category
+\item
+  Total Amount Invoiced from the Client - Past Jobs
+\item
+  Discipline
+\item
+  Position of Main Project Employee - new variable from ANOVA findings
+\item
+  \% of Hours by Main Project Employee
+\item
+  Billing Type
 \end{itemize}
 
-To compare the models, the area under the receiver operating
-characteristic (ROC) curve (AUC) statistic was used. An ROC graph
-visualises the curve from which an AUC score is calculated. In this
-problem a `positive' is a loss making job. For binary classification,
-AUC is a more meaningful statistic than classification accuracy when the
-output is a probability that can be applied to the problem. The AUC
-indicates model performance across many thresholds while classification
-accuracy represents a single threshold.
+Timespan and the total amount invoiced are unknowns at before a project
+commences. Therefore, these variables were discretised into 5 or 6
+categories from which a manager would be able to select. The category
+boundaries were determined by visualising clusters using hierarchical
+dendrograms.
 
-a model must be first created using a training set. The model can then
-make predictions on the test set. this is used to build the ROC A model
-that is perfectly classified would have an AUC = 1. A model that
-predicts as well as random chance would have an AUC = 0.5. An AUC
-between 0.5 and 1 means the model is performing better than random
-chance.
+\subparagraph{3.2.1 Research Question 1}\label{research-question-1}
 
-In order to compare which models performed significantly better than
-others, an adequate sample size of results statistics is required.
-Multiple models could be made by using different data in the training
-vs.~testing sets, each providing a resulting test statistic (RMSE or
-AUC). Initially, 20 models of each method were created in this fashion.
-Then a two-sample power calculation was run using the two sets of 20
-results to determine the sample size to achieve a statistical power of
-0.8 (100 to achieve power of 0.8 between boosted trees and naive bayes)
+To answer the first research question, if loss making projects can be
+predicted using statistical and machine learning algorithms, the binary
+classification and blending methods were built and evaluated. The area
+under the receiver operating characteristic (ROC) curve (AUC) statistic
+was used to compare models and assess performance. Models were built on
+a training subset of data (80\%) and validated on the remaining data.
+Therefore, different training and testing sets produced different AUC
+statistics. In order to compare which models performed significantly
+better than others, an adequate sample size of AUC statistics was
+required. A two-sample power calculation run on 20 AUC output for each
+model determined that 100 samples were required to achieve a statistical
+power of 0.8.
 
-Missing Data Imputation. All methods except gradient Boosted Trees and
-Naive Bayes could not handle missing data. a complete data set allows
-for complete sets of predictions from each method, and these predictions
-could then be blended to further improve results. The MICE Random Forest
-method was chosen for imputation because it has been proven to work well
-with complex data sets (Shah et al. 2014). If similar predictive results
-were obtained using Boosted Trees imputed data and imputed data, the
-imputed data must be reasonable. The imputed data set was then trialed
-on the remaining methods and compared to unimputed trials.
+Then, the model output from the validation sets were combined and fed
+into the three simple and three complex blending models. Again, 100
+models were built to achieve a power of 0.8 for the variation in AUC
+test statistics across different divisions of training/testing data. A
+maximum of five training and validation divisions were created from a
+complete set of individual model results.
 
-Once the best methods were selected, they were blended in numerous ways,
-using both simple averaging techniques and sophisticated
-machine-learning algorithms. These were compared against individual
-models and the best constructs were selected. Six blending methods,
-ranging from simple to complex, were tested using predictions from the
-top performing individual models. These included simple averaging of the
-individual model results, building a Logistic Regression model using the
-individual model results only, a Boosted Tree model using individual
-model results only, feature weighted linear stacking (FWLS), Random
-Forests, and Boosted Trees. A simplified explanation of FWLS is as a
-Linear Regression where meta-features as well as model predictions from
-individual models are included as explanatory variables. Then, each
-meta-feature is interacted with each set of model results (Sill et al.
-2009). Feature interaction is performed passively due to the nature of
-how trees are built. A split in a node determined by one variable is
-conditional upon the preceding split, which was based on another
-variable and so on. The simplest method averaged the probability output
-(a number between 0 and 1) of all three models. The next two simplest
-methods consisted of building a Logistic Regression and Boosted Trees
-model from the three prediction model outputs only. Feature Weighted
-Linear Stacking (FWLS), Random Forest and Boosted Trees were also tested
-as blending methods in a more complex scenario where the predictions
-from each model became additional variables to the original explanatory
-variables (called meta-features in this context). The model predictions
-were interacted with each original variable so that models that
-performed more strongly under certain meta-feature states could be
-weighted as such.
+\subparagraph{3.2.2 Research Question 2}\label{research-question-2}
 
-Again, 100 models were built to achieve a power of 0.8 for the variation
-in AUC test statistics across different divisions of training/testing
-data. A maximum of five blended models were created from a complete set
-of test results (built from the individual models), then a new set of
-test results were created for the next five blended models.
+The second research questions asks whether a predictive algorithm can
+improve a company's profitability? This was analysed using a simple
+decision-making scenario. The model with the highest AUC score may not
+improve company profits the most, because this depends on \emph{which}
+loss making and profitable projects are accurately being identified.
+Therefore, all blended models as well as individual models were carried
+forward for this analysis. A profit curve was built to compare methods,
+which is a chart that plots the change in profit the company earns on
+the y-axis vs.~the probability threshold on the x-axis. For this
+decision making scenario, the threshold is the probability output value
+(a value between 0 and 1 that the model predicts for each case), from
+which it is decided whether a project will be accepted or rejected. For
+example, if the output threshold is 0.6, and a model predicts a project
+has probability of being a loss-making job of 0.7, the project is not
+taken on by the case study company. All profits and losses from jobs
+above the threshold were discounted. The y-axis of the profit curve is
+the ratio of profit after rejecting projects based on model output to
+historical profit:
 
-Finally the impact of the algorithm on the overall profits of the case
-study company was analysed via decision-making scenarios. This analysis
-differed from accuracy in predicting profitability, so several blended
-models as well as individual models were carried forward for this
-analysis. This was done using a profit curve - a chart that plots the
-change in profit the company earns on the y-axis vs.~the probability
-threshold on the x-axis. A simple approach was taken for this analysis,
-where projects with a probability to be a loss making job greater than
-the threshold were rejected entirely. Therefore all profits and losses
-from jobs above the threshold were discounted. An equation defining the
-change in profit as a percentage of the original profit using threshold
-rejection is shown below:
-
-\begin{equation}
-\Delta\ Overall\ Profit\ \textrm{(\%)} = \frac{\sum_{p = 1}^{N} I(Pr_p < threshold) \cdot Profit_p}{\sum_{p = 1}^{N} Profit_p} \cdot100
-\end{equation}
+\[
+\begin{aligned}
+Ratio\ of\ Model\ Profit\ to\ Historical\ Profit\ (\%) &= \frac{\sum_{p = 1}^{N} I(Pr_p < threshold) \cdot Profit_p}{\sum_{p = 1}^{N} Profit_p} \cdot100
+\end{aligned}
+\]
 
 Where
 
@@ -637,26 +619,17 @@ Profit_p &= \textrm{profit for individual project}\ p
 \end{aligned}
 \]
 
-If the threshold was zero, all jobs were rejected and the profit would
-be \$0. If the threshold was 1.0, all jobs were accepted and the profit
-would be the same as the profit the company actually experienced since
-the data is a sample of historic projects. The aim was to find the
-optimal threshold point where saying `no' to a job above that level
-would result in higher profits, because jobs that were likely to make a
-loss were being rejected. This chart will clarify what percentage of
-profit increase the company could expect by integrating the algorithm
-into decision-making.
-
-the curve varies with different divisions of the data. Therefore, in
-order to understand the uncertainty around the profit curve and to
-determine which blended or individual model performed statistically
-better than others, a large sample size of curves was required. 100 to
-achieve a power of 0.8. which was achieved by repeating 5-fold
-training/testing splits. A 95\% confidence interval could also be
-determined around the highest point on each curve. The final expected
-increase in profit and the percentage of projects to be rejected
-presented a clear scenario that the case study business managers could
-assess in terms of their business strategy.
+If the threshold were zero, all jobs were rejected, the profit would be
+\$0, and the ratio to historical profits would be 0\%. If the threshold
+was 1.0, all jobs were accepted and the profit would be the same as
+historical profits, giving a ratio of 100\%. The aim was to find the
+optimal threshold point where mostly loss-making projects were rejected,
+resulting in higher profits. 100 profit curves were built for each
+method to achieve a power of 0.8 and a 95\% confidence interval could
+also be determined around each threshold point. The final expected
+increase in profit combined with the percentage of projects to be
+rejected presents a clear scenario that the case study business managers
+could strategically assess for implementation.
 
 \section{4. Prediction Results and
 Discussion}\label{prediction-results-and-discussion}
@@ -990,14 +963,6 @@ Reconstruction Projects: Artificial Neural Networks Versus Regression.''
 Journal Article. \emph{Journal of Construction Engineering and
 Management} 129 (4): 405--11.
 
-\hypertarget{ref-Auria2008}{}
-Auria, Laura, and Rouslan A Moro. 2008. ``Support Vector Machines (Svm)
-as a Technique for Solvency Analysis.'' Journal Article.
-
-\hypertarget{ref-Barber2012}{}
-Barber, David. 2012. \emph{Bayesian Reasoning and Machine Learning}.
-Book. Cambridge University Press.
-
 \hypertarget{ref-Breiman1996}{}
 Breiman, Leo. 1996. ``Bagging Predictors.'' Journal Article.
 \emph{Machine Learning} 24 (2): 123--40.
@@ -1053,10 +1018,6 @@ Elements of Statistical Learning: Data Mining, Inference, and
 Prediction, Second Edition}. Book. Springer New York.
 \url{http://qut.summon.serialssolutions.com/2.0.0/link/0/eLvHCXMwzV1bS8MwFA7iQBwD3dR6mRAQfNk6trb0Ivi0TQY6EJwgQxi9JLKHddpVf7_nJE269cFnH9NCm_Y7JF--cyPEtnp9s7Im8JCzAWxVjFluEnMWBF4MyyfzE4-HVsR29Tfd9rO89s-BrzBiPSwRH8tocBGfgTxSlGFGrbpQQFAAGIV52JmKxhByhShS_lQg53OGzhsR9IHSKJ6YsfDxcttlP8vYzzrrTEJ4vjYNGaUN8EcoeYfpUofnMCyKACQZ-O6qMEelNAQVpUEpjR1VUGrnKIpucN_BcvnlzqK86ZUNR4cBwrbpes4tFjlf4Yfds9R8fYH9dAA8FGnufK71MnR_ArkqHO7iTW5RQEm_uU4aMEPxsA9subLFFGbHpMYwfaRJ9ljaIkeqaQYt1tAWqU91odzNCXkH0KgCja453QKNKtDuKEJGJWRdqgHrUoCLlnB1qQSLFmCdkpuH8Ww4MXemu_iUBUYW8r_YZ6QRYppDmot0yMQgNQ6myQzkCQZ8l0EO3oKnkT95HMphUw17G5Gz1_vKDaAlwrJNt-edE2pb3PEiL-aRkzh-AKfFqO8nPse2BbFt9S9I-69JXf59-4oclpbTJvt59s2uRQ7tL6t_R8w}.
 
-\hypertarget{ref-Heckerman1998}{}
-Heckerman, David. 1998. \emph{A Tutorial on Learning with Bayesian
-Networks}. Book. Springer.
-
 \hypertarget{ref-Kim2004}{}
 Kim, Gwang-Hee, Sung-Hoon An, and Kyung-In Kang. 2004. ``Comparison of
 Construction Cost Estimating Models Based on Regression Analysis, Neural
@@ -1064,19 +1025,11 @@ Networks, and Case-Based Reasoning.'' Journal Article. \emph{Building
 and Environment} 39 (10): 1235--42.
 doi:\href{https://doi.org/10.1016/j.buildenv.2004.02.013}{10.1016/j.buildenv.2004.02.013}.
 
-\hypertarget{ref-Kragt2009}{}
-Kragt, Marit E. 2009. \emph{A Beginners Guide to Bayesian Network
-Modelling for Integrated Catchment Management}. Book. Landscape Logic.
-
 \hypertarget{ref-Kumar2007}{}
 Kumar, P Ravi, and Vadlamani Ravi. 2007. ``Bankruptcy Prediction in
 Banks and Firms via Statistical and Intelligent Techniques--A Review.''
 Journal Article. \emph{European Journal of Operational Research} 180
 (1): 1--28.
-
-\hypertarget{ref-Louppe2014}{}
-Louppe, Gilles, and Peter Prettenhofer. 2014. ``Gradient Boosted
-Regression Trees.'' Online Multimedia. PyData.
 
 \hypertarget{ref-Lovallo2003}{}
 Lovallo, Dan, and Daniel Kahneman. 2003. ``Delusions of Success: How
@@ -1088,6 +1041,12 @@ SCHOOL PUBLISHING CORPORATION.
 Macdonald, P. 1975. ``The Logit Transformation: With Special Reference
 to Its Uses in Bio-Assay.'' Journal Article. \emph{Journal of the
 Operational Research Society} 25 (1): 201--2.
+
+\hypertarget{ref-Madigan1994}{}
+Madigan, David, and Adrian E Raftery. 1994. ``Model Selection and
+Accounting for Model Uncertainty in Graphical Models Using Occam's
+Window.'' Journal Article. \emph{Journal of the American Statistical
+Association} 89 (428): 1535--46.
 
 \hypertarget{ref-Matson1993}{}
 Matson, Jack E, and Joseph M Mellichamp. 1993. ``An Object‐oriented Tool
@@ -1145,13 +1104,6 @@ Sealfon, Rachel, and Melissa Gymrek. 2012. ``Recitation 6: Random
 Forests and Affinity Propagation.'' Online Multimedia. MIT University.
 \url{https://stellar.mit.edu/S/course/6/fa12/6.047/courseMaterial/topics/topic4/lectureNotes/recitation6/recitation6.pdf}.
 
-\hypertarget{ref-Shah2014}{}
-Shah, Anoop D, Jonathan W Bartlett, James Carpenter, Owen Nicholas, and
-Harry Hemingway. 2014. ``Comparison of Random Forest and Parametric
-Imputation Models for Imputing Missing Data Using Mice: A Caliber
-Study.'' Journal Article. \emph{American Journal of Epidemiology},
-kwt312.
-
 \hypertarget{ref-Shin2015}{}
 Shin, Y. 2015. ``Application of Boosting Regression Trees to Preliminary
 Cost Estimation in Building Construction Projects.'' Journal Article.
@@ -1166,10 +1118,6 @@ Preprint ArXiv:0911.0460}.
 \hypertarget{ref-Weisberg2005}{}
 Weisberg, Sanford. 2005. \emph{Applied Linear Regression}. Book. Vol.
 528. John Wiley \& Sons.
-
-\hypertarget{ref-Zhang2004}{}
-Zhang, Harry. 2004. ``The Optimality of Naive Bayes.'' Journal Article.
-\emph{AA} 1 (2): 3.
 
 \end{document}
 

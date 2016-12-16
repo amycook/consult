@@ -1202,7 +1202,7 @@ Based on the results of the three methods for variable importance, 11 explanator
 | Variable Description                                                 | ANOVA | RF | CF |
 |----------------------------------------------------------------------|-------|----|----|
 | % of Hours Completed by a Professional-level Employee                | x     | x  | x  |
-| Time span                                                             | x     | x  | x  |
+| Time span                                                            | x     | x  | x  |
 | Number of Employees on Project                                       | x     | x  | x  |
 | Amount Invoiced for Project                                          | x     | x  | x  |
 | Business Category of Client                                          | x     | x  | x  |
