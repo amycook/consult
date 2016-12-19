@@ -442,14 +442,15 @@ methods are of competing with high-level machine learning algorithms.
 
 \subparagraph{3.1.4 Naive Bayes}\label{naive-bayes}
 
-Naive Bayes is a simple, fast method included in this work as it
-provides a good baseline method against which to compare complex methods
-(Caruana and Niculescu-Mizil 2006). It works by making conditional
-independence assumptions about the explanatory variables in order to
-simplify probability calculations for a categorical response variable.
-For example, if predicting a binary variable, \(R\) (with classes 0 or
-1) given two covariates \(X_1\) and \(X_2\), the equations for the
-probability of both outcomes is as follows:
+Naive Bayes is a simple, fast method included in this work because,
+similarly to Logistic Regression, it provides a good baseline method
+against which to compare complex methods (Caruana and Niculescu-Mizil
+2006). It works by making conditional independence assumptions about the
+explanatory variables in order to simplify probability calculations for
+a categorical response variable. For example, if predicting a binary
+variable, \(R\) (with classes 0 or 1) given two covariates \(X_1\) and
+\(X_2\), the equations for the probability of both outcomes is as
+follows:
 
 \(p(R = 1|X_1 X_2) = p(X_1|R = 1) \cdot p(X_2|R = 1) \cdot p(R = 1)\)
 
@@ -580,24 +581,29 @@ complete set of individual model results.
 
 \subparagraph{3.2.2 Research Question 2}\label{research-question-2}
 
-The second research questions asks whether a predictive algorithm can
-improve a company's profitability? This was analysed using a simple
-decision-making scenario. The model with the highest AUC score may not
-improve company profits the most, because this depends on \emph{which}
-loss making and profitable projects are accurately being identified.
-Therefore, all blended models as well as individual models were carried
-forward for this analysis. A profit curve was built to compare methods,
-which is a chart that plots the change in profit the company earns on
-the y-axis vs.~the probability threshold on the x-axis. For this
-decision making scenario, the threshold is the probability output value
-(a value between 0 and 1 that the model predicts for each case), from
-which it is decided whether a project will be accepted or rejected. For
-example, if the output threshold is 0.6, and a model predicts a project
-has probability of being a loss-making job of 0.7, the project is not
-taken on by the case study company. All profits and losses from jobs
-above the threshold were discounted. The y-axis of the profit curve is
-the ratio of profit after rejecting projects based on model output to
-historical profit:
+The second research question asks whether a predictive algorithm can
+improve a company's profitability. The model with the highest AUC score
+may not improve company profits the most, because the magnitude of the
+profits and losses from each project have not been analysed. Therefore,
+all blended and individual models were carried forward to be assessed in
+a value framework.
+
+Once a model outputs scores for the probability of each job being
+loss-making, the question then arises at what probability would a
+manager round the probability up to 1? And then what action would be
+taken? A threshold point between 0 and 1 can dictate when a project is
+rounded up, and classified as `loss-making'. For this analysis, a simple
+decision scenario is tested where a manager rejects all projects with
+output above the threshold. For example, if the threshold is 0.6, and a
+project is predicted to have a probability of loss-making of 0.7, the
+project is rejected and profits or losses associated with the project
+are ignored.
+
+To test each threshold between 0 and 1, profit curves were built for
+each method. This chart plots the probability threshold on the x-axis
+and the ratio of model-influenced profits over historical company
+profits on the y-axis. The ratio represented by the y-axis is calculated
+using the formula below:
 
 \[
 \begin{aligned}
@@ -622,14 +628,16 @@ Profit_p &= \textrm{profit for individual project}\ p
 If the threshold were zero, all jobs were rejected, the profit would be
 \$0, and the ratio to historical profits would be 0\%. If the threshold
 was 1.0, all jobs were accepted and the profit would be the same as
-historical profits, giving a ratio of 100\%. The aim was to find the
-optimal threshold point where mostly loss-making projects were rejected,
-resulting in higher profits. 100 profit curves were built for each
-method to achieve a power of 0.8 and a 95\% confidence interval could
-also be determined around each threshold point. The final expected
-increase in profit combined with the percentage of projects to be
-rejected presents a clear scenario that the case study business managers
-could strategically assess for implementation.
+historical profits, giving a ratio of 100\%. The total profits were
+plotted for each threshold and joined to make a profit curve. The aim
+was to find the optimal threshold point where mostly loss-making
+projects were rejected, resulting in higher profits. 100 profit curves
+were built for each method to achieve a power of 0.8 and a 95\%
+confidence interval could also be determined around each threshold
+point. The final expected increase in profit combined with the
+percentage of projects to be rejected presents a clear scenario that the
+case study business managers could strategically assess for
+implementation.
 
 \section{4. Prediction Results and
 Discussion}\label{prediction-results-and-discussion}
@@ -639,288 +647,214 @@ signficance of the results of the work, not repeat them.
 
 \paragraph{4.1 Individual Models}\label{individual-models}
 
-The predictive formula was re-structured so that the 11 explanatory
-variables predicted a new response variable: profitable/unprofitable
-projects. The five prediction methods, were initially built without
-imputing data, by using the maximum amount of data possible depending on
-the method. Boosted Trees and Naive Bayes are able to process data with
-missing values, so all data could be input (Ridgeway 2015; Meyer et al.
-2014). 100 models of each method were built. The violin plot below
-summarises the AUC values produced by each method and the `violins' are
-coloured according to whether the distributions significantly vary to
-Boosted Trees using a critical value of 0.05.
+The violin plot below summarises the distributions of the 100 AUC values
+produced by each method. The `violins' are coloured according to whether
+the distributions significantly vary to Boosted Trees using a critical
+value of 0.05. Boosted Trees was chosen as the comparison method because
+it was expected to perform well.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics{Consulting_Profitability_Paper_files/figure-latex/reduced_violin-1.pdf}
-\caption{Violin plot vertically illustrating the distribution of AUC
-values from each of the methods when predicting profit/loss. Subsets of
-the data were used for Logistic Regression and Random Forests in order
-to provide datasets without missing values.}
-\end{figure}
-
-The AUC performance of Logistic Regression and the Random Forest
-algorithms cannot be statistically differentiated from Boosted Trees.
-
-Next, data imputation methods were trialed which would make the complete
-data set available to Logistic Regression and Random Forests. Again, 100
-models were required to achieve a power of 0.8 with respect to Boosted
-Trees
-
-\begin{figure}[htbp]
-\centering
 \includegraphics{Consulting_Profitability_Paper_files/figure-latex/mice_violin-1.pdf}
-\caption{Violin plot vertically illustrating the distribution of AUC
-values from each of the methods when predicting profit/loss. Each method
-was fed the same imputed full dataset.}
-\end{figure}
 
-Boosted Trees, Logistic Regression, and Random Forest all performed
-significantly better than the baseline algorithm, Naive Bayes, however
-none outperformed Boosted Trees.
+The AUC distrubtions of Logistic Regression and the Random Forest
+algorithms could not be statistically differentiated from Boosted Trees,
+while the Naive Bayes distribution was significantly lower. The three
+high-performing methods had AUC values between 0.755 and 0.764. This
+indicates predictions were well above random chance, where AUC = 0.5.
 
-Testing Boosted Trees, Random Forests, Naive Bayes, Logistic Regression
-and Bayesian Networks on the binary classification problem showed that
-Boosted Trees, Logistic Regression and Random Forests performed best
-(according to AUC). Naive Bayes and Logistic Regression were included as
-baseline models and it was expected that the more complex models would
-outperform these. Therefore it was surprising that results from 100
-Logistic Regression models were not statistically significantly lower
-than Boosted Trees.
-
-A possible explanation for this, according to the literature, is that
+Naive Bayes and Logistic Regression were included as baseline models and
+it was expected that the more complex models would outperform these.
+Therefore it was surprising that results from 100 Logistic Regression
+models were not statistically significantly lower than Boosted Trees. A
+possible explanation for this, according to the literature, is that
 there was not enough data for the ensemble trees to learn the complex
 decision rules at which they excel. Trees tend to overfit the patterns
 in a smaller training set. Logistic Regression on the other hand is
 capable of only one decision boundary (which does not have to be
 parallel to the variable axes) and is not prone to overfitting (Perlich,
 Provost, and Simonoff 2003). This may explain Logistic Regression's
-comparatively high performance on the case study's small but complex
-data set.
-
-Boosted trees, Random Forests and Logistic Regression all had mean AUC
-values between 0.755 to 0.764. In summary, the individual binary
-classification models performed well above random chance (AUC = 0.5).
-Whether the model is worth implementing in the work place is dependent
-on the extent to which the algorithm would improve `bottom line' profits
-for the business and if the model can affect decisions in practice.
-
-\begin{itemize}
-\tightlist
-\item
-  NB and BN were bad - one sentence
-\end{itemize}
+comparatively high performance on the case study's data set, which is
+small for the range and complexity of the described projects.
 
 \paragraph{4.2 Blended Models}\label{blended-models}
 
-Blended models combine the predictions from each high-performing
-individual model to create averaged or `blended' predictions. In this
-case, the Random Forest, Boosted Trees, and Logistic Regression models
-were chosen. Through variable importance studies, 6 variables were
-included as metafeatures. All six methods were compared against the
-original Logistic Regression model's AUC distribution (as it was not
-statistically different from the ensemble trees)
+Six blended models combined the predictions from the three
+high-performing individual models: Logistic Regression, Random Forests,
+and Boosted Trees to create `blended' predictions. There were 3 simple
+blended models, and 3 complex models that interacted original covariates
+with the individual model predictions. Through variable importance
+analysis on the original covariates and the 3 new variables containing
+model predictions, only 6 original covariates were included as
+metafeatures. All six blended methods' AUC values were compared against
+the Logistic Regression AUC distribution, which was chosen because it
+was the simplest high performing individual model.
 
-\begin{figure}[htbp]
-\centering
 \includegraphics{Consulting_Profitability_Paper_files/figure-latex/blend_violin-1.pdf}
-\caption{Violin plot vertically illustrating the distribution of AUC
-values from each of the blending methods when predicting profit/loss.
-100 models were built for each method.}
-\end{figure}
 
-The above plot shows that 4 methods had a higher mean AUC than the
-original Logistic Regression model:
-
-\begin{itemize}
-\tightlist
-\item
-  the simple blended Logistic Regression
-\item
-  the simple average
-\item
-  and the two Boosted Tree models.
-\end{itemize}
-
-The simple averaged method and simple logistic regression could achieve
-a statistical power of 0.8 with 150 samples (models), whereas the
-boosted trees required thousands. The additional 50 models were run for
-the simple logistic regression and simple average to reveal similar
-distributions that were indeed statistically significantly higher than
-the individual logistic regression AUC distribution. P-values from two
-sample t-test were 0.0019 and 0.0021 respectively.
+None of the blended methods were significantly higher than the
+individual Logistic Regression model with data from 100 models. However,
+the simple averaged method and simple logistic regression could achieve
+a statistical power of 0.8 with 150 samples (models), whereas the other
+blended methods required thousands. 50 more models were run for the
+simple logistic regression and simple average blend to confirm their AUC
+distributions were significantly higher than the individual Logistic
+Regression. P-values from two sample t-test were 0.0019 and 0.0021
+respectively.
 
 Blended models improved the mean AUC from 0.759 to 0.77, which is an
-increase of 1.4\%. It was expected that model blending would improve
-predictions because it combined the strengths of individual models with
-different theoretical foundations.
+increase of 1.4\%. This confirms the expectation that model blending
+would improve predictions by combining the strengths of different
+methods' theoretical foundations.
 
-The trials of different blending methods demonstrated that again, the
-simplest methods worked best with the case study data. In this incident,
-averaging the results of the best three single models (Logistic
-Regression, Random Forests, and Boosted Trees) or taking a Logistic
-Regression of the three models outperformed more complex Boosted Trees,
-Random Forests, and Logistic Regression blends that facilitated
-interaction of the individual model results and original variables
-(meta-features). Simple blended models could perform better than complex
-methods if the data is not big enough for the complex models to learn
-the more intricate patterns at which they excel. This was observed in
-the single model methods. their success in the 2009 Netflix competition
-generated some publications. The Netflix data set comprised of almost
-3,000,000 observations, so the size of the data could have enabled the
-success of complex blending methods such as FWLS (Sill et al. 2009)
+Again, the simplest methods worked best. In this case, averaging the
+results of the best three individual models or taking a Logistic
+Regression of the three models' outputs outperformed the complex Boosted
+Trees, Random Forests, and Logistic Regression blends that facilitated
+meta-feature interactions. Simiarly to the individual models, Simple
+methods may outperform complex methods if the data is not big enough for
+complex methods to learn the intricate patterns at which they excel. The
+Netflix data set comprised of almost 3,000,000 observations, so the size
+of the data could have enabled the success of their complex blending
+methods (Feature Weighted Linear Stacking) (Sill et al. 2009)
+
+The outcomes in this section show that statistical and machine learning
+methods can predict whether a consulting project will be profitable or
+not to some extent. The average, or weighted average (logistic
+regression) blend of individual Logistic Regression, Boosted Trees, and
+Random Forests models produced the highest AUC values. However, the
+business value of the model has not been proven. The following section
+explores whether the models would improve overall profits for the case
+study business.
 
 \section{5. Business Impact}\label{business-impact}
 
-This chapter first presents the full range of method results in terms of
-improvements to the case study's bottom line. A business decision making
-scenario was created so that profit curves based on the decision rule
-could be built and analysed. From the profit curves, optimal probability
-thresholds could be derived for each method (individual and blended
-methods). The predictive models output a `probability' between 0 and 1
-that each project will be a loss making job (where probability = 1
-indicates a loss making job). The question the arises, at what
-probability would a decision-maker round the probability up to 1 or down
-to 0? And what business decision would then be made? To find the
-threshold point for rounding, an experimental business-scenario was
-tested. At a given threshold, all projects with probability outputs
-above the threshold were considered too risky, and were rejected. All
-profits and losses from these projects were forfeited, while the profits
-from the remaining jobs (below the threshold) were summed to give a
-revised total profit. This profit calculation was made on a range of
-thresholds between 0 and 1 at 0.05 increments. The total profits were
-plotted for each threshold and joined to make a profit curve
+This chapter transports model results into the value framework to assess
+impact on the case study's overall profitability. The plot below
+illustrates the distribution of profit curves for the 100 models built
+using each method. Solid lines join the mean values at each threshold
+point and the grey ribbon represents the 95\% confidence interval for
+the profit ratio.
 
-The plot below illustrates the distribution of profit curves for each
-method, where the solid lines join the mean values at each threshold
-point. The grey ribbon illustrates the 95\% confidence interval for the
-profit improvement ratio at each threshold point for the 100 models.
-
-\begin{figure}[htbp]
-\centering
 \includegraphics{Consulting_Profitability_Paper_files/figure-latex/profit_curve-1.pdf}
-\caption{Profit curves summarising results from 100 models of 9 methods:
-3 simple blends, 3 complex blends, and the original 3 best methods.}
-\end{figure}
 
-Two blended models clearly outperformed the individual models as shown
-in the above plot with higher profit ratios as well as tighter
-confidence intervals. The simple Logistic Regression blend performed
-best with the highest mean profit ratio of 109\% with a standard
-deviation of 1.28\%. \%. This means that for the simple blended Logistic
-Regression model, if all jobs above the probability threshold 0.6 were
-rejected, the profits would increase on average by 9\% in comparison to
-historical profits.
+From the profit curves, the optimal probability thresholds are where the
+profit curves peak, and peaks above 100\% indicate the model assisted
+profits outperformed historical profits. The two simple blended models
+clearly outperformed all other models with higher profit ratios as well
+as tighter confidence intervals. The simple Logistic Regression blend
+performed best with the highest mean profit ratio of 109\% and a
+standard deviation of 1.28\%. This means that if all jobs above the
+probability threshold 0.6 were rejected, the profits would increase on
+average by 9\% in comparison to historical profits. Only 4.3\% of
+projects were rejected in this case.
 
-Profit curves from the simple average blend and Logistic Regression
-blended models outperformed the complex blended models, which follows
-logically from their significantly higher AUC distributions. The simple
-average blended model produced a profit curve with an almost identical
-profit improvement (and standard deviation) to the Logistic Regression
-blend. In the data, projects assigned a probability higher than 0.6
-represent only 4.3\% of all projects.
+Profit curves from the simple blended models outperformed the complex
+blended models, which follows logically from their significantly higher
+AUC distributions. The shaded grey 95\% confidence intervals show that
+none of the lower bounds for the original methods' or complex blending
+methods were above 100\% on the y-axis. That is, it cannot be said with
+95\% confidence that these methods would produce a mean profit higher
+than historical profits in the given decision framework. It is
+interesting that despite the reasonable AUC values, the profit curves
+for the individual and complex blended models do not make a complelling
+case for adoption into business practice.
 
-The shaded grey 95\% confidence intervals in the Profit Curve plot shows
-that with the 100 sample models that were analysed, none of the lower
-bounds for the original methods' or complex blending methods were above
-100\% on the y-axis. That is, it cannot be said with 95\% confidence
-that the original methods would produce a mean profit higher than
-historical profits in the given decision framework. Clearly this level
-of certainty is not beneficial for the case-study business to adopt.
-
-It is not clear why simple linear models and the averaging model
-outperformed ensemble tree blending methods. As previously stated, the
-ensemble trees may not have received enough data to adequately learn the
-complex series of rules they develop. The only differences between FWLS
-and the simple Logistic Regression (that performed best) were two
-additional explanatory variables and four interaction terms. The number
-of variables was not high for the amount of data since according to
-Peduzzi et al. (1996), 10 events per explanatory variable or more avoids
-the risk of biased estimation of variable coefficients in Logistic
-Regression. The data contained 315 events per explanatory variable and
-did not pose that risk. Nevertheless, the additional variables must have
-added misleading noise to the model.
-
-To conclude, because of the promising AUC results, it was logical that
-the models translated into financial benefits for the company. The 9\%
-improvement in profits produced by the simple blended Logistic
-Regression is reasonable, and may be high enough to trigger further
-cost-benefit analyses and the development of a more comprehensive
-framework describing different decision scenarios.
-
-\begin{itemize}
-\item
-  decision scenario
-\item
-  profit curves
-\item
-  prototype decision support interface
-\end{itemize}
+The simple blended Logistic Regression model on the other hand, a mean
+9\% improvement in profits, with a lower bound of 6.5\%. In terms of
+implementing the model, this improvement may be high enough to trigger
+further development and analysis of a more sophisticated framework
+describing decision making scenarios.
 
 \section{6. Conclusions and Future
 Work}\label{conclusions-and-future-work}
 
 3/4 page
 
-The general aim was to use statistical techniques to predict the
-profitability of projects for a case study consulting business using
-their internal CRM data. This was rigorously completed by approaching
-the prediction of `profitability' as a binary classification problem
-predicting either profit or loss. Several statistical and machine
-learning approaches were applied including Naive Bayes, Bayesian
-Networks, Linear Regression, Random Forests, gradient Boosted Trees as
-well as multiple methods of blending the individual models' output.
+Complex ensemble tree methods did not outpereform simple linear methods,
+however, the simple blended predictions of all methods
 
-AUC = 0.76). This was achieved by 3 individual methods while various
-techniques that blended the individual methods improved results further
-(AUC = 0.77).
+The general aim of this work was twofold. First, statistical and machine
+learning techniques were tested to determine whether the profitability
+of projects for a case study consulting business could be predicted
+using their internal CRM data. This was rigorously completed by
+approaching the prediction of `profitability' as a binary classification
+problem with classes profititable or loss-making. Naive Bayes, Logistic
+Regression, Random Forests, gradient Boosted Trees as well as simple and
+complex blending methods were applied to the problem. Secondly, this
+project tested whether predictions from the models could be proven to
+improve the overall profitability of the case study company and by how
+much.
 
-predictive models could be shown to improve the overall profitability
-(bottom line) of the case study business. A range of probability
-threshold values were trialed for each method using a decision framework
-where projects scored below the threshold were accepted, while projects
-above the threshold were rejected. If a project was rejected, the
-profits and losses were forfeited, and the remaining accepted profits
-and losses were summed.
+Predicting whether a job would be profitable or not (binary
+classification) was possible to a level significantly better than random
+assignment (AUC = 0.76). This mean statistic was achieved by 100
+different training/testing divisions of the data, built for each of the
+3 individual methods. Simple averaging and simple Logistic Regression
+blending methods improved results further to a mean of AUC = 0.77.
 
-Final results showed the simple Logistic Regression blend of the
-individual Logistic Regression, Random Forest and Boosted Tree models
-improved profits the most. The 95\% confidence interval for these
+Two models could also be shown to improve the overall profitability of
+the case study business. This was done by converting the binary
+predictions from the first analysis into profit curves that plotted
+model-influenced profit improvements over a range of probability
+threshold values. To determine model-influenced profit improvements, a
+managerial decision framework was used where projects scored below the
+threshold were accepted, while projects above the threshold were
+rejected. If a project was rejected, the profits and losses were
+forfeited, and the remaining accepted profits and losses were summed.
+
+100 training/testing divisions of the data were user to produce 100
+profit curves so that a 95\% confidence interval could be framed around
+the curves. Final results showed the simple Logistic Regression blend of
+the individual Logistic Regression, Random Forest and Boosted Tree
+models improved profits the most. The 95\% confidence interval for these
 improvements was between 6.5\% and 11.5\% using a probability threshold
-of 0.6 (approximately 4.3\% of projects).
+of 0.6 (approximately 4.3\% of projects were rejected).
 
 These results contribute significantly to the research in cost
-estimation in three ways: the applied methods, the decision framework,
-and the appeal to user trust. Ensemble tree methods and blending had
-been applied minimally to cost estimation previously, even though
-ensemble trees provide insight into model structure while predicting at
-a similar level to Neural Networks. Next, previous studies have verified
-predictive accuracy but stopped short of how the algorithm would affect
-decisions and what the measured benefits would be. This study presented
-a clear framework for how a business could improve profits by applying
-the algorithm.
+estimation in two ways: the applied methods, and the value assessment
+based on a managerial decision framework. Ensemble tree methods and
+blending had been applied minimally to cost estimation previously, even
+though ensemble trees provide insight into model structure while
+predicting at a similar level to Neural Networks. Next, previous studies
+compared accuracy of their predictive models, but stopped short of
+computing how the algorithm would affect decisions and what the measured
+benefits would be. This study presented a clear framework for how a
+business could improve profits by applying the algorithm.
 
-Further work is required to test user confidence in the output. Another
-topic identified for future research was to test how well managers
-estimate some numeric project input variables. In particular, time span,
-team size, total invoiced amount, and percentage of hours completed by
-professionals should be tested as these variables were calculated post
-project completion. Time span and total invoiced amount were discretised
-into wide categories, which should be easier for a manager to choose
-between.
-
-future work: user interface.
+Further work is required to measure user confidence in the output.
+Another topic identified for future research is to test how well
+managers estimate input variables at project conception. This is
+paraticularly relevant for time span and total invoiced amount which
+were discretised into 4 to 5 categories.
 
 Overall, this work has successfully built a mathematical blend of
 Logistic Regression, Random Forests, and Boosted Tree models, from a
-consulting company's internal project data. This blended model can
-predict whether a project will be profitable or not and in a reasonable
-decision framework, can guide managers in rejecting financially risky
-projects and improving profitability of the business.
+consulting company's internal project data. This blended model predicts
+whether a project will be profitable or not and in a reasonable decision
+framework, can guide managers in rejecting financially risky projects
+and improving profitability of the business by a mean of 9\%.
 
 \section{Acknowledgments}\label{acknowledgments}
 
 This research was supported by a scholarship/ ACEMS?
+
+\section{Figure Captions}\label{figure-captions}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  mice\_violin: Violin plot vertically illustrating the distribution of
+  AUC values from each of the methods when predicting profit/loss. Each
+  method was fed the same imputed full dataset.
+\item
+  blend\_violin: Violin plot vertically illustrating the distribution of
+  AUC values from each of the blending methods when predicting
+  profit/loss. 100 models were built for each method.
+\item
+  profit\_curve: Profit curves summarising results from 100 models of 9
+  methods: 3 simple blends, 3 complex blends, and the original 3 best
+  methods.
+\end{enumerate}
 
 \section*{References}\label{references}
 \addcontentsline{toc}{section}{References}
@@ -1016,7 +950,6 @@ Planning and Technology} 30 (1): 9--30.
 Hastie, Trevor, Robert Tibshirani, and Jerome Friedman. 2009. \emph{The
 Elements of Statistical Learning: Data Mining, Inference, and
 Prediction, Second Edition}. Book. Springer New York.
-\url{http://qut.summon.serialssolutions.com/2.0.0/link/0/eLvHCXMwzV1bS8MwFA7iQBwD3dR6mRAQfNk6trb0Ivi0TQY6EJwgQxi9JLKHddpVf7_nJE269cFnH9NCm_Y7JF--cyPEtnp9s7Im8JCzAWxVjFluEnMWBF4MyyfzE4-HVsR29Tfd9rO89s-BrzBiPSwRH8tocBGfgTxSlGFGrbpQQFAAGIV52JmKxhByhShS_lQg53OGzhsR9IHSKJ6YsfDxcttlP8vYzzrrTEJ4vjYNGaUN8EcoeYfpUofnMCyKACQZ-O6qMEelNAQVpUEpjR1VUGrnKIpucN_BcvnlzqK86ZUNR4cBwrbpes4tFjlf4Yfds9R8fYH9dAA8FGnufK71MnR_ArkqHO7iTW5RQEm_uU4aMEPxsA9subLFFGbHpMYwfaRJ9ljaIkeqaQYt1tAWqU91odzNCXkH0KgCja453QKNKtDuKEJGJWRdqgHrUoCLlnB1qQSLFmCdkpuH8Ww4MXemu_iUBUYW8r_YZ6QRYppDmot0yMQgNQ6myQzkCQZ8l0EO3oKnkT95HMphUw17G5Gz1_vKDaAlwrJNt-edE2pb3PEiL-aRkzh-AKfFqO8nPse2BbFt9S9I-69JXf59-4oclpbTJvt59s2uRQ7tL6t_R8w}.
 
 \hypertarget{ref-Kim2004}{}
 Kim, Gwang-Hee, Sung-Hoon An, and Kyung-In Kang. 2004. ``Comparison of
@@ -1035,7 +968,6 @@ Journal Article. \emph{European Journal of Operational Research} 180
 Lovallo, Dan, and Daniel Kahneman. 2003. ``Delusions of Success: How
 Optimism Undermines Executives' Decisions.'' Generic. HARVARD BUSINESS
 SCHOOL PUBLISHING CORPORATION.
-\url{http://qut.summon.serialssolutions.com/2.0.0/link/0/eLvHCXMw3V3Pb9MwFLYQQxMSEgxYKAPJBwQHlCqO61-TdoC2aNImcdgmcYscxwGktoMlQfvzeXYSJy1M4swxjZuq_uz3vs95PxCi6TSJd2yCAU-T53pmjbIgoblMCqGYyEtpEpoWs-3zt9Bqb_jsfwB-YVdN1Ye3XTS-IaLT_a553GcwEGvXFsO3O1q7kPf3y1trGmf0fDzFouu5U41Za99AKETJb79ROL_-pbtXOIthsZ3pbxvbna-2iexbJww0RKMGq9l5srHVlGS0OsTIBDI-cqakTczcrnO9439CVCCIZQ6ml751Vc_XxXdTn9hNfHUBDhZ4q1cFH5d3utk_feqIVDxwOT5N9Vd24ZnE5RP0uC_pjT-02B2ge3bzFO33k_sMzQOE-LrEHYTHGADEPYB4ABAPAL7DAb7n6OrT8nJ-GnfNLuKvBChkzFTJcgnkVadGg1XkVllKiXYEDHYLYxKUK3imPCfGklIwA8KxYJQpSsAaSHqIHmmXFLGpffJkEaG9EhayjRyriOBfRmj_izpfyNOzeXt50F9OK5_hN_1ZRzC7fh_EfCpeICxEIg2fcebqtoHtzlOic26UYobKWZFMUOQmPXObor7RJiMJT0BSJGqCDnscsmK1yqgrlQfklMBXWlSyH209lQwoEgPdDnfetDCFO2lWpRmoVBDJqRBOq9a3NTxgZ1i_cOABY3jDfSdkYIhgzEueCSL_MmzeFcl3xSHql3f-6BF6OGyaV-h-fdPY1z5t-DdLboxJ}.
 
 \hypertarget{ref-Macdonald1975}{}
 Macdonald, P. 1975. ``The Logit Transformation: With Special Reference
@@ -1059,12 +991,6 @@ Cross-Company and Within-Company Effort Estimation Models for Web
 Applications.'' Conference Proceedings. In \emph{Software Metrics, 2004.
 Proceedings. 10th International Symposium on}, 348--57. IEEE.
 
-\hypertarget{ref-e1071}{}
-Meyer, David, Evgenia Dimitriadou, Kurt Hornik, Andreas Weingessel, and
-Friedrich Leisch. 2014. \emph{E1071: Misc Functions of the Department of
-Statistics (E1071), Tu Wien}.
-\url{https://CRAN.R-project.org/package=e1071}.
-
 \hypertarget{ref-Moore1989}{}
 Moore, David S, and George P McCabe. 1989. \emph{Introduction to the
 Practice of Statistics}. Book. WH Freeman/Times Books/Henry Holt \& Co.
@@ -1073,13 +999,6 @@ Practice of Statistics}. Book. WH Freeman/Times Books/Henry Holt \& Co.
 Pai, Dinesh R., Kevin S. McFall, and Girish H. Subramanian. 2013.
 ``Software Effort Estimation Using a Neural Network Ensemble.'' Journal
 Article. \emph{Journal of Computer Information Systems} 53 (4): 49--58.
-\url{http://qut.summon.serialssolutions.com/2.0.0/link/0/eLvHCXMwnV1Nb9QwEB0VekFClPLVAJV8gGPAH4kbc4GlyraIbhftpurRysTe06os3VTqz8fjTbawBanqKZHiOIntvBmPPe8BKPmBpxuYgMHsmgALqtHauDrYJRTaZNlB4b3XiBvxty99pGDV2z1IRuR2PxsKmn8UAUm1IcKwz4tfKclI0XJrp6nxALaJVoSG_Ej-WC8rFHnUE4x_Fmlv_e1WUh7I1fKfFiham-EO9Nuf-tjX_FZywW02x3t_xFN40nmlbLAaRruw5S-ewU6v-MA6AHgOn6bjYXU-mJQs-LfjScXKafVtFMNcjAQ8jtiAnZZnk8FJOFTn48l3Vp5Oy9HXk_IFnA3L6vA47dQX0gWlFaWNwjwjOjfDZ43hssFaovNCu7wIZwpnJrhmuSPtK2xE0QhZ68IJn3PnMzxQL-FxTbv0L9qYzef2gKkw-eJZ1BnFzGcKQ_Ua3SxUyRELTGC_byZbI8V6mnZpbxopgVfr624-t2G-QynmSooE3q-6zy5WLB1W2qW03BYBoSTdrbltr9sE9jbKkaChKLgyCbz7s-PXBWjaGJ6guInGPQFxl2KHHcU6UQu0r__73m_gkYwCG7QB-C08bC-v_H5MOv0NwrD2yw}.
-
-\hypertarget{ref-Peduzzi1996}{}
-Peduzzi, Peter, John Concato, Elizabeth Kemper, Theodore R Holford, and
-Alvan R Feinstein. 1996. ``A Simulation Study of the Number of Events
-Per Variable in Logistic Regression Analysis.'' Journal Article.
-\emph{Journal of Clinical Epidemiology} 49 (12): 1373--9.
 
 \hypertarget{ref-Perlich2003}{}
 Perlich, Claudia, Foster Provost, and Jeffrey S Simonoff. 2003. ``Tree
@@ -1088,11 +1007,7 @@ Article. \emph{The Journal of Machine Learning Research} 4: 211--55.
 
 \hypertarget{ref-Provost2013}{}
 Provost, F., and T. Fawcett. 2013. \emph{Data Science for Business}.
-Book. O'Reilly. \url{https://books.google.com.au/books?id=_1b4nAEACAAJ}.
-
-\hypertarget{ref-gbm}{}
-Ridgeway, Greg. 2015. \emph{Gbm: Generalized Boosted Regression Models}.
-\url{https://CRAN.R-project.org/package=gbm}.
+Book. O'Reilly.
 
 \hypertarget{ref-Saradhi2011}{}
 Saradhi, V Vijaya, and Girish Keshav Palshikar. 2011. ``Employee Churn
