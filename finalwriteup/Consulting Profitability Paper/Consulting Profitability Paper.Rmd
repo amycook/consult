@@ -1,5 +1,5 @@
 ---
-title: Predictive Models to Support Quoting of Fixed Fee Consulting Projects
+title: Predictive Framework to Support Managerial Decisions around Fixed Fee Consulting Projects
 author:
   - name: Amy Cook, Paul Wu, Kerrie Mengersen
     email: a21.cook@qut.edu.au
@@ -11,7 +11,8 @@ address:
 abstract: |
   A concise abstract is required. limit to 250 words. clearly state purpose of research, principal resutls and major conclusions. no refs
   
-  Engaging in loss making jobs for fixed fees is a major problem in consulting, particularly in the competitive construction industry. This thesis investigates whether machine learning techniques applied to a company's passively collected internal data could help avoid loss making jobs or help tactfully choose when to enforce stricter contracts. It was found that in a specific decision framework, a case study's profits could be improved 9% by declining approximately 4% of projects. Alternative decision frameworks are also proposed and evaluated. Algorithmic methods such as Logistic Regression, Random Forests, Boosted Trees, Naive Bayes, and Bayesian Networks were applied as well as blended combinations of these methods. A decision scenario which rejected projects above a sequence of tested thresholds was run in order to find the optimal threshold for profit improvements. The blended Logistic Regression model outperformed other methods and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. The findings from this research have the potential to assist managers in reducing losses by highlighting risky projects and guiding project-based changes to fee structures.
+  Fixed fee projects that run overbudget are a major problem for consulting businesses, particularly in competitive industries such as the construction industry. This thesis investigates whether machine learning algorithms trained on a company's passively collected internal data could predict whether a job would be profitable or loss making. Logistic Regression, Random Forests, Boosted Trees, and Naive Bayes were applied as well as blended combinations of these methods. The aim of these models is to help managers determine when to enforce certain contract structures or when to not engage in a project in order to avoid losses. Therefore this paper also examines whether the predictive algorithm improves a case study's overall profits if implementing the algorithm within a simple managerial decision framework. The framework was to reject all projects predicted as loss making, where loss making projects were defined as projects with a probability of being loss making above a certain threshold. The Logistic Regression model that blended predictive output from a Logistic Regression, Random Forest, and Boosted Tree models performed best and produced a 95% confidence interval of 6.5 - 11.5% profit improvements. This improvement was achieved by rejecting approximately 4% of projects that were deemed high risk. The findings from this research have the potential to assist managers in reducing consulting project losses by highlighting which projects to either avoid or accept given a fee structure that minimises financial risk.
+
 keywords: |
   consulting; machine learning; profitability; predictive model; construction industry; data mining
 abbreviations: 
@@ -414,7 +415,19 @@ ggplot(finance.plot, aes(x= threshold, y= profit.ratio, colour = method)) +
 ```
 
 
-From the profit curves, the optimal probability thresholds are where the profit curves peak, and peaks above 100% indicate the model assisted profits outperformed historical profits. The two simple blended models clearly outperformed all other models with higher profit ratios as well as tighter confidence intervals. The simple Logistic Regression blend performed best with the highest mean profit ratio of 109% and a standard deviation of 1.28%. This means that if all jobs above the probability threshold 0.6 were rejected, the profits would increase on average by 9% in comparison to historical profits. Only 4.3% of projects were rejected in this case.
+From the profit curves, the optimal probability thresholds are where the profit curves peak, and peaks above 100% indicate the model-assisted profits outperformed historical profits. The two simple blended models clearly outperformed all other models with higher profit ratios as well as tighter confidence intervals. The simple Logistic Regression blend performed best with the highest mean profit ratio of 109% and a standard deviation of 1.28%. This means that if all jobs above the probability threshold 0.6 were rejected, the profits would increase on average by 9% in comparison to historical profits. Only 4.3% of projects were rejected in this case.
+
+| Optimal Threshold | Method               | Mean profit ratio  (%) | SD profit ratio  (%) | Lower bound 95% CI (%) | Upper bound 95% CI (%) |
+|-----------|----------------------|------------------------|----------------------|------------------------|------------------------|
+| 0.60      | Simple LR blend      | 109.0                  | 1.28                 | 106.5                  | 111.5                  |
+| 0.55      | Simple average blend | 108.7                  | 1.56                 | 105.6                  | 111.8                  |
+| 0.55      | Simple BT blend      | 105.6                  | 3.21                 | 99.3                   | 111.9                  |
+| 0.50      | Complex BT blend     | 105.4                  | 3.23                 | 99.1                   | 111.7                  |
+| 0.60      | Individual RF        | 103.2                  | 2.58                 | 98.1                   | 108.3                  |
+| 0.60      | Individual BT        | 103.2                  | 2.77                 | 97.8                   | 108.6                  |
+| 0.75      | Individual LR        | 102.5                  | 2.93                 | 96.8                   | 108.2                  |
+| 0.65      | Complex RF blend     | 101.3                  | 2.72                 | 96.0                   | 106.6                  |
+| 0.65      | Complex LR blend     | 101.0                  | 1.18                 | 98.7                   | 103.3                  |
 
 Profit curves from the simple blended models outperformed the complex blended models, which follows logically from their significantly higher AUC distributions. The shaded grey 95% confidence intervals show that none of the lower bounds for the original methods' or complex blending methods were above 100% on the y-axis. That is, it cannot be said with 95% confidence that these methods would produce a mean profit higher than historical profits in the given decision framework. It is interesting that despite the reasonable AUC values, the profit curves for the individual and complex blended models do not make a complelling case for adoption into business practice.
 
@@ -454,6 +467,10 @@ Figure Captions
 1. mice_violin: Violin plot vertically illustrating the distribution of AUC values from each of the methods when predicting profit/loss. Each method was fed the same imputed full dataset.
 2. blend_violin: Violin plot vertically illustrating the distribution of AUC values from each of the blending methods when predicting profit/loss. 100 models were built for each method.
 3. profit_curve: Profit curves summarising results from 100 models of 9 methods: 3 simple blends, 3 complex blends, and the original 3 best methods.
+
+Table Captions
+===============
+1. Values and statistics describing each individual model and blended model's profit curves at the optimal position in the curve.
 
 References {#references .unnumbered}
 ==========

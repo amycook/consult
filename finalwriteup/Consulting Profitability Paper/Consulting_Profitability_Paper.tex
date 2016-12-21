@@ -45,6 +45,7 @@
 \fi
 % use microtype if available
 \IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+\usepackage{longtable}
 \usepackage{graphicx}
 % We will generate all images so they have a width \maxwidth. This means
 % that they will get their normal width if they fit onto the page, but
@@ -95,24 +96,29 @@
   A concise abstract is required. limit to 250 words. clearly state
   purpose of research, principal resutls and major conclusions. no refs
   
-  Engaging in loss making jobs for fixed fees is a major problem in
-  consulting, particularly in the competitive construction industry. This
-  thesis investigates whether machine learning techniques applied to a
-  company's passively collected internal data could help avoid loss making
-  jobs or help tactfully choose when to enforce stricter contracts. It was
-  found that in a specific decision framework, a case study's profits
-  could be improved 9\% by declining approximately 4\% of projects.
-  Alternative decision frameworks are also proposed and evaluated.
-  Algorithmic methods such as Logistic Regression, Random Forests, Boosted
-  Trees, Naive Bayes, and Bayesian Networks were applied as well as
-  blended combinations of these methods. A decision scenario which
-  rejected projects above a sequence of tested thresholds was run in order
-  to find the optimal threshold for profit improvements. The blended
-  Logistic Regression model outperformed other methods and produced a 95\%
-  confidence interval of 6.5 - 11.5\% profit improvements. The findings
-  from this research have the potential to assist managers in reducing
-  losses by highlighting risky projects and guiding project-based changes
-  to fee structures.
+  Fixed fee projects that run overbudget are a major problem for
+  consulting businesses, particularly in competitive industries such as
+  the construction industry. This thesis investigates whether machine
+  learning algorithms trained on a company's passively collected internal
+  data could predict whether a job would be profitable or loss making.
+  Logistic Regression, Random Forests, Boosted Trees, and Naive Bayes were
+  applied as well as blended combinations of these methods. The aim of
+  these models is to help managers determine when to enforce certain
+  contract structures or when to not engage in a project in order to avoid
+  losses. Therefore this paper also examines whether the predictive
+  algorithm improves a case study's overall profits if implementing the
+  algorithm within a simple managerial decision framework. The framework
+  was to reject all projects predicted as loss making, where loss making
+  projects were defined as projects with a probability of being loss
+  making above a certain threshold. The Logistic Regression model that
+  blended predictive output from a Logistic Regression, Random Forest, and
+  Boosted Tree models performed best and produced a 95\% confidence
+  interval of 6.5 - 11.5\% profit improvements. This improvement was
+  achieved by rejecting approximately 4\% of projects that were deemed
+  high risk. The findings from this research have the potential to assist
+  managers in reducing consulting project losses by highlighting which
+  projects to either avoid or accept given a fee structure that minimises
+  financial risk.
   \end{abstract}
    \begin{keyword} consulting; machine learning; profitability; predictive model;
 construction industry; data mining \sep \end{keyword}
@@ -737,7 +743,7 @@ the profit ratio.
 \includegraphics{Consulting_Profitability_Paper_files/figure-latex/profit_curve-1.pdf}
 
 From the profit curves, the optimal probability thresholds are where the
-profit curves peak, and peaks above 100\% indicate the model assisted
+profit curves peak, and peaks above 100\% indicate the model-assisted
 profits outperformed historical profits. The two simple blended models
 clearly outperformed all other models with higher profit ratios as well
 as tighter confidence intervals. The simple Logistic Regression blend
@@ -746,6 +752,143 @@ standard deviation of 1.28\%. This means that if all jobs above the
 probability threshold 0.6 were rejected, the profits would increase on
 average by 9\% in comparison to historical profits. Only 4.3\% of
 projects were rejected in this case.
+
+\begin{longtable}[]{@{}llllll@{}}
+\toprule
+\begin{minipage}[b]{0.08\columnwidth}\raggedright\strut
+Optimal Threshold\strut
+\end{minipage} & \begin{minipage}[b]{0.14\columnwidth}\raggedright\strut
+Method\strut
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright\strut
+Mean profit ratio (\%)\strut
+\end{minipage} & \begin{minipage}[b]{0.14\columnwidth}\raggedright\strut
+SD profit ratio (\%)\strut
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright\strut
+Lower bound 95\% CI (\%)\strut
+\end{minipage} & \begin{minipage}[b]{0.16\columnwidth}\raggedright\strut
+Upper bound 95\% CI (\%)\strut
+\end{minipage}\tabularnewline
+\midrule
+\endhead
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.60\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Simple LR blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+109.0\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+1.28\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+106.5\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+111.5\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.55\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Simple average blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+108.7\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+1.56\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+105.6\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+111.8\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.55\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Simple BT blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+105.6\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+3.21\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+99.3\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+111.9\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.50\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Complex BT blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+105.4\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+3.23\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+99.1\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+111.7\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.60\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Individual RF\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+103.2\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+2.58\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+98.1\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+108.3\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.60\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Individual BT\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+103.2\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+2.77\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+97.8\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+108.6\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.75\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Individual LR\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+102.5\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+2.93\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+96.8\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+108.2\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.65\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Complex RF blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+101.3\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+2.72\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+96.0\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+106.6\strut
+\end{minipage}\tabularnewline
+\begin{minipage}[t]{0.08\columnwidth}\raggedright\strut
+0.65\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+Complex LR blend\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+101.0\strut
+\end{minipage} & \begin{minipage}[t]{0.14\columnwidth}\raggedright\strut
+1.18\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+98.7\strut
+\end{minipage} & \begin{minipage}[t]{0.16\columnwidth}\raggedright\strut
+103.3\strut
+\end{minipage}\tabularnewline
+\bottomrule
+\end{longtable}
 
 Profit curves from the simple blended models outperformed the complex
 blended models, which follows logically from their significantly higher
@@ -854,6 +997,16 @@ This research was supported by a scholarship/ ACEMS?
   profit\_curve: Profit curves summarising results from 100 models of 9
   methods: 3 simple blends, 3 complex blends, and the original 3 best
   methods.
+\end{enumerate}
+
+\section{Table Captions}\label{table-captions}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Values and statistics describing each individual model and blended
+  model's profit curves at the optimal position in the curve.
 \end{enumerate}
 
 \section*{References}\label{references}
